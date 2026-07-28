@@ -10,7 +10,7 @@ export function CountdownCard() {
       title="다음 추첨까지"
       subtitle={countdown ? `제${countdown.nextRound}회 · 매주 토요일 20:35` : undefined}
     >
-      <p className="text-3xl font-bold tabular-nums tracking-tight text-emerald-400">
+      <p className="text-3xl font-bold tabular-nums tracking-tight text-emerald-600">
         {remaining ?? "…"}
       </p>
     </Card>
