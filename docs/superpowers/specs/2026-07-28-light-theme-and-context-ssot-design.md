@@ -32,6 +32,7 @@
 | `background` | `slate-950` | `white` | 페이지 배경 |
 | `surface` | `slate-900` | `white` + `border-slate-200` | 카드/패널 배경 |
 | `surface-border` | `slate-800` / `slate-700` | `slate-200` / `slate-300` | 카드·구분선 테두리 |
+| `surface-muted` | `slate-800` (비활성 칩/버튼 배경) | `slate-100` | 토글 미선택 상태, 값 없는 진행 바 트랙 |
 | `text-primary` | `slate-100` | `slate-900` | 제목, 본문 강조 |
 | `text-secondary` | `slate-300` | `slate-700` | 본문 보조 |
 | `text-muted` | `slate-400` / `slate-500` | `slate-500` | 캡션, 라벨 |
@@ -40,12 +41,18 @@
 | `accent-warning` | `amber-300` / `400` / `500` | 텍스트 `amber-600`, 배경 칩 `amber-50` + `border-amber-200` | 희귀도 배지, 정직성 각주 강조 |
 | `accent-special` | `violet-500` / `600` | `violet-600` | 특수 강조(생성기 등) |
 | `accent-danger` | `red-400` | `red-600` | 에러/불일치 강조 |
+| `accent-ring` | `white` (`ring-white`) | `slate-900` (`ring-slate-900`) | `Ball`의 일치 번호 강조 링 — 밝은 배경에서 대비를 내려면 반전 필요 |
 | 로또 공 색상 | 변경 없음 (hex 고정) | 변경 없음 | `ballColor()` — 도메인 규칙, 손대지 않음 |
+
+버튼처럼 배경·글자색을 함께 지정해 그 자체로 대비가 완결되는 요소(예: `bg-emerald-600 text-white`,
+`bg-sky-600 text-white`)는 페이지 배경이 바뀌어도 그대로 둔다 — 치환 대상은 페이지/카드 배경에
+기대어 대비를 얻던 클래스(텍스트 단독 색상, 테두리, 미선택 상태 배경)로 한정한다.
 
 ## 적용 파일
 
 - `apps/web/src/app/globals.css` — `color-scheme: light`로 변경, body 배경/텍스트 기본값 교체
 - `apps/web/src/shared/ui/card.tsx` — surface/border 토큰 적용
+- `apps/web/src/shared/ui/ball.tsx` — 일치 번호 강조 링(`ring-white` → `ring-slate-900`)
 - `apps/web/src/app/page.tsx`
 - `apps/web/src/modules/countdown/view/countdown-card.tsx`
 - `apps/web/src/modules/draw/view/latest-draw-card.tsx`
@@ -54,14 +61,20 @@
 - `apps/web/src/modules/picks/view/picks-card.tsx`
 - `apps/web/src/modules/results/view/results-card.tsx`
 - `apps/web/src/modules/simulation/view/simulation-card.tsx`
+- `apps/web/src/modules/statistics/view/statistics-panel.tsx`
 - `apps/web/src/modules/statistics/view/frequency-heatmap.tsx`
 - `apps/web/src/modules/statistics/view/hot-cold-board.tsx`
 - `apps/web/src/modules/statistics/view/number-frequency-bars.tsx`
 - `apps/web/src/modules/statistics/view/pattern-distribution.tsx`
 - `apps/web/src/modules/statistics/view/probability-reality.tsx`
+- `apps/web/src/modules/statistics/view/recent-grid.tsx` — 미출현 칸 hex(`#1e293b` → `#e2e8f0`)
 - `apps/web/src/modules/statistics/view/top-pairs-list.tsx`
 
 이 파일들은 모두 `*View`/`*Card` 컴포넌트로, 색상 클래스 치환만 필요하며 로직 변경은 없다.
+
+`apps/web/src/modules/statistics/view/sum-distribution-chart.tsx`는 검토했으나 변경하지 않는다 — SVG
+막대/마커 색상(`#38bdf8`, `#f59e0b`, `#64748b`)이 흰 배경에서도 이미 충분한 대비를 가지며, 카드 배경에
+기대어 대비를 얻는 방식이 아니기 때문이다.
 
 ## `.claude/context/` SSOT 도입
 
