@@ -28,7 +28,7 @@ export function GeneratorCard({ onGenerated }: GeneratorCardProps) {
             className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
               vm.mode === key
                 ? "bg-emerald-600 text-white"
-                : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
             }`}
           >
             {label}
@@ -46,7 +46,7 @@ export function GeneratorCard({ onGenerated }: GeneratorCardProps) {
               className={`rounded-md py-1 text-xs font-semibold tabular-nums transition-colors ${
                 vm.selected.includes(n)
                   ? "bg-emerald-600 text-white"
-                  : "bg-slate-800 text-slate-400 hover:bg-slate-700"
+                  : "bg-slate-100 text-slate-500 hover:bg-slate-200"
               }`}
             >
               {n}
@@ -64,7 +64,7 @@ export function GeneratorCard({ onGenerated }: GeneratorCardProps) {
         {vm.busy ? "생성 중…" : "번호 생성"}
       </button>
 
-      {vm.error ? <p className="mt-3 text-sm text-red-400">{vm.error}</p> : null}
+      {vm.error ? <p className="mt-3 text-sm text-red-600">{vm.error}</p> : null}
 
       {vm.result ? (
         <div className="mt-4 flex items-center gap-1.5">
