@@ -22,7 +22,7 @@ export function Ball({ n, size = "md", glow = 0, dimmed = false, ring = false }:
       : undefined;
   return (
     <span
-      className={`inline-flex items-center justify-center rounded-full font-bold tabular-nums select-none ${SIZES[size]} ${dimmed ? "opacity-30" : ""} ${ring ? "ring-2 ring-white" : ""}`}
+      className={`inline-flex items-center justify-center rounded-full font-bold tabular-nums select-none ${SIZES[size]} ${dimmed ? "opacity-30" : ""} ${ring ? "ring-2 ring-slate-900" : ""}`}
       style={{ backgroundColor: color.bg, color: color.text, boxShadow: shadow }}
       title={`${n}번`}
     >
