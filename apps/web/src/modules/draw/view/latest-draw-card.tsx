@@ -8,7 +8,7 @@ export function LatestDrawCard() {
 
   return (
     <Card title="최근 회차" subtitle={draw ? `제${draw.round}회 · ${formatDrawDate(draw.drawnAt)} 추첨` : undefined}>
-      {error ? <p className="text-sm text-red-400">{error}</p> : null}
+      {error ? <p className="text-sm text-red-600">{error}</p> : null}
       {draw ? (
         <div className="flex items-center gap-1.5">
           {draw.numbers.map((n) => (
