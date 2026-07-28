@@ -18,9 +18,9 @@ export default function HomePage() {
       <header className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
-            로또랩 <span className="text-emerald-400">Lotto Lab</span>
+            로또랩 <span className="text-emerald-600">Lotto Lab</span>
           </h1>
-          <p className="mt-1 text-sm text-slate-400">
+          <p className="mt-1 text-sm text-slate-500">
             사기 전에, 데이터로 확인하세요. 과거 통계는 미래 당첨 확률을 높이지 않습니다 — 저희는
             그 사실부터 정직하게 보여드립니다.
           </p>
