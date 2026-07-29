@@ -24,18 +24,20 @@ export function SimulationCard({ numbers }: SimulationCardProps) {
         {vm.busy ? "확인 중…" : numbers ? "과거 전 회차 대입" : "먼저 번호를 생성하세요"}
       </button>
 
-      {vm.error ? <p className="mt-3 text-sm text-red-400">{vm.error}</p> : null}
+      {vm.error ? <p className="mt-3 text-sm text-red-600">{vm.error}</p> : null}
 
       {vm.result ? (
         <div className="mt-4 space-y-3">
-          <p className="text-sm text-slate-300">{vm.summaryLine(vm.result)}</p>
+          <p className="text-sm text-slate-700">{vm.summaryLine(vm.result)}</p>
           {vm.summarizeRanks(vm.result).length > 0 ? (
             <ul className="flex flex-wrap gap-2">
               {vm.summarizeRanks(vm.result).map(({ rank, label, count }) => (
                 <li
                   key={rank}
                   className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${
-                    rank <= 2 ? "bg-amber-500/20 text-amber-300" : "bg-slate-800 text-slate-200"
+                    rank <= 2
+                      ? "border border-amber-200 bg-amber-50 text-amber-600"
+                      : "bg-slate-100 text-slate-700"
                   }`}
                 >
                   {label} × {count.toLocaleString()}
