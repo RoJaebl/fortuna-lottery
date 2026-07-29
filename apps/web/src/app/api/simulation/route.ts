@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import type { SimulationRequest } from "@lotto-lab/core/simulation/dto";
+import type { SimulationRequest } from "@fortuna-lottery/core/simulation/dto";
 import { container } from "@/server/container";
 
 export async function POST(request: NextRequest) {

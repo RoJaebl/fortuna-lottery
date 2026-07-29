@@ -1,4 +1,4 @@
-import type { StatisticsResponse } from "@lotto-lab/core/statistics/dto";
+import type { StatisticsResponse } from "@fortuna-lottery/core/statistics/dto";
 import { apiGet } from "@/shared/lib/fetcher";
 import { assembleStatistics } from "../transport/assembler/statistics-response.assembler";
 import type { StatisticsModel } from "../model/statistics.model";

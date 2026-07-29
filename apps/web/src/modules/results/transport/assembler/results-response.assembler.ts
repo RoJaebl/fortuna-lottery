@@ -1,4 +1,4 @@
-import type { ResultsResponse } from "@lotto-lab/core/results/dto";
+import type { ResultsResponse } from "@fortuna-lottery/core/results/dto";
 import type { ResultsModel } from "../../model/results.model";
 
 export function assembleResults(dto: ResultsResponse): ResultsModel {

@@ -14,7 +14,7 @@ importers:
 
   apps/web:
     dependencies:
-      '@lotto-lab/core':
+      '@fortuna-lottery/core':
         specifier: workspace:*
         version: link:../../packages/core
       next:

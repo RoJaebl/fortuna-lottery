@@ -1,4 +1,4 @@
-import type { SimulationResponse } from "@lotto-lab/core/simulation/dto";
+import type { SimulationResponse } from "@fortuna-lottery/core/simulation/dto";
 import type { BacktestModel } from "../../model/simulation.model";
 
 export function assembleBacktest(dto: SimulationResponse): BacktestModel {

@@ -1,4 +1,4 @@
-import type { StatisticsResponse } from "@lotto-lab/core/statistics/dto";
+import type { StatisticsResponse } from "@fortuna-lottery/core/statistics/dto";
 import type { StatisticsModel } from "../../model/statistics.model";
 
 /** 응답 DTO → FE 모델 (와이어 이음새) */

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import type { SavePickRequest } from "@lotto-lab/core/picks/dto";
+import type { SavePickRequest } from "@fortuna-lottery/core/picks/dto";
 import { container } from "@/server/container";
 
 export async function GET() {

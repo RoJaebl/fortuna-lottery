@@ -1,8 +1,8 @@
-# lotto-lab 아키텍처 설계 문서 v2 — 데이터 흐름 중심 재설계
+# fortuna-lottery 아키텍처 설계 문서 v2 — 데이터 흐름 중심 재설계
 
 - 작성일: 2026-07-03
 - 상태: 확정 (본 문서 기준으로 MVP 구현 진행)
-- 선행 문서: [2026-06-04-lotto-lab-design.md](./2026-06-04-lotto-lab-design.md) (제품 개요·기능 범위·정직성 원칙은 v1을 그대로 계승한다. 본 문서는 **애플리케이션 아키텍처와 데이터 흐름**을 재설계한 것이다.)
+- 선행 문서: [2026-06-04-fortuna-lottery-design.md](./2026-06-04-fortuna-lottery-design.md) (제품 개요·기능 범위·정직성 원칙은 v1을 그대로 계승한다. 본 문서는 **애플리케이션 아키텍처와 데이터 흐름**을 재설계한 것이다.)
 
 ## 0. v1 대비 변경 요약
 
@@ -60,7 +60,7 @@
 ## 4. 전체 구조 (Lean Hexagonal on Next.js)
 
 ```
-lotto-lab/
+fortuna-lottery/
 ├─ apps/web/                              Next.js 단일 앱 (App Router)
 │  ├─ app/
 │  │  ├─ (routes)/…                       페이지 = 모듈 조립만 (로직 없음)

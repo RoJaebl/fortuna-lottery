@@ -4,8 +4,8 @@
 
 ## 설계 문서
 
-- [v2 — 데이터 흐름 중심 아키텍처 (현행)](docs/superpowers/specs/2026-07-03-lotto-lab-architecture-v2.md)
-- [v1 — 제품 개요·기능 범위](docs/superpowers/specs/2026-06-04-lotto-lab-design.md)
+- [v2 — 데이터 흐름 중심 아키텍처 (현행)](docs/superpowers/specs/2026-07-03-fortuna-lottery-architecture-v2.md)
+- [v1 — 제품 개요·기능 범위](docs/superpowers/specs/2026-06-04-fortuna-lottery-design.md)
 
 ## 구조
 

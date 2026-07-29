@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import type { GenerateRequest } from "@lotto-lab/core/generator/dto";
+import type { GenerateRequest } from "@fortuna-lottery/core/generator/dto";
 import { container } from "@/server/container";
 
 export async function POST(request: NextRequest) {

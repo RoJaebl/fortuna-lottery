@@ -1,4 +1,4 @@
-import type { PickResponse } from "@lotto-lab/core/picks/dto";
+import type { PickResponse } from "@fortuna-lottery/core/picks/dto";
 import { apiDelete, apiGet, apiPost } from "@/shared/lib/fetcher";
 import { assemblePick } from "../transport/assembler/pick-response.assembler";
 import { mapSavePickRequest } from "../transport/mapper/save-pick-request.mapper";

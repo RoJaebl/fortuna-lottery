@@ -1,4 +1,4 @@
-# lotto-lab 설계 문서
+# fortuna-lottery 설계 문서
 
 - 작성일: 2026-06-04
 - 상태: 설계 확정 (구현 계획 단계로 진행 예정)
@@ -107,7 +107,7 @@ apps/api/src/
 
 ### 모노레포 루트
 ```
-lotto-lab/
+fortuna-lottery/
 ├─ apps/
 │  ├─ web/                Next.js (App Router)
 │  └─ api/                NestJS

@@ -1,4 +1,4 @@
-import type { DrawResponse } from "@lotto-lab/core/draw/dto";
+import type { DrawResponse } from "@fortuna-lottery/core/draw/dto";
 import { apiGet } from "@/shared/lib/fetcher";
 import { assembleDraw } from "../transport/assembler/draw.assembler";
 import type { DrawModel } from "../model/draw.model";

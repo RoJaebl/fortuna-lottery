@@ -5,10 +5,10 @@ import tseslint from "typescript-eslint";
 const coreInternalPatterns = [
   {
     group: [
-      "@lotto-lab/core/*/application",
-      "@lotto-lab/core/*/domain",
-      "@lotto-lab/core/*/infrastructure",
-      "@lotto-lab/core/shared",
+      "@fortuna-lottery/core/*/application",
+      "@fortuna-lottery/core/*/domain",
+      "@fortuna-lottery/core/*/infrastructure",
+      "@fortuna-lottery/core/shared",
     ],
     message:
       "FE 모듈은 core의 dto만 타입 import할 수 있습니다 (경계 규칙). 로직이 필요하면 API route를 통하세요.",

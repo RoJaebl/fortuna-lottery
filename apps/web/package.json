@@ -1,5 +1,5 @@
 {
-  "name": "web",
+  "name": "@fortuna-lottery/web",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -9,7 +9,7 @@
     "lint": "eslint src"
   },
   "dependencies": {
-    "@lotto-lab/core": "workspace:*",
+    "@fortuna-lottery/core": "workspace:*",
     "next": "^15.3.4",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"

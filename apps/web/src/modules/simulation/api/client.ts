@@ -1,4 +1,4 @@
-import type { SimulationResponse } from "@lotto-lab/core/simulation/dto";
+import type { SimulationResponse } from "@fortuna-lottery/core/simulation/dto";
 import { apiPost } from "@/shared/lib/fetcher";
 import { assembleBacktest } from "../transport/assembler/simulation-response.assembler";
 import { mapSimulationRequest } from "../transport/mapper/simulation-request.mapper";
