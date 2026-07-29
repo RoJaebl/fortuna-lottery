@@ -13,13 +13,13 @@ export function TopPairsList({ stats }: { stats: StatisticsModel }) {
           <li key={`${a}-${b}`} className="flex items-center gap-2">
             <Ball n={a} size="sm" />
             <Ball n={b} size="sm" />
-            <div className="h-2 flex-1 overflow-hidden rounded bg-slate-800">
+            <div className="h-2 flex-1 overflow-hidden rounded bg-slate-100">
               <div
                 className="h-full rounded bg-sky-600"
                 style={{ width: `${(count / maxCount) * 100}%` }}
               />
             </div>
-            <span className="w-10 text-right text-xs tabular-nums text-slate-400">{count}회</span>
+            <span className="w-10 text-right text-xs tabular-nums text-slate-500">{count}회</span>
           </li>
         ))}
       </ul>

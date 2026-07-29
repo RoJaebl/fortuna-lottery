@@ -33,7 +33,7 @@ export function RecentGrid({ stats }: { stats: StatisticsModel }) {
                   title={`제${r.round}회 · ${n}번${present.has(n) ? " 출현" : ""}`}
                   className="rounded-[1px]"
                   style={{
-                    backgroundColor: present.has(n) ? ballColor(n).bg : "#1e293b",
+                    backgroundColor: present.has(n) ? ballColor(n).bg : "#e2e8f0",
                   }}
                 />
               );

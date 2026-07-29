@@ -13,7 +13,7 @@ export function HotColdBoard({ stats }: { stats: StatisticsModel }) {
     >
       <div className="space-y-4">
         <div>
-          <p className="mb-2 text-xs font-medium text-slate-400">오래 안 나온 번호 TOP 8</p>
+          <p className="mb-2 text-xs font-medium text-slate-500">오래 안 나온 번호 TOP 8</p>
           <div className="flex flex-wrap gap-2">
             {coldest(stats, 8).map(({ number, gap }) => (
               <div key={number} className="flex flex-col items-center gap-0.5">
@@ -24,7 +24,7 @@ export function HotColdBoard({ stats }: { stats: StatisticsModel }) {
           </div>
         </div>
         <div>
-          <p className="mb-2 text-xs font-medium text-slate-400">최근 나온 번호 TOP 8</p>
+          <p className="mb-2 text-xs font-medium text-slate-500">최근 나온 번호 TOP 8</p>
           <div className="flex flex-wrap gap-2">
             {hottest(stats, 8).map(({ number, gap }) => (
               <div key={number} className="flex flex-col items-center gap-0.5">

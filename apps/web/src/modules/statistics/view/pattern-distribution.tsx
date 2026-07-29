@@ -23,10 +23,10 @@ function DistBars({
             {total > 0 ? `${Math.round((count / total) * 100)}%` : "0%"}
           </span>
           <div
-            className={`w-full rounded-t ${i === highlight ? "bg-amber-400" : "bg-sky-600/70"}`}
+            className={`w-full rounded-t ${i === highlight ? "bg-amber-600" : "bg-sky-600/70"}`}
             style={{ height: `${6 + (count / max) * 56}px` }}
           />
-          <span className={`text-[10px] ${i === highlight ? "font-bold text-amber-300" : "text-slate-500"}`}>
+          <span className={`text-[10px] ${i === highlight ? "font-bold text-amber-600" : "text-slate-500"}`}>
             {labelOf(i)}
           </span>
         </div>
@@ -56,7 +56,7 @@ export function PatternDistribution({
     >
       <div className="space-y-5">
         <div>
-          <p className="mb-2 text-xs font-medium text-slate-400">홀수 개수 (0~6)</p>
+          <p className="mb-2 text-xs font-medium text-slate-500">홀수 개수 (0~6)</p>
           <DistBars
             dist={stats.oddCountDist}
             total={stats.totalDraws}
@@ -65,7 +65,7 @@ export function PatternDistribution({
           />
         </div>
         <div>
-          <p className="mb-2 text-xs font-medium text-slate-400">저구간(1~22) 개수 (0~6)</p>
+          <p className="mb-2 text-xs font-medium text-slate-500">저구간(1~22) 개수 (0~6)</p>
           <DistBars
             dist={stats.lowCountDist}
             total={stats.totalDraws}
@@ -74,7 +74,7 @@ export function PatternDistribution({
           />
         </div>
         <div>
-          <p className="mb-2 text-xs font-medium text-slate-400">구간별 총 출현</p>
+          <p className="mb-2 text-xs font-medium text-slate-500">구간별 총 출현</p>
           <DistBars
             dist={stats.zoneCounts}
             total={stats.zoneCounts.reduce((a, b) => a + b, 0)}
