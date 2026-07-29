@@ -24,7 +24,7 @@ export function ResultsCard() {
         {vm.busy ? "대조 중…" : "당첨 대조"}
       </button>
 
-      {vm.error ? <p className="mt-3 text-sm text-red-400">{vm.error}</p> : null}
+      {vm.error ? <p className="mt-3 text-sm text-red-600">{vm.error}</p> : null}
 
       {vm.results ? (
         vm.results.items.length === 0 ? (
@@ -32,8 +32,8 @@ export function ResultsCard() {
         ) : (
           <div className="mt-4 space-y-4">
             {vm.results.draw ? (
-              <div className="flex items-center gap-1.5 border-b border-slate-800 pb-3">
-                <span className="mr-1 text-xs text-slate-400">당첨</span>
+              <div className="flex items-center gap-1.5 border-b border-slate-200 pb-3">
+                <span className="mr-1 text-xs text-slate-500">당첨</span>
                 {vm.results.draw.numbers.map((n) => (
                   <Ball key={n} n={n} size="sm" />
                 ))}
@@ -57,7 +57,7 @@ export function ResultsCard() {
                   </div>
                   <span
                     className={`shrink-0 text-xs font-semibold ${
-                      item.rank >= 1 ? "text-amber-300" : "text-slate-500"
+                      item.rank >= 1 ? "text-amber-600" : "text-slate-500"
                     }`}
                   >
                     {vm.resultLabel(item)}
