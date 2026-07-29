@@ -26,7 +26,7 @@ export function PicksCard({ currentNumbers }: PicksCardProps) {
         {vm.busy ? "저장 중…" : currentNumbers ? "현재 번호 저장" : "먼저 번호를 생성하세요"}
       </button>
 
-      {vm.error ? <p className="mb-3 text-sm text-red-400">{vm.error}</p> : null}
+      {vm.error ? <p className="mb-3 text-sm text-red-600">{vm.error}</p> : null}
 
       {vm.picks.length === 0 ? (
         <p className="text-sm text-slate-500">아직 저장한 번호가 없습니다.</p>
@@ -44,7 +44,7 @@ export function PicksCard({ currentNumbers }: PicksCardProps) {
                 <button
                   type="button"
                   onClick={() => vm.remove(pick.id)}
-                  className="rounded px-2 py-1 text-xs text-slate-500 transition-colors hover:bg-slate-800 hover:text-red-400"
+                  className="rounded px-2 py-1 text-xs text-slate-500 transition-colors hover:bg-slate-100 hover:text-red-600"
                   aria-label="삭제"
                 >
                   삭제
