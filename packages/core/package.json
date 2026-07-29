@@ -1,0 +1,21 @@
+{
+  "name": "@lotto-lab/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./shared": "./src/shared/index.ts",
+    "./*/domain": "./src/*/domain/index.ts",
+    "./*/application": "./src/*/application/index.ts",
+    "./*/dto": "./src/*/dto/index.ts",
+    "./*/infrastructure": "./src/*/infrastructure/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "lint": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0",
+    "vitest": "^3.1.0"
+  }
+}
