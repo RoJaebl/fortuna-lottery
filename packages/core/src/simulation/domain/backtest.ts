@@ -1,6 +1,6 @@
 import type { Combination } from "../../shared/combination";
 import { scoreAgainstDraw } from "../../shared/scoring";
-import type { Draw } from "../../draw/domain/draw";
+import type { Draw } from "../../lotterietus/domain/draw";
 
 export interface BacktestReadModel {
   totalDraws: number;

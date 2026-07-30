@@ -1,4 +1,4 @@
-import type { DrawResponse } from "../../draw/dto/draw.dto";
+import type { DrawResponse } from "../../lotterietus/dto/draw.dto";
 
 export interface ResultItemResponse {
   pickId: string;

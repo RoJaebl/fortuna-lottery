@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Draw } from "../../draw/domain/draw";
+import type { Draw } from "../../lotterietus/domain/draw";
 import {
   frequency,
   hotCold,
