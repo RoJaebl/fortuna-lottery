@@ -1,11 +1,10 @@
 // 컴포지션 루트 — 어댑터를 조립해 유스케이스에 포트를 주입하는 유일한 장소.
 // app/api(인프라 계층)만 이 파일을 import할 수 있다 (경계 규칙).
-import { makeGetRecentDraws } from "@fortuna-lottery/core/draw/application";
-import { createDummyDrawDataAdapter } from "@fortuna-lottery/core/draw/infrastructure";
+import { makeGetLotterietusStatus } from "@fortuna-lottery/core/lotterietus/application";
+import { createDummyDrawDataAdapter } from "@fortuna-lottery/core/lotterietus/infrastructure";
 import { makeGetStatistics } from "@fortuna-lottery/core/statistics/application";
 import { makeGenerateCombination } from "@fortuna-lottery/core/generator/application";
 import { makeBacktestCombination } from "@fortuna-lottery/core/simulation/application";
-import { makeGetCountdown } from "@fortuna-lottery/core/countdown/application";
 import {
   makeDeletePick,
   makeListPicks,
@@ -23,11 +22,10 @@ function buildContainer() {
 
   return {
     identity,
-    getRecentDraws: makeGetRecentDraws(drawData),
+    getLotterietusStatus: makeGetLotterietusStatus(drawData),
     getStatistics: makeGetStatistics(drawData),
     generateCombination: makeGenerateCombination(Math.random),
     backtestCombination: makeBacktestCombination(drawData),
-    getCountdown: makeGetCountdown(drawData),
     savePick: makeSavePick({ repository: pickRepository }),
     listPicks: makeListPicks(pickRepository),
     deletePick: makeDeletePick(pickRepository),
