@@ -1,6 +1,6 @@
 import { createCombination } from "../../../shared/combination";
 import { scoreAgainstDraw } from "../../../shared/scoring";
-import type { DrawDataPort } from "../../../draw/application/ports/draw-data.port";
+import type { DrawDataPort } from "../../../lotterietus/application/ports/draw-data.port";
 import type { PickRepositoryPort } from "../../../picks/application/ports/pick-repository.port";
 import type { ResultsResponse } from "../../dto/results.dto";
 

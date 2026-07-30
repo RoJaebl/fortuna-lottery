@@ -1,5 +1,5 @@
 import { TOTAL_COMBINATIONS } from "../../../shared/combination";
-import type { DrawDataPort } from "../../../draw/application/ports/draw-data.port";
+import type { DrawDataPort } from "../../../lotterietus/application/ports/draw-data.port";
 import {
   frequency,
   hotCold,

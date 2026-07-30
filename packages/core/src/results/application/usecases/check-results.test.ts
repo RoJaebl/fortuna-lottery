@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { Draw } from "../../../draw/domain/draw";
-import type { DrawDataPort } from "../../../draw/application/ports/draw-data.port";
+import type { Draw } from "../../../lotterietus/domain/draw";
+import type { DrawDataPort } from "../../../lotterietus/application/ports/draw-data.port";
 import { createInMemoryPickRepository } from "../../../picks/infrastructure/adapters/in-memory-pick.repository";
 import { makeCheckResults } from "./check-results";
 

@@ -1,6 +1,6 @@
 import { createCombination } from "../../../shared/combination";
 import { ok, type Result } from "../../../shared/result";
-import type { DrawDataPort } from "../../../draw/application/ports/draw-data.port";
+import type { DrawDataPort } from "../../../lotterietus/application/ports/draw-data.port";
 import { backtest } from "../../domain/backtest";
 import type { SimulationRequest, SimulationResponse } from "../../dto/simulation.dto";
 

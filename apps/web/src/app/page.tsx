@@ -1,10 +1,9 @@
 "use client";
 // 라우트 = 모듈 조립만 (경계 규칙). 모듈 간 데이터 흐름(현재 조합)을 여기서 중개한다.
 import { useState } from "react";
-import { CountdownCard } from "@/modules/countdown";
-import { LatestDrawCard } from "@/modules/draw";
 import { GeneratorCard } from "@/modules/generator";
 import { IdentityBadge } from "@/modules/identity";
+import { LotterietusCard } from "@/modules/lotterietus";
 import { PicksCard } from "@/modules/picks";
 import { ResultsCard } from "@/modules/results";
 import { SimulationCard } from "@/modules/simulation";
@@ -28,10 +27,7 @@ export default function HomePage() {
         <IdentityBadge />
       </header>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <LatestDrawCard />
-        <CountdownCard />
-      </div>
+      <LotterietusCard />
 
       <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-[420px_1fr]">
         <div className="space-y-4">
