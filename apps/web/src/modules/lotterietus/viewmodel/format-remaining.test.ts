@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatRemaining } from "./use-countdown.viewmodel";
+import { formatRemaining } from "./use-lotterietus.viewmodel";
 
 describe("formatRemaining (카운트다운 presenter)", () => {
   it("일 단위가 있으면 D-표기", () => {
