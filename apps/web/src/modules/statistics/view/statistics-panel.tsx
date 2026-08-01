@@ -63,6 +63,10 @@ export function StatisticsPanel({ myNumbers }: StatisticsPanelProps) {
         return <NumberFrequencyBars stats={stats!} />;
       case "recent":
         return <RecentGrid stats={stats!} />;
+      default: {
+        const exhaustiveCheck: never = activeStatView;
+        return exhaustiveCheck;
+      }
     }
   }
 
