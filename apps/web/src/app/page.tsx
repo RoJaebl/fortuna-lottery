@@ -1,6 +1,6 @@
 "use client";
-// 라우트 = 모듈 조립만 (경계 규칙). 모듈 간 데이터 흐름(현재 조합)을 여기서 중개한다.
-import { useState } from "react";
+// 라우트 = 모듈 조립만 (경계 규칙). 모듈 간 데이터 흐름(현재 조합)과 화면 전환 상태를 여기서 중개한다.
+import { useState, type ReactNode } from "react";
 import { GeneratorCard } from "@/modules/generator";
 import { IdentityBadge } from "@/modules/identity";
 import { LotterietusCard } from "@/modules/lotterietus";
@@ -8,13 +8,33 @@ import { PicksCard } from "@/modules/picks";
 import { ResultsCard } from "@/modules/results";
 import { SimulationCard } from "@/modules/simulation";
 import { StatisticsPanel } from "@/modules/statistics";
+import { Tabs, type TabItem } from "@/shared/ui/tabs";
+
+type TabKey = "statistics" | "simulation" | "picks" | "results";
+
+/** 각 카드의 기존 title을 탭 라벨로 그대로 사용 (설계 문서 §3) */
+const TABS: readonly TabItem<TabKey>[] = [
+  { key: "statistics", label: "통계" },
+  { key: "simulation", label: "시뮬레이션" },
+  { key: "picks", label: "내 번호" },
+  { key: "results", label: "결과 확인" },
+];
 
 export default function HomePage() {
   const [currentNumbers, setCurrentNumbers] = useState<number[] | null>(null);
+  const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabKey>("statistics");
+
+  const panels: Record<TabKey, ReactNode> = {
+    statistics: <StatisticsPanel myNumbers={currentNumbers} />,
+    simulation: <SimulationCard numbers={currentNumbers} />,
+    picks: <PicksCard currentNumbers={currentNumbers} />,
+    results: <ResultsCard />,
+  };
 
   return (
-    <main className="mx-auto max-w-screen-2xl px-6 py-8">
-      <header className="mb-8 flex items-center justify-between">
+    <main className="mx-auto max-w-screen-2xl px-4 py-8 sm:px-6">
+      <header className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
             로또랩 <span className="text-emerald-600">Lotto Lab</span>
@@ -27,16 +47,23 @@ export default function HomePage() {
         <IdentityBadge />
       </header>
 
-      <LotterietusCard />
+      <LotterietusCard
+        generatorOpen={isGeneratorOpen}
+        onToggleGenerator={() => setIsGeneratorOpen((open) => !open)}
+      />
 
-      <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-[420px_1fr]">
-        <div className="space-y-4">
+      {isGeneratorOpen ? (
+        <div className="mt-4">
           <GeneratorCard onGenerated={setCurrentNumbers} />
-          <SimulationCard numbers={currentNumbers} />
-          <PicksCard currentNumbers={currentNumbers} />
-          <ResultsCard />
         </div>
-        <StatisticsPanel myNumbers={currentNumbers} />
+      ) : null}
+
+      <div className="mt-8">
+        <Tabs items={TABS} active={activeTab} onChange={setActiveTab} label="주요 화면" />
+      </div>
+
+      <div role="tabpanel" className="mt-4">
+        {panels[activeTab]}
       </div>
     </main>
   );

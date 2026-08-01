@@ -22,6 +22,9 @@
 | `accent-special` | `violet-600` | 특수 강조 (생성기 등) |
 | `accent-danger` | `text-red-600` | 에러/불일치 강조 |
 | `accent-ring` | `ring-slate-900` | `Ball`의 일치 번호 강조 링 |
+| `tab-active` (밑줄형) | `text-slate-900` + `border-b-2 border-slate-900` | 최상단 탭 활성 상태 (`shared/ui/tabs.tsx` underline 변형) |
+| `tab-inactive` | `text-slate-500` | 최상단 탭 비활성 상태 |
+| `subtab-active` / `subtab-inactive` | `bg-slate-900 text-white` / `bg-slate-100 text-slate-500` | 패널 내부 서브탭 칩 (`shared/ui/tabs.tsx` chip 변형) |
 | 로또 공 색상 | 변경 없음 (hex 고정) | `ballColor()` — 도메인 규칙, 절대 손대지 않음 |
 
 ## 원칙
@@ -30,3 +33,5 @@
   페이지/카드 배경과 무관하게 항상 그대로 둔다 — 토큰 치환 대상이 아니다.
 - 다크 모드는 없다 — 라이트 단일 테마다. 다크 모드 토글이나 `dark:` variant를 추가하지 않는다.
 - 로또 공 색상은 실제 로또 공 색(노랑·파랑·빨강·회색·초록) 규칙이며 어떤 이유로도 바꾸지 않는다.
+- 내비게이션(탭)은 `slate` 계열로만 표현한다 — `emerald-600` 채움 버튼은 "실행(CTA)" 전용이며,
+  "지금 보고 있는 화면"을 나타내는 데 쓰지 않는다.
