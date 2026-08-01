@@ -1,6 +1,6 @@
 "use client";
 // 라우트 = 모듈 조립만 (경계 규칙). 모듈 간 데이터 흐름(현재 조합)과 화면 전환 상태를 여기서 중개한다.
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { GeneratorCard } from "@/modules/generator";
 import { IdentityBadge } from "@/modules/identity";
 import { LotterietusCard } from "@/modules/lotterietus";
@@ -24,6 +24,13 @@ export default function HomePage() {
   const [currentNumbers, setCurrentNumbers] = useState<number[] | null>(null);
   const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabKey>("statistics");
+
+  const panels: Record<TabKey, ReactNode> = {
+    statistics: <StatisticsPanel myNumbers={currentNumbers} />,
+    simulation: <SimulationCard numbers={currentNumbers} />,
+    picks: <PicksCard currentNumbers={currentNumbers} />,
+    results: <ResultsCard />,
+  };
 
   return (
     <main className="mx-auto max-w-screen-2xl px-4 py-8 sm:px-6">
@@ -56,10 +63,7 @@ export default function HomePage() {
       </div>
 
       <div role="tabpanel" className="mt-4">
-        {activeTab === "statistics" ? <StatisticsPanel myNumbers={currentNumbers} /> : null}
-        {activeTab === "simulation" ? <SimulationCard numbers={currentNumbers} /> : null}
-        {activeTab === "picks" ? <PicksCard currentNumbers={currentNumbers} /> : null}
-        {activeTab === "results" ? <ResultsCard /> : null}
+        {panels[activeTab]}
       </div>
     </main>
   );
