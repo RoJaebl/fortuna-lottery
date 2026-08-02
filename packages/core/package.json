@@ -19,7 +19,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.20.0",
-    "prisma": "^6.19.3",
+    "prisma": "6.19.3",
     "typescript": "^5.8.0",
     "vitest": "^3.1.0"
   },

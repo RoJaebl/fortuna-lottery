@@ -65,7 +65,7 @@ importers:
         specifier: ^22.20.0
         version: 22.20.0
       prisma:
-        specifier: ^6.19.3
+        specifier: 6.19.3
         version: 6.19.3(typescript@5.9.3)
       typescript:
         specifier: ^5.8.0
