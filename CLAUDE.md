@@ -137,11 +137,13 @@ ViewModel/Model/DTO/Domain 코드는 한 줄도 바뀌지 않는다 — 단일 �
 
 ## MVP 현황
 
-데이터 소스는 `DummyDrawDataAdapter` — 시드 고정 결정적 생성 데이터(~1,180회차)이며, 실제
-동행복권 데이터는 아직 없다. 픽은 `PickRepositoryPort` 뒤의 `InMemoryPickRepository`(서버 프로세스
-메모리, 실제 DB 아님)로 저장된다 — 이후 Supabase로 교체해도 어댑터만 바뀌고 유스케이스/DTO/FE는
-무수정이다. 인증은 아직 없음(게스트 전용); Supabase Auth + 로그인 게이팅은 v1 문서 기준 후속
-단계다.
+데이터 소스는 `PrismaDrawDataAdapter`(PostgreSQL, `docker-compose.yml`로 로컬 기동) — 실제 동행복권
+당첨 데이터가 회차 1부터 빈틈없이 들어 있다. 별도 프로세스인 `apps/worker`가 동행복권 비공식
+엔드포인트를 `IngestDraws` 유스케이스로 주기적으로(매주 추첨 이후) 수집해 채워 넣는다;
+`DummyDrawDataAdapter`는 코드로는 남아 있지만(테스트/시드 용도) 앱 컨테이너 기본값에서는 빠졌다.
+픽은 `PickRepositoryPort` 뒤의 `InMemoryPickRepository`(서버 프로세스 메모리, 실제 DB 아님)로
+저장된다 — 이후 Supabase로 교체해도 어댑터만 바뀌고 유스케이스/DTO/FE는 무수정이다. 인증은 아직
+없음(게스트 전용); Supabase Auth + 로그인 게이팅은 v1 문서 기준 후속 단계다.
 
 ## TDD
 
