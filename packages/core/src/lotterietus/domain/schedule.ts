@@ -1,6 +1,6 @@
 /** 추첨 스케줄 — 매주 토요일 20:35 KST (= 11:35 UTC) */
-const DRAW_UTC_HOUR = 11;
-const DRAW_UTC_MINUTE = 35;
+export const DRAW_UTC_HOUR = 11;
+export const DRAW_UTC_MINUTE = 35;
 const SATURDAY = 6;
 
 /** 기준 시각 이후 가장 가까운 추첨 시각을 반환한다. */
