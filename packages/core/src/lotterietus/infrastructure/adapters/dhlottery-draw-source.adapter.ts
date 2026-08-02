@@ -1,6 +1,7 @@
 import type { DrawSourcePort } from "../../application/ports/draw-source.port";
 import type { Draw } from "../../domain/draw";
 import { drawnAtFromYmd } from "../../domain/drawn-at";
+import { createCombination, LOTTO_MAX, LOTTO_MIN } from "../../../shared/combination";
 
 const ENDPOINT = "https://www.dhlottery.co.kr/lt645/selectPstLt645InfoNew.do";
 const RESULT_PAGE = "https://www.dhlottery.co.kr/lt645/result";
@@ -35,10 +36,16 @@ function toDraw(row: DhlotteryRow): Draw {
   if (![row.ltEpsd, ...rawNumbers, row.bnsWnNo].every(Number.isFinite)) {
     throw new Error(`회차 ${row.ltEpsd} 응답의 번호 필드가 올바르지 않습니다`);
   }
-  const numbers = [...rawNumbers].sort((a, b) => a - b);
+  const combination = createCombination(rawNumbers);
+  if (!combination.ok) {
+    throw new Error(`회차 ${row.ltEpsd} 응답의 당첨번호가 올바르지 않습니다: ${combination.error}`);
+  }
+  if (!Number.isInteger(row.bnsWnNo) || row.bnsWnNo < LOTTO_MIN || row.bnsWnNo > LOTTO_MAX) {
+    throw new Error(`회차 ${row.ltEpsd} 응답의 보너스 번호가 올바르지 않습니다: ${row.bnsWnNo}`);
+  }
   return {
     round: row.ltEpsd,
-    numbers: Object.freeze(numbers),
+    numbers: combination.value,
     bonus: row.bnsWnNo,
     drawnAt: drawnAtFromYmd(row.ltRflYmd),
   };
