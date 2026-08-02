@@ -11,10 +11,16 @@
     "./*/infrastructure": "./src/*/infrastructure/index.ts"
   },
   "scripts": {
+    "postinstall": "prisma generate",
     "test": "vitest run",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev"
   },
   "devDependencies": {
+    "@prisma/client": "6.19.3",
+    "@types/node": "^22.20.0",
+    "prisma": "^6.19.3",
     "typescript": "^5.8.0",
     "vitest": "^3.1.0"
   }
