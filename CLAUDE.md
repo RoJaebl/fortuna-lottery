@@ -32,6 +32,15 @@ PARA/MOC 규칙과는 무관하다.
 
 현재 문서: `design-system.md` (컬러 토큰).
 
+## superpowers 스킬 워크플로 — 계획/스펙 문서 선(先) 커밋
+
+`superpowers:subagent-driven-development` 또는 `superpowers:executing-plans` 스킬로 구현 작업을
+실행할 때, 그 작업이 참조하는 `docs/superpowers/plans/`의 계획 문서나 `docs/superpowers/specs/`의
+스펙 문서가 아직 커밋되지 않은 상태라면, 구현에 들어가기 전에 먼저 그 문서들을 커밋한다.
+
+모든 구현이 끝난 뒤에 계획/스펙 문서가 뒤늦게 (혹은 구현 커밋과 뒤섞여) 커밋되는 것은 작업 흐름상
+순서가 맞지 않는다 — 계획 문서는 구현의 근거이므로, 구현보다 먼저 저장소 히스토리에 존재해야 한다.
+
 ## 명령어
 
 ```bash
