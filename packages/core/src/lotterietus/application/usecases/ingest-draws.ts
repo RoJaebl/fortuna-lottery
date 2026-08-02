@@ -56,13 +56,16 @@ export const makeIngestDraws =
       const batch = await source.fetchBatch(maxRound + step);
       requestCount += 1;
 
-      const fresh = [...batch]
-        .filter((draw) => draw.round > maxRound)
-        .sort((a, b) => a.round - b.round);
+      const fresh = batch.filter((draw) => draw.round > maxRound).sort((a, b) => a.round - b.round);
       const first = fresh[0];
       const last = fresh[fresh.length - 1];
+      const isContiguous =
+        first !== undefined &&
+        last !== undefined &&
+        first.round === maxRound + 1 &&
+        last.round - first.round + 1 === fresh.length;
 
-      if (first !== undefined && last !== undefined && first.round === maxRound + 1) {
+      if (isContiguous) {
         // 저장분과 이어지는 구간만 저장한다 — 창이 앞서가 생긴 구멍을 절대 남기지 않는다
         await writer.upsertDraws(fresh);
         ingestedCount += fresh.length;

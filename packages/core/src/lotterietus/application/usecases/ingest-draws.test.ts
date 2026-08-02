@@ -146,4 +146,24 @@ describe("ingestDraws (수집 catch-up 사이클)", () => {
     expect(writer.saved).toEqual(Array.from({ length: 20 }, (_, i) => i + 1));
     expect(result.latestRound).toBe(20);
   });
+
+  it("응답이 있어도 저장분과 계속 이어지지 않으면 경고 로그 후 종료한다 (무한루프 방지)", async () => {
+    const calls: number[] = [];
+    const source: DrawSourcePort = {
+      async fetchBatch(centerRound) {
+        calls.push(centerRound);
+        return [makeDraw(centerRound + 5)]; // 항상 비어있지 않지만 저장분과 절대 안 이어짐
+      },
+    };
+    const writer = fakeWriter(0);
+    const logger = vi.fn();
+    const ingest = makeIngestDraws({ source, writer: writer.port, sleep: noSleep, logger });
+
+    const result = await ingest();
+
+    expect(writer.saved).toEqual([]);
+    expect(result.ingestedCount).toBe(0);
+    expect(calls).toEqual([6, 3, 1]);
+    expect(logger).toHaveBeenCalledWith(expect.stringContaining("경고"));
+  });
 });
