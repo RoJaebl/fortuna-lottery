@@ -24,6 +24,11 @@ describe("drawnAtFromYmd (동행복권 추첨일 → ISO)", () => {
     expect(() => drawnAtFromYmd("20260132")).toThrow();
     expect(() => drawnAtFromYmd("20260100")).toThrow();
   });
+
+  it("해당 월에 실존하지 않는 날짜면 에러를 던진다 (월별 일수 롤오버 방지)", () => {
+    expect(() => drawnAtFromYmd("20260230")).toThrow(); // 2월 30일
+    expect(() => drawnAtFromYmd("20260431")).toThrow(); // 4월 31일
+  });
 });
 
 describe("drawnAtFromDate (DB date 컬럼 → ISO)", () => {
