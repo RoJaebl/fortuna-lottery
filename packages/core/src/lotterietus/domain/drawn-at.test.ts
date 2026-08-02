@@ -14,6 +14,16 @@ describe("drawnAtFromYmd (동행복권 추첨일 → ISO)", () => {
     expect(() => drawnAtFromYmd("2026-08-01")).toThrow();
     expect(() => drawnAtFromYmd("")).toThrow();
   });
+
+  it("월이 01~12 범위를 벗어나면 에러를 던진다 (Date.UTC 롤오버 방지)", () => {
+    expect(() => drawnAtFromYmd("20261301")).toThrow();
+    expect(() => drawnAtFromYmd("20260001")).toThrow();
+  });
+
+  it("일이 01~31 범위를 벗어나면 에러를 던진다 (Date.UTC 롤오버 방지)", () => {
+    expect(() => drawnAtFromYmd("20260132")).toThrow();
+    expect(() => drawnAtFromYmd("20260100")).toThrow();
+  });
 });
 
 describe("drawnAtFromDate (DB date 컬럼 → ISO)", () => {

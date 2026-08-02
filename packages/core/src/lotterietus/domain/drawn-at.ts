@@ -13,11 +13,12 @@ export function drawnAtFromYmd(ymd: string): string {
   if (!/^\d{8}$/.test(ymd)) {
     throw new Error(`추첨일 형식이 올바르지 않습니다 (YYYYMMDD 필요): ${ymd}`);
   }
-  return atDrawTime(
-    Number(ymd.slice(0, 4)),
-    Number(ymd.slice(4, 6)) - 1,
-    Number(ymd.slice(6, 8)),
-  );
+  const month = Number(ymd.slice(4, 6));
+  const day = Number(ymd.slice(6, 8));
+  if (month < 1 || month > 12 || day < 1 || day > 31) {
+    throw new Error(`추첨일 월/일이 범위를 벗어났습니다 (YYYYMMDD): ${ymd}`);
+  }
+  return atDrawTime(Number(ymd.slice(0, 4)), month - 1, day);
 }
 
 /**

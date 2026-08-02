@@ -4,6 +4,8 @@ import { drawnAtFromYmd } from "../../domain/drawn-at";
 
 const ENDPOINT = "https://www.dhlottery.co.kr/lt645/selectPstLt645InfoNew.do";
 const RESULT_PAGE = "https://www.dhlottery.co.kr/lt645/result";
+const USER_AGENT =
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36";
 
 /** 응답 1행 — 실제로 쓰는 필드만 선언한다 (당첨금·등수 등 나머지는 무시) */
 interface DhlotteryRow {
@@ -29,14 +31,11 @@ export interface DhlotteryDrawSourceOptions {
 }
 
 function toDraw(row: DhlotteryRow): Draw {
-  const numbers = [
-    row.tm1WnNo,
-    row.tm2WnNo,
-    row.tm3WnNo,
-    row.tm4WnNo,
-    row.tm5WnNo,
-    row.tm6WnNo,
-  ].sort((a, b) => a - b);
+  const rawNumbers = [row.tm1WnNo, row.tm2WnNo, row.tm3WnNo, row.tm4WnNo, row.tm5WnNo, row.tm6WnNo];
+  if (![row.ltEpsd, ...rawNumbers, row.bnsWnNo].every(Number.isFinite)) {
+    throw new Error(`회차 ${row.ltEpsd} 응답의 번호 필드가 올바르지 않습니다`);
+  }
+  const numbers = [...rawNumbers].sort((a, b) => a - b);
   return {
     round: row.ltEpsd,
     numbers: Object.freeze(numbers),
@@ -64,6 +63,7 @@ export function createDhlotteryDrawSourceAdapter(
           Referer: RESULT_PAGE,
           "X-Requested-With": "XMLHttpRequest",
           Accept: "application/json",
+          "User-Agent": USER_AGENT,
         },
         signal: AbortSignal.timeout(timeoutMs),
       });
