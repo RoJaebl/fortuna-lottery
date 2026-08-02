@@ -1,0 +1,23 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+/// 한 회차 추첨 결과 — 사용자와 완전히 무관 (DrawDataPort로만 공급)
+model Draw {
+  round   Int      @id
+  n1      Int
+  n2      Int
+  n3      Int
+  n4      Int
+  n5      Int
+  n6      Int
+  bonus   Int
+  drawnAt DateTime @map("drawn_at") @db.Date
+
+  @@map("draws")
+}
