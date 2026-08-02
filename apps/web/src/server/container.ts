@@ -1,7 +1,10 @@
 // 컴포지션 루트 — 어댑터를 조립해 유스케이스에 포트를 주입하는 유일한 장소.
 // app/api(인프라 계층)만 이 파일을 import할 수 있다 (경계 규칙).
 import { makeGetLotterietusStatus } from "@fortuna-lottery/core/lotterietus/application";
-import { createDummyDrawDataAdapter } from "@fortuna-lottery/core/lotterietus/infrastructure";
+import {
+  createPrismaClient,
+  createPrismaDrawDataAdapter,
+} from "@fortuna-lottery/core/lotterietus/infrastructure";
 import { makeGetStatistics } from "@fortuna-lottery/core/statistics/application";
 import { makeGenerateCombination } from "@fortuna-lottery/core/generator/application";
 import { makeBacktestCombination } from "@fortuna-lottery/core/simulation/application";
@@ -15,8 +18,9 @@ import { makeCheckResults } from "@fortuna-lottery/core/results/application";
 import { createGuestIdentityAdapter } from "@fortuna-lottery/core/identity/infrastructure";
 
 function buildContainer() {
-  // MVP 어댑터 — 후속: RealDrawDataAdapter / SupabasePickRepository / SupabaseIdentityAdapter로 교체
-  const drawData = createDummyDrawDataAdapter();
+  // draws는 워커가 수집해 Postgres에 넣은 실데이터를 읽는다.
+  // picks/identity는 아직 MVP 어댑터 — 후속: SupabasePickRepository / SupabaseIdentityAdapter로 교체
+  const drawData = createPrismaDrawDataAdapter(createPrismaClient());
   const pickRepository = createInMemoryPickRepository();
   const identity = createGuestIdentityAdapter();
 
