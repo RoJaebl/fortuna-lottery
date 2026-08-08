@@ -160,3 +160,25 @@ ViewModel/Model/DTO/Domain 코드는 한 줄도 바뀌지 않는다 — 단일 �
 함수들을 순수 함수로 유지하는 이유가 바로 이것이다. 도메인 규칙이나 유스케이스를 추가할 때는
 구현 전에 대상 파일 옆에 `*.test.ts`를 먼저 작성한다 (`packages/core/src/**`와
 `apps/web/src/modules/**/viewmodel/*.test.ts` 아래 기존 `*.test.ts` 파일들 참고).
+
+## Known quirks
+
+- **OneDrive + git worktree 손상.** 이 저장소는 OneDrive 동기화 vault 안에 있어 vault-root CLAUDE.md가
+  `tag-hero`에 대해 문서화한 것과 같은 손상 패턴을 겪는다. `.worktrees/implement.orphaned-20260730`,
+  `.worktrees/implement.orphaned-20260801` — 두 번의 실제 발생 흔적이 남아 있다(raw
+  `git worktree add .worktrees/<name>`가 OneDrive Files-On-Demand 하에서 `.git/worktrees/<name>/HEAD`가
+  손상되며 워크트리가 고아가 됨). **완화**: 브랜치/자식 워크트리 작업은 raw `git worktree add` 대신
+  Orca의 네이티브 워크트리 생성(`EnterWorktree` 도구 또는 `orca worktree create`)을 사용한다.
+- **`mmap failed: Invalid argument`.** `git checkout`/`git fsck` 등이 이 오류로 실패하면, OneDrive
+  cloud-only 플레이스홀더(`.git/objects/pack/*`, `.git/index` 등)가 완전히 하이드레이션되지 않은
+  것일 수 있다(파일 크기는 정상으로 보여도 Windows 파일 속성이 `ReparsePoint`). "cloud file provider
+  is not running" 같은 명시적 메시지가 없어도 같은 원인일 수 있다 — 실제 손상으로 단정하기 전에
+  해당 파일을 PowerShell `[System.IO.File]::ReadAllBytes($path)`로 강제 전체 읽기해 하이드레이션시킨
+  뒤 재시도한다.
+- **`dev`/`implement` 브랜치는 원격에 푸시돼 있지 않다.** `main`만 `origin/main`을 추적한다(`git
+  branch -vv`로 확인). 위 손상이 실제 데이터 손실로 이어질 경우 이 두 브랜치는 복구할 원격 사본이
+  없다 — 정기적으로 `origin`에 푸시하거나, 최소한 손상 의심 시 조기에 발견해 대응한다.
+- **크로스 머신 워크트리 정리 시 주의.** `git worktree list`가 "prunable"로 표시하는 항목이 이
+  머신에서 죽은 로컬 경로인지, 다른 머신(예: Mac Orca 워크스페이스)에서 여전히 쓰이는 항목인지
+  먼저 확인한다 — 이 저장소의 `.git`이 OneDrive로 동기화되므로, `git worktree prune`은 다른 머신이
+  보는 등록 정보도 함께 지운다.
