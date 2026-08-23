@@ -169,15 +169,24 @@ ViewModel/Model/DTO/Domain 코드는 한 줄도 바뀌지 않는다 — 단일 �
   `git worktree add .worktrees/<name>`가 OneDrive Files-On-Demand 하에서 `.git/worktrees/<name>/HEAD`가
   손상되며 워크트리가 고아가 됨). **완화**: 브랜치/자식 워크트리 작업은 raw `git worktree add` 대신
   Orca의 네이티브 워크트리 생성(`EnterWorktree` 도구 또는 `orca worktree create`)을 사용한다.
+- **세 번째 흔적 — `.git/worktrees/implement1` (2026-08-24 확인).** 위 둘은 작업 폴더 쪽 흔적이지만
+  이것은 **관리 폴더 쪽**이 남은 경우다. `gitdir` 파일이 사라져 `git worktree list`에는 아예 잡히지
+  않으므로 눈에 띄지 않고, 대신 **커밋할 때마다** `error: failed to delete
+  '.git/worktrees/implement1': Permission denied`가 stderr로 따라붙는다. 커밋 자체는 정상 성공하므로
+  이 오류를 보고 실패로 오인하지 않는다. `git worktree prune`은 이 항목을 지우려 시도하지만 같은
+  Permission denied로 실패한다(OneDrive가 폴더를 잡고 있다) — **prune을 반복해도 소용없다.**
+  실제로 치우려면 OneDrive 동기화를 멈춘 뒤 `.git/worktrees/implement1/`을 직접 지운다. 급하지
+  않으면 그냥 두어도 커밋·푸시에 지장은 없다.
 - **`mmap failed: Invalid argument`.** `git checkout`/`git fsck` 등이 이 오류로 실패하면, OneDrive
   cloud-only 플레이스홀더(`.git/objects/pack/*`, `.git/index` 등)가 완전히 하이드레이션되지 않은
   것일 수 있다(파일 크기는 정상으로 보여도 Windows 파일 속성이 `ReparsePoint`). "cloud file provider
   is not running" 같은 명시적 메시지가 없어도 같은 원인일 수 있다 — 실제 손상으로 단정하기 전에
   해당 파일을 PowerShell `[System.IO.File]::ReadAllBytes($path)`로 강제 전체 읽기해 하이드레이션시킨
   뒤 재시도한다.
-- **`dev`/`implement` 브랜치는 원격에 푸시돼 있지 않다.** `main`만 `origin/main`을 추적한다(`git
-  branch -vv`로 확인). 위 손상이 실제 데이터 손실로 이어질 경우 이 두 브랜치는 복구할 원격 사본이
-  없다 — 정기적으로 `origin`에 푸시하거나, 최소한 손상 의심 시 조기에 발견해 대응한다.
+- **`dev` 브랜치는 여전히 원격에 푸시돼 있지 않다.** `implement`는 2026-08-24에 푸시되어
+  `origin/implement`를 추적한다(vault가 이 저장소를 gitlink로 추적하기 시작하면서, 기록된 SHA가
+  원격에서 해석되도록 함께 푸시했다). `dev`는 아직 로컬에만 있으므로 위 손상이 데이터 손실로
+  이어지면 복구할 원격 사본이 없다 — `git branch -vv`로 현재 상태를 확인하고 정기적으로 푸시한다.
 - **크로스 머신 워크트리 정리 시 주의.** `git worktree list`가 "prunable"로 표시하는 항목이 이
   머신에서 죽은 로컬 경로인지, 다른 머신(예: Mac Orca 워크스페이스)에서 여전히 쓰이는 항목인지
   먼저 확인한다 — 이 저장소의 `.git`이 OneDrive로 동기화되므로, `git worktree prune`은 다른 머신이
