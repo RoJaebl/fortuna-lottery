@@ -62,7 +62,10 @@ Nest DI 토큰은 런타임 값이어야 하는데 TS `interface`는 컴파일 �
 
 ### DTO는 반드시 `import type`으로 가져온다
 
-`packages/contract`는 `"type": "module"`인 **TS 소스** 패키지이고 `apps/api`는 CommonJS다. DTO는 전부 interface이므로 `import type`이면 컴파일 시 완전히 지워져 런타임 해석이 일어나지 않는다. **값 import를 하면 런타임에 깨진다.**
+`packages/contract`는 **TS 소스** 패키지이고 `apps/api`는 `moduleResolution: "node16"`인 CommonJS다. DTO는 전부 interface이므로 `import type`이면 컴파일 시 완전히 지워져 런타임 해석이 일어나지 않는다. **값 import를 하면 런타임에 깨진다.**
+
+> ⚠️ **`import type`만으로는 충분하지 않다 — 계약 패키지가 ESM이면 컴파일 자체가 막힌다.** `packages/contract/package.json`에 `"type": "module"`이 있으면 CJS인 `apps/api`의 type-only import조차 **TS1541**(`Type-only import of an ECMAScript module from a CommonJS module must have a 'resolution-mode' attribute`)로 거부되고, 계약 패키지 내부의 확장자 없는 `export * from "./x.dto"`도 TS2307이 난다. 런타임 소거 여부와 무관한 **컴파일 단계 제약**이다.
+> 따라서 동반 클라이언트 계획 Task 1에서 `packages/contract/package.json`에 `"type": "module"`을 **넣지 않는다**(그 계획에서 이미 제외했다). 이미 넣어버렸다면 이 계획 Task 1에서 제거하고 넘어간다 — `apps/web`은 `moduleResolution: "Bundler"` + `transpilePackages`라 제거해도 영향이 없다.
 
 ### 스펙과 의도적으로 다르게 가는 2가지 (이미 결정됐다 — 실행 중 재판단하지 말 것)
 
@@ -75,6 +78,10 @@ Nest DI 토큰은 런타임 값이어야 하는데 TS `interface`는 컴파일 �
 ### 스펙 §9.4의 `combination.vo.ts`를 어떻게 다루는가
 
 6개·1~45·중복 없음 검증(`createCombination`)은 `generator`·`picks`·`results`·`simulation` 네 모듈이 쓰므로 **`apps/api/src/shared/combination.ts`(순수 커널)에 남는다** — §3.1이 모든 레이어의 `shared` import를 허용한다. `picks/domain/model/combination.vo.ts`는 스펙이 지정한 파일명 그대로 두되, 그 안에는 **픽 전용 값 객체**(사용자 키 + 검증된 조합)인 `PickCombinationVO`가 들어간다.
+
+### 셸 주의 — Windows Git Bash다
+
+이 저장소의 개발 머신은 Windows 11이고 셸은 Git Bash다. **procps 도구(`pkill`·`pgrep`)가 없다.** 그래서 이 계획의 모든 기동/종료 절차는 `pkill` 대신 **런치 시 PID를 잡아 `kill $PID`로 내린다**(`kill`은 bash 빌트인이라 동작한다). 서버를 백그라운드로 띄울 때 `(cd dir && cmd &)` 형태로 서브셸에 넣으면 `$!`가 소실되므로, 항상 `(cd dir && cmd) & PID=$!` 형태를 쓴다.
 
 ### 브랜치 주의 (CLAUDE.md known quirk)
 
@@ -92,7 +99,8 @@ apps/api/
   scripts/check-module-graph.mjs               모듈 그래프 DAG + gateway 전용 접근 검사
   src/
     main.ts · app.module.ts
-    shared/   combination.ts · scoring.ts · rng.ts · result.ts · prisma.service.ts · prisma.module.ts · index.ts
+    shared/   combination.ts · scoring.ts · rng.ts · result.ts · prisma.service.ts · prisma.module.ts
+              httpException.filter.ts · index.ts
     modules/
       identity/     interface(facade) · business · domain(model·repository) · infra(persistence)
       lotterietus/  interface(controller·facade·scheduler) · business ×2 · context(ingest) · domain · infra
@@ -139,7 +147,7 @@ Expected: `packages/contract/src`에 `generator lotterietus picks results simula
 - Create: `apps/api/src/main.ts`, `src/app.module.ts`
 - Move: `packages/core/src/shared/*` → `apps/api/src/shared/`
 - Move: `packages/core/prisma/` → `apps/api/prisma/`
-- Create: `apps/api/src/shared/prisma.service.ts`, `prisma.module.ts`
+- Create: `apps/api/src/shared/prisma.service.ts`, `prisma.module.ts`, `httpException.filter.ts`
 - Modify: `packages/contract/package.json` (exports에 `types` 조건 추가)
 
 ---
@@ -169,11 +177,12 @@ Expected: `packages/contract/src`에 `generator lotterietus picks results simula
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "nest start --watch",
+    "dev": "nest start --watch --exec \"node --env-file=.env\"",
     "build": "nest build",
-    "start": "node dist/main.js",
+    "start": "node --env-file=.env dist/main.js",
     "test": "vitest run",
     "lint": "eslint src && tsc --noEmit",
+    "postinstall": "prisma generate",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev"
   },
@@ -203,6 +212,10 @@ Expected: `packages/contract/src`에 `generator lotterietus picks results simula
   }
 }
 ```
+
+> **`postinstall: prisma generate`가 왜 여기 있어야 하나:** 지금 저장소에서 Prisma 클라이언트를 생성하는 훅은 `packages/core/package.json`의 `postinstall` **하나뿐**인데, Task 12가 그 패키지를 통째로 지운다. 지금 넣어두지 않으면 삭제 직후 새 clone·`pnpm install --force`에서 `@prisma/client`가 생성되지 않아 `tsc --noEmit`과 `nest build`가 전부 깨진다. 이 vault는 두 대의 기기에 동기화되지만 `node_modules`는 동기화되지 않으므로 실제로 밟게 되는 경로다.
+
+> **`--env-file`을 dev/start에 붙이는 이유:** Node는 `.env`를 자동으로 읽지 않고 이 계획은 `@nestjs/config`를 도입하지 않는다. 그대로 두면 `PrismaService.onModuleInit()`의 `$connect()`가 `DATABASE_URL` 없이 실패해 `pnpm dev`로 API가 아예 뜨지 않는다.
 
 `apps/api/tsconfig.json` — **`node16` 해석**이라 `packages/contract`의 `exports`를 읽고, CommonJS 패키지라 상대 import에 확장자가 필요 없다:
 
@@ -329,19 +342,58 @@ import { PrismaModule } from "./shared/prisma.module";
 export class AppModule {}
 ```
 
+`apps/api/src/shared/httpException.filter.ts` — **와이어 에러 계약을 기존 Next Route Handler와 동일하게 유지한다**:
+
+```ts
+import {
+  Catch,
+  HttpException,
+  type ArgumentsHost,
+  type ExceptionFilter,
+} from "@nestjs/common";
+import type { Response } from "express";
+
+/**
+ * 기존 Next Route Handler는 실패 시 `{ error: "<도메인 메시지>" }`를 돌려줬고
+ * `apps/web/src/shared/lib/fetcher.ts`는 그 `body.error`를 읽어 사용자에게 보여준다.
+ * Nest 기본 직렬화는 `{ statusCode, message, error: "Bad Request" }`라서 그대로 두면
+ * 한국어 도메인 메시지가 HTTP 상태 문구로 바뀐다 — 이 필터가 그 회귀를 막는다.
+ * 프록시는 바디를 건드리지 않으므로(§7.1) 이 봉투는 브라우저까지 그대로 전달된다.
+ */
+@Catch(HttpException)
+export class HttpExceptionFilter implements ExceptionFilter {
+  catch(exception: HttpException, host: ArgumentsHost): void {
+    const response = host.switchToHttp().getResponse<Response>();
+    const body = exception.getResponse();
+    const message =
+      typeof body === "string"
+        ? body
+        : ((body as { message?: string | string[] }).message ?? exception.message);
+
+    response
+      .status(exception.getStatus())
+      .json({ error: Array.isArray(message) ? message.join(", ") : message });
+  }
+}
+```
+
 `apps/api/src/main.ts`:
 
 ```ts
 import "reflect-metadata";
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
+import { HttpExceptionFilter } from "./shared/httpException.filter";
 
 const DEFAULT_PORT = 4000;
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
+  app.useGlobalFilters(new HttpExceptionFilter());
   app.enableShutdownHooks();
-  await app.listen(Number(process.env.PORT ?? DEFAULT_PORT));
+  // 기본은 루프백 — 이 프로세스에 닿는 유일한 정상 경로는 web의 catch-all 프록시다(설계 §7.2).
+  // 컨테이너 배포처럼 외부 바인딩이 필요할 때만 API_HOST를 명시적으로 연다.
+  await app.listen(Number(process.env.PORT ?? DEFAULT_PORT), process.env.API_HOST ?? "127.0.0.1");
 }
 
 void bootstrap();
@@ -352,10 +404,15 @@ void bootstrap();
 `.env.example` — api도 같은 DB를 본다:
 
 ```bash
+# --- apps/api/.env 에만 넣는다 ---
 # 로컬 Postgres (docker-compose.yml의 자격증명과 일치해야 한다)
-# 이 값을 그대로 apps/api/.env, apps/web/.env.local 에 넣는다
+# apps/web은 전환 후 Prisma를 쓰지 않으므로 웹 티어에 이 값을 배포하지 않는다 (최소 권한)
 DATABASE_URL="postgresql://fortuna:fortuna_local@localhost:5432/fortuna_lottery?schema=public"
+# Nest가 바인딩할 주소. 비워두면 127.0.0.1(루프백)이다 — 프록시만 도달 가능한 상태가 기본값이다.
+# 컨테이너/사설망 배포에서 프록시가 다른 호스트에 있을 때만 0.0.0.0 등으로 연다.
+API_HOST="127.0.0.1"
 
+# --- apps/web/.env.local 에만 넣는다 ---
 # apps/web 프록시가 중계할 백엔드 오리진 (서버 전용 — 브라우저에 노출되지 않는다)
 API_ORIGIN="http://localhost:4000"
 ```
@@ -372,14 +429,21 @@ pnpm --filter @fortuna-lottery/api exec prisma generate
 ```bash
 docker compose up -d
 pnpm --filter @fortuna-lottery/api exec nest build
-(cd apps/api && node --env-file=.env dist/main.js &) ; sleep 4
+(cd apps/api && node --env-file=.env dist/main.js) & API_PID=$!
+sleep 4
 curl -s -o /dev/null -w "%{http_code}\n" http://localhost:4000/
-pkill -f "dist/main.js"
+kill $API_PID
 ```
 
 Expected: `404` — 라우트가 아직 없으니 Nest가 정상 부팅해서 404를 준다(연결 거부가 아니다).
 
-> `apps/api/.env`가 없으면 만든다: `cp .env.example apps/api/.env`
+> **env 파일 두 개를 지금 만든다** — Task 4의 프록시가 `API_ORIGIN`을 읽지 못하면 첫 컷오버(Task 6)가
+> 곧바로 500이 난다. `.env`/`.env.local`은 `.gitignore` 대상이라 저장소에 없으므로 반드시 각자 만든다:
+>
+> ```bash
+> cp .env.example apps/api/.env        # DATABASE_URL · API_HOST
+> cp .env.example apps/web/.env.local  # API_ORIGIN (DATABASE_URL 줄은 지운다)
+> ```
 
 - [ ] **Step 7: 전체 검증과 커밋**
 
@@ -653,7 +717,7 @@ Next는 **구체 경로가 catch-all보다 우선**하므로, 지금 프록시�
 
 **Files:**
 - Create: `apps/web/src/app/api/[...path]/route.ts`
-- Create: `apps/web/tests/proxy.test.ts`
+- Create: `apps/web/tests/proxy.test.ts`, `apps/web/tests/proxyOnly.test.ts`
 - Modify: `apps/web/vitest.config.ts`
 
 ---
@@ -786,7 +850,54 @@ pnpm --filter web exec vitest run tests/proxy.test.ts
 
 Expected: PASS — 4 tests.
 
-- [ ] **Step 3: 프록시 파일에 도메인 이름이 없는지 확인한다**
+- [ ] **Step 3: 유지 조건 2개를 CI가 지키게 한다 (스펙 §11)**
+
+스펙 §11은 `apps/web/src/app/api/` **파일 수 검사(=1)를 CI에 넣으라**고 명시한다. Task 13의 일회성
+스크립트로만 두면 전환이 끝난 뒤 누군가 도메인 route.ts를 되살려도 아무것도 실패하지 않는다 —
+`apps/api` 쪽에서 `check-module-graph.mjs`를 lint에 물린 것과 대칭이 맞아야 한다. 바이트 동일성
+테스트는 프록시 파일 자체가 변형될 때만 깨지고 이 회귀는 감지하지 못한다.
+
+`apps/web/tests/proxyOnly.test.ts`:
+
+```ts
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import path from "node:path";
+import { describe, expect, it } from "vitest";
+
+const API_DIR = path.resolve(__dirname, "../src/app/api");
+const DOMAINS = /picks|results|statistics|simulation|generator|lotterietus|identity|draw/i;
+
+function walk(dir: string): string[] {
+  return readdirSync(dir).flatMap((entry) => {
+    const full = path.join(dir, entry);
+    return statSync(full).isDirectory() ? walk(full) : [full];
+  });
+}
+
+describe("프록시 유지 조건 (설계 §7.1)", () => {
+  const files = walk(API_DIR);
+
+  it("app/api 아래 파일은 [...path]/route.ts 하나뿐이다", () => {
+    expect(files.map((f) => path.relative(API_DIR, f))).toEqual([
+      path.join("[...path]", "route.ts"),
+    ]);
+  });
+
+  it("프록시 파일에 도메인 이름이 등장하지 않는다", () => {
+    expect(readFileSync(files[0]!, "utf8")).not.toMatch(DOMAINS);
+  });
+});
+```
+
+```bash
+pnpm --filter web exec vitest run tests/proxyOnly.test.ts
+```
+
+Expected: PASS — 2 tests. (Task 4 시점에는 도메인 `route.ts` 7개가 아직 살아 있으므로 **첫 테스트는
+실패한다** — 이것이 정상이다. `it.skip`으로 두고 Task 11에서 마지막 `route.ts`를 지운 직후 `skip`을
+떼어 CI 상시 검사로 올린다. Task 13 Step 1의 5·6번 수동 검사는 이 테스트로 대체된다.)
+
+- [ ] **Step 4: 프록시 파일에 도메인 이름이 없는지 확인한다**
 
 ```bash
 grep -Ein "picks|results|statistics|simulation|generator|lotterietus|identity|draw" \
@@ -795,19 +906,19 @@ grep -Ein "picks|results|statistics|simulation|generator|lotterietus|identity|dr
 
 Expected: 출력 없음 (`exit=1`).
 
-- [ ] **Step 4: 기존 7개 경로가 여전히 우선하는지 확인한다**
+- [ ] **Step 5: 기존 7개 경로가 여전히 우선하는지 확인한다**
 
 ```bash
 docker compose up -d
-pnpm --filter web build && pnpm --filter web exec next start &
+pnpm --filter web build && (cd apps/web && pnpm exec next start) & WEB_PID=$!
 sleep 6
 curl -s -o /dev/null -w "statistics=%{http_code}\n" http://localhost:3000/api/statistics
-pkill -f "next start"
+kill $WEB_PID
 ```
 
 Expected: `statistics=200` — Nest는 아직 안 떠 있으므로, 이 200은 구체 `route.ts`가 처리했다는 뜻이다(프록시가 탔다면 연결 실패로 500이 났을 것이다).
 
-- [ ] **Step 5: 커밋**
+- [ ] **Step 6: 커밋**
 
 ```bash
 git add "apps/web/src/app/api/[...path]" apps/web/tests apps/web/vitest.config.ts
@@ -827,7 +938,16 @@ git commit -m "feat(web): apps/api로의 투명 catch-all 프록시 + 바이트 
 5. `apps/web/src/server/container.ts`에서 그 도메인의 항목을 지운다.
 6. `pnpm lint && pnpm test && pnpm build` + 수동 확인.
 
-**롤백:** 문제가 생기면 지웠던 `route.ts` 하나를 되살리면 그 도메인만 Next로 돌아온다.
+**롤백:** 문제가 생기면 그 도메인만 Next로 되돌린다 — 다만 **파일 하나가 아니라 두 곳**을 되살려야 한다.
+현재 `route.ts`들은 전부 `container`의 항목에 직접 의존하는데(예: `picks/route.ts` → `container.identity`·
+`container.listPicks`·`container.savePick`), 위 4~5번이 그 둘을 같은 스텝에서 지우기 때문이다:
+
+1. 지웠던 `apps/web/src/app/api/<domain>/route.ts`
+2. `apps/web/src/server/container.ts`의 그 도메인 항목과 해당 `import` 줄
+
+**롤백 유효 기간:** Task 11이 `apps/web/src/server`를 통째로 지우므로 그 이후에는 `server/` 복원까지
+필요하고, Task 12가 `packages/core`를 지우면 **롤백이 불가능하다.** 그 시점부터는 Nest 쪽 수정으로만
+대응한다 — 이 경계를 넘기 전에 각 도메인이 실제로 동작하는지 확인해 두는 것이 안전망의 전부다.
 
 **다른 모듈의 데이터가 필요할 때 도메인 타입을 빌려오지 않는다.** 모듈 경계를 넘는 타입은 DTO뿐이므로, 소비하는 모듈은 자기 `domain`에 **필요한 최소 형태**를 스스로 선언한다(예: `statistics/domain/model/drawRecord.model.ts`). 구조적 타이핑 덕에 변환 코드 없이 맞물리고, 결합은 0이다.
 
@@ -891,6 +1011,11 @@ import type { User } from "../model/user.model";
 /** 현재 요청의 사용자 식별 계약 — MVP: 게스트 고정 / 후속: Supabase Auth 세션 */
 export abstract class IdentityRepository {
   abstract getCurrentUser(): Promise<User>;
+  // ⚠️ 인증 도입 시 이 해석은 **요청 스코프**여야 한다. MVP의 GuestIdentityAdapter는 상태가 없어
+  // 싱글턴으로 안전하지만, Supabase Auth 어댑터가 같은 싱글턴 자리에 들어가면 동시 요청 사이에
+  // 사용자 신원이 섞이고 picks·results가 그 키로 데이터를 스코프하므로 곧 타인의 픽 조회·삭제가 된다.
+  // 그때 필요한 변경: 바인딩을 { scope: Scope.REQUEST }로 올리고 어댑터가 @Inject(REQUEST)로
+  // 현재 요청을 읽는다. 현재 사용자를 싱글턴 필드에 캐시하지 않는다.
 }
 ```
 
@@ -1914,11 +2039,13 @@ import { createPrismaClient, createPrismaDrawDataAdapter } from "@fortuna-lotter
 ```bash
 docker compose up -d
 pnpm --filter @fortuna-lottery/api build
-(cd apps/api && node --env-file=.env dist/main.js &) ; sleep 6
+(cd apps/api && node --env-file=.env dist/main.js) & API_PID=$!
+sleep 6
 curl -s http://localhost:4000/lotterietus | head -c 200 ; echo
-pnpm --filter web build && (cd apps/web && pnpm exec next start &) ; sleep 6
+pnpm --filter web build && (cd apps/web && pnpm exec next start) & WEB_PID=$!
+sleep 6
 curl -s http://localhost:3000/api/lotterietus | head -c 200 ; echo
-pkill -f "next start" ; pkill -f "dist/main.js"
+kill $WEB_PID $API_PID
 ```
 
 Expected: 두 응답이 같은 JSON(`round`·`numbers`·`bonus`·`drawnAt`·`nextRound`·`nextDrawAt`)이다 — 프록시가 Nest로 넘긴 것이다.
@@ -3168,11 +3295,13 @@ Expected: 전부 통과. 그래프 검사가 `모듈 그래프 OK — 5개 모�
 
 ```bash
 docker compose up -d
-pnpm --filter @fortuna-lottery/api build && (cd apps/api && node --env-file=.env dist/main.js &) ; sleep 6
+pnpm --filter @fortuna-lottery/api build
+(cd apps/api && node --env-file=.env dist/main.js) & API_PID=$!
+sleep 6
 curl -s -X POST http://localhost:4000/picks -H 'content-type: application/json' \
   -d '{"numbers":[1,2,3,4,5,6]}' ; echo
 curl -s http://localhost:4000/results | head -c 300 ; echo
-pkill -f "dist/main.js"
+kill $API_PID
 ```
 
 Expected: POST가 `{"id":"pick_...","numbers":[1,2,3,4,5,6],"createdAt":"..."}`, GET `/results`가 그 픽을 `items`에 담아 돌려준다.
@@ -3980,7 +4109,7 @@ grep -rn "@fortuna-lottery/core" --include="*.ts" --include="*.tsx" --include="*
   apps packages | grep -v node_modules | grep -v "^packages/core/"
 ```
 
-Expected: 정확히 3줄 — `apps/web/package.json`의 dependency, `apps/web/next.config.ts`의 transpilePackages, `apps/web/eslint.config.mjs`의 금지 패턴. 셋 다 이 태스크에서 정리한다. **다른 줄이 나오면 그 참조를 먼저 해결한다.**
+Expected: 정확히 6줄 — `apps/web/package.json`의 dependency 1줄, `apps/web/next.config.ts`의 transpilePackages 1줄, `apps/web/eslint.config.mjs`의 금지 패턴 4줄(`core/*/application`·`core/*/domain`·`core/*/infrastructure`·`core/shared`가 각각 한 줄). 전부 이 태스크에서 정리한다. **다른 줄이 나오면 그 참조를 먼저 해결한다.**
 
 - [ ] **Step 2: core와 빈 countdown 폴더를 지운다**
 
@@ -4133,8 +4262,12 @@ Expected:
 
 ```bash
 docker compose up -d
-pnpm --filter @fortuna-lottery/api build && (cd apps/api && node --env-file=.env dist/main.js &) ; sleep 8
-pnpm dev
+pnpm --filter @fortuna-lottery/api build
+(cd apps/api && node --env-file=.env dist/main.js) & API_PID=$!
+sleep 8
+# web만 dev로 띄운다 — `pnpm dev`(turbo)는 apps/api의 nest start도 함께 올려
+# 위 인스턴스와 포트 4000이 충돌(EADDRINUSE)하고 수집 스케줄러가 중복 기동된다.
+pnpm --filter web dev
 ```
 
 `http://localhost:3000` 에서:
@@ -4147,7 +4280,7 @@ pnpm dev
 
 그리고 **추첨 수집**: api 로그에 `[LotterietusScheduler] 사이클 완료 — … 회차` 가 부팅 직후 찍히는지 확인한다.
 
-확인 후 `Ctrl+C`, `pkill -f "dist/main.js"`, `docker compose down`.
+확인 후 `Ctrl+C`(web), `kill $API_PID`, `docker compose down`.
 
 - [ ] **Step 3: `CLAUDE.md`를 v4 기준으로 다시 쓴다**
 
@@ -4302,6 +4435,10 @@ DTO는 반드시 `import type`으로 가져온다 — `packages/contract`는 TS 
 도입 시 어댑터 교체와 Nest Guard 추가로 끝난다.
 
 **운영 조건:** 프록시가 홉을 하나 추가하므로 `apps/web`과 `apps/api`는 **같은 리전에 배포**한다.
+`apps/api`는 **프록시만 도달 가능한 사설망(또는 루프백)에 바인딩**한다 — 인증이 없는 쓰기 엔드포인트
+(`POST`/`DELETE /picks`)가 프록시를 우회해 노출되면 헤더 허용목록 통제가 전부 무력해진다. 기본값은
+`API_HOST=127.0.0.1`이고, 프록시가 다른 호스트에 있을 때만 의도적으로 넓힌다.
+`DATABASE_URL`은 `apps/api`에만 배포한다 — 웹 티어는 Prisma를 쓰지 않는다(최소 권한).
 **스케일아웃 선결 조건:** 수집 스케줄러가 다중 인스턴스에서 중복 실행되지 않도록 DB 어드바이저리
 락이 필요하다 (지금은 단일 인스턴스 전제라 무해).
 ````
@@ -4341,7 +4478,7 @@ Task 13 Step 1의 검증 스크립트가 1~7을 기계적으로 확인한다.
 - [ ] 모든 Facade의 입출력이 `packages/contract`의 DTO다 (`Model`·`VO`·`*Context`가 모듈 밖으로 나가지 않는다) — *스크립트 8 + 리뷰*
 - [ ] 다른 모듈을 import하는 파일이 `infra/gateway/**`로 한정된다 — *그래프 검사*
 - [ ] 모듈 의존 그래프에 순환이 없다 — *그래프 검사*
-- [ ] `apps/web/src/app/api/` 아래 파일이 `[...path]/route.ts` 하나뿐이고, 도메인 이름이 등장하지 않으며, 바이트 동일성 테스트가 통과한다 — *스크립트 5·6 + Task 4의 테스트*
+- [ ] `apps/web/src/app/api/` 아래 파일이 `[...path]/route.ts` 하나뿐이고, 도메인 이름이 등장하지 않으며, 바이트 동일성 테스트가 통과한다 — *`tests/proxyOnly.test.ts`(CI 상시, Task 11에서 `skip` 해제) + `tests/proxy.test.ts`*
 - [ ] `packages/core` · `apps/worker` · `apps/web/src/server/` · 빈 `countdown/`이 삭제됐다 — *스크립트 7*
 - [ ] `Entity` · `ReadModel` 용어가 코드베이스에서 사라졌다 — *스크립트 4*
 - [ ] `CLAUDE.md`가 갱신됐다 — *Task 13 Step 3*

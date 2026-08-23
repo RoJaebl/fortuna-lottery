@@ -45,6 +45,9 @@
 1. **`PickModel`의 필드명은 `createdAt: Date`를 유지한다.** 스펙 §3.4 스니펫은 `savedAt!: string`으로 쓰여 있지만 그건 예시이고, `createdAt`은 `PickResponse` DTO의 필드명과 일치한다. 스펙 §3.2가 요구하는 것은 **getter 이름이 `savedAtLabel`인 것**이며 그것만 지킨다.
 2. **`lotterietus` Presenter 번들에 `cta`·`error`를 추가한다.** 스펙 §2.2 표는 데이터 번들(`countdown`·`drawInfo`)만 열거한 것인데, 이 카드에는 생성기 토글 CTA 버튼과 에러 표시 슬롯이 실제로 있다.
 3. **모듈 공개 배럴(`modules/<d>/index.ts`)은 하위 배럴 경로에서 가져오되, 다른 모듈이 실제로 쓰는 심볼만 재export한다.** 스펙 §5-4의 "하위 배럴을 재export"는 경로 규칙이고, 무엇을 공개할지는 별개 축이다 — 전부 쏟아내면 모듈 경계가 무의미해진다.
+   구체적으로 이번 리팩터에서 `app/page.tsx`·`app/home.presenter.ts`가 실제로 쓰는 것은 각 모듈의
+   **View 컴포넌트와 그 `*CardProps`/`*PanelProps`뿐**이므로, 공개 배럴에 `*Model` 타입을 재export하지
+   않는다. `model/`은 모듈 내부 계약이고 밖에서 쓸 일이 생기면 그때 한 줄 추가한다.
 
 ### 스펙 내부의 모순 하나 (이미 판정했다)
 
@@ -153,7 +156,6 @@ apps/web/src/
   "name": "@fortuna-lottery/contract",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
   "exports": {
     "./*": "./src/*/index.ts"
   },
@@ -165,6 +167,14 @@ apps/web/src/
   }
 }
 ```
+
+> **`"type": "module"`을 넣지 않는 이유:** 동반 백엔드 계획의 `apps/api`는 `moduleResolution: "node16"`인
+> CommonJS 패키지다. 계약 패키지가 ESM으로 선언돼 있으면 CJS 쪽의 `import type`조차 **TS1541**
+> (`Type-only import of an ECMAScript module from a CommonJS module must have a 'resolution-mode'
+> attribute`)로 거부되고, 계약 패키지 내부의 `export * from "./x.dto"`도 확장자 없는 상대 경로라 TS2307이
+> 난다 — `import type`이 런타임에 지워진다는 사실과 무관하게 **컴파일 단계에서 막힌다.**
+> `apps/web`은 `moduleResolution: "Bundler"` + `transpilePackages`라 어느 쪽이든 영향받지 않으므로,
+> 필드를 빼는 편이 양쪽을 모두 만족한다.
 
 `packages/contract/tsconfig.json`:
 
@@ -400,7 +410,7 @@ grep -rl "@fortuna-lottery/core/[a-z]*/dto" packages/core/src apps/web/src \
   | xargs perl -i -pe 's{\@fortuna-lottery/core/([a-z]+)/dto}{\@fortuna-lottery/contract/$1}g'
 ```
 
-`packages/core` 안에서 상대 경로로 DTO를 import하던 파일 6곳도 바꾼다:
+`packages/core` 안에서 상대 경로로 DTO를 import하던 파일 7곳도 바꾼다:
 
 | 파일 | 이전 | 이후 |
 |---|---|---|
@@ -409,6 +419,7 @@ grep -rl "@fortuna-lottery/core/[a-z]*/dto" packages/core/src apps/web/src \
 | `src/picks/application/usecases/list-picks.ts` | `../../dto/pick.dto` | `@fortuna-lottery/contract/picks` |
 | `src/picks/application/usecases/save-pick.ts` | `../../dto/pick.dto` | `@fortuna-lottery/contract/picks` |
 | `src/results/application/usecases/check-results.ts` | `../../dto/results.dto` | `@fortuna-lottery/contract/results` |
+| `src/simulation/application/usecases/backtest-combination.ts` | `../../dto/simulation.dto` | `@fortuna-lottery/contract/simulation` |
 | `src/statistics/application/usecases/get-statistics.ts` | `../../dto/statistics.dto` | `@fortuna-lottery/contract/statistics` |
 
 ```bash
@@ -417,6 +428,7 @@ grep -rl '\.\./\.\./dto/' packages/core/src | xargs perl -i -pe '
   s{"\.\./\.\./dto/lotterietus\.dto"}{"\@fortuna-lottery/contract/lotterietus"};
   s{"\.\./\.\./dto/pick\.dto"}{"\@fortuna-lottery/contract/picks"};
   s{"\.\./\.\./dto/results\.dto"}{"\@fortuna-lottery/contract/results"};
+  s{"\.\./\.\./dto/simulation\.dto"}{"\@fortuna-lottery/contract/simulation"};
   s{"\.\./\.\./dto/statistics\.dto"}{"\@fortuna-lottery/contract/statistics"};
 '
 ```
@@ -435,7 +447,7 @@ Expected: 출력 없음 (`exit=1`).
 pnpm lint && pnpm test && pnpm build
 ```
 
-Expected: 전부 통과. `packages/core` 44개 + `apps/web` 10개 테스트 통과.
+Expected: 전부 통과. `packages/core` 61개 + `apps/web` 10개 테스트 통과.
 
 - [ ] **Step 6: 커밋**
 
@@ -762,7 +774,6 @@ export * from "./identityBadge";
 
 ```ts
 export { IdentityBadge } from "./view";
-export type { IdentityModel } from "./model";
 ```
 
 ```bash
@@ -957,7 +968,7 @@ export * from "./results.viewmodel";
 pnpm --filter web exec vitest run src/modules/results/model/results.viewmodel.test.ts
 ```
 
-Expected: PASS — 7 tests.
+Expected: PASS — 8 tests.
 
 - [ ] **Step 5: mapper를 만든다 (`transport/assembler` 대체)**
 
@@ -1175,7 +1186,6 @@ export * from "./resultsCard";
 
 ```ts
 export { ResultsCard } from "./view";
-export type { ResultItemModel, ResultsModel } from "./model";
 ```
 
 ```bash
@@ -1522,7 +1532,6 @@ export * from "./simulationCard";
 
 ```ts
 export { SimulationCard, type SimulationCardProps } from "./view";
-export type { BacktestModel } from "./model";
 ```
 
 ```bash
@@ -1970,7 +1979,6 @@ export * from "./lotterietusCard";
 
 ```ts
 export { LotterietusCard, type LotterietusCardProps } from "./view";
-export type { LotterietusModel } from "./model";
 ```
 
 ```bash
@@ -2576,7 +2584,6 @@ export * from "./generatorCard";
 
 ```ts
 export { GeneratorCard, type GeneratorCardProps } from "./view";
-export type { GeneratedCombinationModel, GeneratorMode } from "./model";
 ```
 
 ```bash
@@ -3095,7 +3102,6 @@ export * from "./picksCard";
 
 ```ts
 export { PicksCard, type PicksCardProps } from "./view";
-export type { PickModel } from "./model";
 ```
 
 ```bash
@@ -4228,7 +4234,6 @@ export * from "./statisticsPanel";
 
 ```ts
 export { StatisticsPanel, type StatisticsPanelProps } from "./view";
-export type { StatisticsModel } from "./model";
 ```
 
 ```bash
