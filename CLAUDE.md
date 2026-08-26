@@ -32,6 +32,15 @@ PARA/MOC 규칙과는 무관하다.
 
 현재 문서: `design-system.md` (컬러 토큰).
 
+## superpowers 스킬 워크플로 — 계획/스펙 문서 선(先) 커밋
+
+`superpowers:subagent-driven-development` 또는 `superpowers:executing-plans` 스킬로 구현 작업을
+실행할 때, 그 작업이 참조하는 `docs/superpowers/plans/`의 계획 문서나 `docs/superpowers/specs/`의
+스펙 문서가 아직 커밋되지 않은 상태라면, 구현에 들어가기 전에 먼저 그 문서들을 커밋한다.
+
+모든 구현이 끝난 뒤에 계획/스펙 문서가 뒤늦게 (혹은 구현 커밋과 뒤섞여) 커밋되는 것은 작업 흐름상
+순서가 맞지 않는다 — 계획 문서는 구현의 근거이므로, 구현보다 먼저 저장소 히스토리에 존재해야 한다.
+
 ## 명령어
 
 ```bash
@@ -151,3 +160,47 @@ ViewModel/Model/DTO/Domain 코드는 한 줄도 바뀌지 않는다 — 단일 �
 함수들을 순수 함수로 유지하는 이유가 바로 이것이다. 도메인 규칙이나 유스케이스를 추가할 때는
 구현 전에 대상 파일 옆에 `*.test.ts`를 먼저 작성한다 (`packages/core/src/**`와
 `apps/web/src/modules/**/viewmodel/*.test.ts` 아래 기존 `*.test.ts` 파일들 참고).
+
+## git 분기 전략 — vault 공통 정책을 따른다
+
+브랜치 생성 · 워크트리 생성/제거 · 병합 · push · 브랜치 삭제 전에 vault의 `git-strategy` 스킬을
+먼저 호출한다. 정본은 vault의 `Resource/자동화/git 분기 전략/📋 작업 규격.md`이고, 실행 절차와
+**이 저장소의 예외**는 vault의 `.claude/skills/git-strategy/SKILL.md` §7에 있다.
+
+요지 — `main` ← `dev`는 PR로만 / `dev` ← `implement`는 `--no-ff` 후 `implement`로 복귀 / 작업은
+`implement/{주제}` 워크트리에서 하고 끝나면 폴더·로컬·원격 브랜치를 모두 지운다 / 모든 브랜치는
+원격 추적 브랜치를 가진다.
+
+**이 저장소의 예외:** `dev`가 로컬에만 있다(원격 추적 없음). 작업 전에
+`git push -u origin dev`로 먼저 연결한다 — 지금 상태에서는 손상이 나면 복구 사본이 없다.
+
+## Known quirks
+
+- **OneDrive + git worktree 손상.** 이 저장소는 OneDrive 동기화 vault 안에 있어 vault-root CLAUDE.md가
+  `tag-hero`에 대해 문서화한 것과 같은 손상 패턴을 겪는다. `.worktrees/implement.orphaned-20260730`,
+  `.worktrees/implement.orphaned-20260801` — 두 번의 실제 발생 흔적이 남아 있다(raw
+  `git worktree add .worktrees/<name>`가 OneDrive Files-On-Demand 하에서 `.git/worktrees/<name>/HEAD`가
+  손상되며 워크트리가 고아가 됨). **완화**: 브랜치/자식 워크트리 작업은 raw `git worktree add` 대신
+  Orca의 네이티브 워크트리 생성(`EnterWorktree` 도구 또는 `orca worktree create`)을 사용한다.
+- **세 번째 흔적 — `.git/worktrees/implement1` (2026-08-24 확인).** 위 둘은 작업 폴더 쪽 흔적이지만
+  이것은 **관리 폴더 쪽**이 남은 경우다. `gitdir` 파일이 사라져 `git worktree list`에는 아예 잡히지
+  않으므로 눈에 띄지 않고, 대신 **커밋할 때마다** `error: failed to delete
+  '.git/worktrees/implement1': Permission denied`가 stderr로 따라붙는다. 커밋 자체는 정상 성공하므로
+  이 오류를 보고 실패로 오인하지 않는다. `git worktree prune`은 이 항목을 지우려 시도하지만 같은
+  Permission denied로 실패한다(OneDrive가 폴더를 잡고 있다) — **prune을 반복해도 소용없다.**
+  실제로 치우려면 OneDrive 동기화를 멈춘 뒤 `.git/worktrees/implement1/`을 직접 지운다. 급하지
+  않으면 그냥 두어도 커밋·푸시에 지장은 없다.
+- **`mmap failed: Invalid argument`.** `git checkout`/`git fsck` 등이 이 오류로 실패하면, OneDrive
+  cloud-only 플레이스홀더(`.git/objects/pack/*`, `.git/index` 등)가 완전히 하이드레이션되지 않은
+  것일 수 있다(파일 크기는 정상으로 보여도 Windows 파일 속성이 `ReparsePoint`). "cloud file provider
+  is not running" 같은 명시적 메시지가 없어도 같은 원인일 수 있다 — 실제 손상으로 단정하기 전에
+  해당 파일을 PowerShell `[System.IO.File]::ReadAllBytes($path)`로 강제 전체 읽기해 하이드레이션시킨
+  뒤 재시도한다.
+- **`dev` 브랜치는 여전히 원격에 푸시돼 있지 않다.** `implement`는 2026-08-24에 푸시되어
+  `origin/implement`를 추적한다(vault가 이 저장소를 gitlink로 추적하기 시작하면서, 기록된 SHA가
+  원격에서 해석되도록 함께 푸시했다). `dev`는 아직 로컬에만 있으므로 위 손상이 데이터 손실로
+  이어지면 복구할 원격 사본이 없다 — `git branch -vv`로 현재 상태를 확인하고 정기적으로 푸시한다.
+- **크로스 머신 워크트리 정리 시 주의.** `git worktree list`가 "prunable"로 표시하는 항목이 이
+  머신에서 죽은 로컬 경로인지, 다른 머신(예: Mac Orca 워크스페이스)에서 여전히 쓰이는 항목인지
+  먼저 확인한다 — 이 저장소의 `.git`이 OneDrive로 동기화되므로, `git worktree prune`은 다른 머신이
+  보는 등록 정보도 함께 지운다.
