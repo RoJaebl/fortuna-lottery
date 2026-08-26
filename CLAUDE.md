@@ -161,6 +161,19 @@ ViewModel/Model/DTO/Domain 코드는 한 줄도 바뀌지 않는다 — 단일 �
 구현 전에 대상 파일 옆에 `*.test.ts`를 먼저 작성한다 (`packages/core/src/**`와
 `apps/web/src/modules/**/viewmodel/*.test.ts` 아래 기존 `*.test.ts` 파일들 참고).
 
+## git 분기 전략 — vault 공통 정책을 따른다
+
+브랜치 생성 · 워크트리 생성/제거 · 병합 · push · 브랜치 삭제 전에 vault의 `git-strategy` 스킬을
+먼저 호출한다. 정본은 vault의 `Resource/자동화/git 분기 전략/📋 작업 규격.md`이고, 실행 절차와
+**이 저장소의 예외**는 vault의 `.claude/skills/git-strategy/SKILL.md` §7에 있다.
+
+요지 — `main` ← `dev`는 PR로만 / `dev` ← `implement`는 `--no-ff` 후 `implement`로 복귀 / 작업은
+`implement/{주제}` 워크트리에서 하고 끝나면 폴더·로컬·원격 브랜치를 모두 지운다 / 모든 브랜치는
+원격 추적 브랜치를 가진다.
+
+**이 저장소의 예외:** `dev`가 로컬에만 있다(원격 추적 없음). 작업 전에
+`git push -u origin dev`로 먼저 연결한다 — 지금 상태에서는 손상이 나면 복구 사본이 없다.
+
 ## Known quirks
 
 - **OneDrive + git worktree 손상.** 이 저장소는 OneDrive 동기화 vault 안에 있어 vault-root CLAUDE.md가
