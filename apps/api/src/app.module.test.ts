@@ -25,4 +25,16 @@ describe("AppModule", () => {
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
   });
+
+  it("조립 루트가 identity 를 picks 의 CURRENT_USER 에 꽂아, 게스트의 픽이 저장되고 보인다", async () => {
+    const saved = await fetch(`${base}/api/picks`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ numbers: [1, 2, 3, 4, 5, 6] }),
+    });
+    expect(saved.status).toBe(201);
+
+    const list = (await (await fetch(`${base}/api/picks`)).json()) as { numbers: number[] }[];
+    expect(list.map((p) => p.numbers)).toEqual([[1, 2, 3, 4, 5, 6]]);
+  });
 });
