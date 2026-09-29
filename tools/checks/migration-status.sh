@@ -16,7 +16,11 @@ git ls-files '*.ts' '*.tsx' | grep -E "$EXCLUDE_RE" | sed 's|/[^/]*$||' | sort -
 
 echo
 echo "-- 옮긴 모듈 --"
-git ls-files 'apps/*/src/modules/*/index.ts' | { grep -vE "$EXCLUDE_RE" || true; } | sed 's|/index.ts$||' | sed 's/^/  /'
+# 옛 구역에 파일이 하나도 남지 않은 모듈 폴더 — 서버 모듈은 index.ts 가 없고, 화면 모듈은 옛 하위 폴더만 제외되므로
+# index.ts 유무로는 가를 수 없다
+git ls-files 'apps/*/src/modules/*' | cut -d/ -f1-5 | sort -u | while read -r m; do
+  git ls-files "$m" | grep -qE "$EXCLUDE_RE" || echo "  $m"
+done
 
 echo
 echo "-- 옛 구역에 최근 30일 안에 생긴 파일 (규칙 3절 위반 후보) --"

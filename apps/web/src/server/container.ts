@@ -6,7 +6,6 @@ import {
   createPrismaDrawDataAdapter,
 } from "@fortuna-lottery/core/lotterietus/infrastructure";
 import { makeGetStatistics } from "@fortuna-lottery/core/statistics/application";
-import { makeGenerateCombination } from "@fortuna-lottery/core/generator/application";
 import { makeBacktestCombination } from "@fortuna-lottery/core/simulation/application";
 import {
   makeDeletePick,
@@ -15,20 +14,18 @@ import {
 } from "@fortuna-lottery/core/picks/application";
 import { createInMemoryPickRepository } from "@fortuna-lottery/core/picks/infrastructure";
 import { makeCheckResults } from "@fortuna-lottery/core/results/application";
-import { createGuestIdentityAdapter } from "@fortuna-lottery/core/identity/infrastructure";
 
 function buildContainer() {
   // draws는 워커가 수집해 Postgres에 넣은 실데이터를 읽는다.
   // picks/identity는 아직 MVP 어댑터 — 후속: SupabasePickRepository / SupabaseIdentityAdapter로 교체
   const drawData = createPrismaDrawDataAdapter(createPrismaClient());
   const pickRepository = createInMemoryPickRepository();
-  const identity = createGuestIdentityAdapter();
 
   return {
-    identity,
+    // identity 는 apps/api 로 옮겼다. 남은 picks·results 처리기가 옮겨질 때까지 옛 게스트 어댑터의 값을 여기 둔다
+    identity: { getCurrentUser: async () => ({ id: "guest", isGuest: true }) },
     getLotterietusStatus: makeGetLotterietusStatus(drawData),
     getStatistics: makeGetStatistics(drawData),
-    generateCombination: makeGenerateCombination(Math.random),
     backtestCombination: makeBacktestCombination(drawData),
     savePick: makeSavePick({ repository: pickRepository }),
     listPicks: makeListPicks(pickRepository),

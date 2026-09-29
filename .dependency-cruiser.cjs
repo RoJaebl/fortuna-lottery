@@ -106,7 +106,13 @@ module.exports = {
     // 골조 이관 전 구역. 이 목록이 짧아지는 것이 진행이다.
     // 여기 있는 경로에는 어떤 골조 규칙도 걸리지 않는다.
     // 새 파일을 여기 만들지 않는다 — 규칙 3절.
-    exclude: { path: '^(packages/core|apps/worker|apps/web/src/(modules/[^/]+/(view|viewmodel|transport|api)|server|app/api))/' },
+    // 옮긴 도메인이 빠지면서 packages/core 와 화면 모듈은 남은 도메인을 풀어 쓴다.
+    exclude: {
+      path:
+        '^(packages/core/(src/(lotterietus|picks|results|simulation|statistics)/|vitest)' +
+        '|apps/worker/' +
+        '|apps/web/src/(modules/(lotterietus|picks|results|simulation|statistics)/(view|viewmodel|transport|api)/|server/|app/api/))',
+    },
     doNotFollow: { path: 'node_modules' },
     tsConfig: { fileName: 'tsconfig.base.json' },
     tsPreCompilationDeps: true,
