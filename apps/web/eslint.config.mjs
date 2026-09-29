@@ -4,11 +4,7 @@ import tseslint from "typescript-eslint";
 
 // 골조 이관 전 구역 — .dependency-cruiser.cjs 의 options.exclude 가운데 apps/web 몫과 같은 경로여야 한다.
 // 그쪽 정규식에서 도메인이 빠질 때마다 여기서도 함께 뺀다. 이 목록도 줄기만 한다.
-export const OLD_ZONE = [
-  "src/modules/results/{view,viewmodel,transport,api}/**",
-  "src/server/**",
-  "src/app/api/**",
-];
+export const OLD_ZONE = ["src/app/page.tsx"];
 
 const VIEW_STATE = {
   selector: "CallExpression[callee.name=/^use(State|Reducer|Effect)$/]",

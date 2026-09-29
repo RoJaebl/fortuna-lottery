@@ -75,9 +75,6 @@ importers:
       '@fortuna-lottery/contract':
         specifier: workspace:*
         version: link:../../packages/contract
-      '@fortuna-lottery/core':
-        specifier: workspace:*
-        version: link:../../packages/core
       next:
         specifier: ^15.3.4
         version: 15.5.20(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -134,31 +131,6 @@ importers:
       '@types/node':
         specifier: ^22.20.0
         version: 22.20.0
-      typescript:
-        specifier: ^5.8.0
-        version: 5.9.3
-      vitest:
-        specifier: ^3.1.0
-        version: 3.2.6(@types/node@22.20.0)(jiti@2.7.0)(jsdom@30.1.1)(lightningcss@1.32.0)(supports-color@7.2.0)(tsx@4.23.4)
-
-  packages/core:
-    dependencies:
-      '@fortuna-lottery/contract':
-        specifier: workspace:*
-        version: link:../contract
-      '@fortuna-lottery/kernel':
-        specifier: workspace:*
-        version: link:../kernel
-      '@prisma/client':
-        specifier: 6.19.3
-        version: 6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3)
-    devDependencies:
-      '@types/node':
-        specifier: ^22.20.0
-        version: 22.20.0
-      prisma:
-        specifier: 6.19.3
-        version: 6.19.3(typescript@5.9.3)
       typescript:
         specifier: ^5.8.0
         version: 5.9.3

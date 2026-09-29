@@ -107,13 +107,10 @@ module.exports = {
     // 골조 이관 전 구역. 이 목록이 짧아지는 것이 진행이다.
     // 여기 있는 경로에는 어떤 골조 규칙도 걸리지 않는다.
     // 새 파일을 여기 만들지 않는다 — 규칙 3절.
-    // 옮긴 도메인이 빠지면서 packages/core 와 화면 모듈은 남은 도메인을 풀어 쓴다.
-    // core 의 picks 는 저장소 포트·엔티티·인메모리 어댑터 셋만 남았다 — 옛 results 가 results 이관(과업 8)까지 읽는다.
-    // core 의 lotterietus 는 Draw·DrawDataPort·Prisma 읽기 어댑터와 그것이 딛는 파일만 남았다 — 옛 results 가 읽는다.
+    // 도메인은 다 옮겼다 — packages/core·apps/web/src/server·Next 경로 처리기는 지워졌다.
+    // 남은 것은 상태를 쥔 옛 셸(app/page.tsx) 하나다. 셸을 옮기는 과업 9 에서 이 옵션을 지운다.
     exclude: {
-      path:
-        '^(packages/core/(src/(lotterietus|picks|results)/|vitest)' +
-        '|apps/web/src/(modules/results/(view|viewmodel|transport|api)/|server/|app/api/))',
+      path: '^apps/web/src/app/page\\.tsx$',
     },
     doNotFollow: { path: 'node_modules' },
     tsConfig: { fileName: 'tsconfig.base.json' },
