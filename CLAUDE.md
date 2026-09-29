@@ -13,7 +13,7 @@
 
 설계 문서 (v2가 아키텍처를 대체하지만 v1의 제품 범위는 그대로 계승):
 - `docs/superpowers/specs/2026-06-04-fortuna-lottery-design.md` — v1: 제품 개요·기능 범위·정직성 원칙 (이 부분은 지금도 유효)
-- `docs/superpowers/specs/2026-07-03-fortuna-lottery-architecture-v2.md` — v2: 현재 아키텍처 (Next.js 위의 Lean Hexagonal — v1의 별도 NestJS 백엔드 설계를 대체)
+- `docs/superpowers/specs/2026-07-03-fortuna-lottery-architecture-v2.md` — v2: 현재 아키텍처 (Next.js 위의 Lean Hexagonal — v1의 별도 NestJS 백엔드 설계를 대체) — vault 골조로 이관 중
 
 참고: 이 저장소는 사용자의 Obsidian vault(별도로 관리되는 OneDrive 동기화 폴더) 안에 위치하지만,
 `RoJaebl/fortuna-lottery`라는 자체 GitHub 원격 저장소를 가진 독립된 git 저장소다 — vault의
@@ -59,7 +59,20 @@ pnpm --filter web lint
 ```
 Vitest로 파일 하나만 돌릴 때는 `pnpm --filter @fortuna-lottery/core exec vitest run <path>` (web도 동일).
 
+## 배치와 골조 이관 상태
+
+이 저장소는 vault 의 `docs/context/architecture/architecture-baseline` 골조를 따라 옮기는 중이다. 배치는
+**두 서버**다 — 화면을 맡는 `apps/web` 과 API 를 맡는 `apps/api` 를 별도 프로세스로 둔다. 이렇게 고른
+까닭은 둘이다. 화면과 서버의 경계가 프로세스 단위로 물리적으로 잘려 경계 검사기에 덜 기대게 되고,
+vault 골조가 화면 모듈과 서버 모듈을 따로 정의하므로 번역 없이 그대로 맞는다.
+
+아직 옮기지 않은 구역은 `.dependency-cruiser.cjs` 의 `options.exclude` 가 소유한다. 그 목록은 줄기만
+하고, 옛 구역에는 새 파일을 만들지 않는다. 진행 판정은 `pnpm check:migration` 으로 낸다. 이관 절차는
+vault 의 `docs/context/architecture/incremental-migration` 을 따른다.
+
 ## 아키텍처: Next.js 위의 Lean Hexagonal
+
+> **이관 중 — 옛 구역의 설명.** 아래 절은 아직 옮기지 않은 옛 구역을 설명한다. 본문은 이관이 끝나는 대로 다시 쓴다.
 
 별도 백엔드 프로세스 없이 단일 Next.js 앱으로 구성된다. 비즈니스 로직은 프레임워크에 의존하지 않는
 순수 TS 패키지인 `packages/core`에 있고, `apps/web/src/app/api/**` 아래의 Next.js Route Handler만이
