@@ -1,8 +1,8 @@
 "use client";
-import { useIdentityViewModel } from "../viewmodel/use-identity.viewmodel";
+import { useIdentityBadgePresenter } from "./IdentityBadge.presenter";
 
 export function IdentityBadge() {
-  const { label } = useIdentityViewModel();
+  const { label } = useIdentityBadgePresenter();
   return (
     <span className="rounded-full border border-slate-300 px-3 py-1 text-xs text-slate-500">
       {label}

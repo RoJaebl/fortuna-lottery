@@ -1,1 +1,1 @@
-export { IdentityBadge } from "./view/identity-badge";
+export { IdentityBadge } from "./IdentityBadge";
