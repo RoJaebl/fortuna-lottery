@@ -26,3 +26,12 @@ describe.each([
     expect(parse([1, 1, 2, 3, 4, 5])).toBe(true);
   });
 });
+
+describe("빈 번호 배열", () => {
+  it("현황 응답은 회차가 없을 때의 빈 상태로 받는다", () => {
+    expect(status([])).toBe(true);
+  });
+  it("회차 조각은 받지 않는다", () => {
+    expect(draw([])).toBe(false);
+  });
+});

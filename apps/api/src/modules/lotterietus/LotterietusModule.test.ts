@@ -7,7 +7,7 @@ import { type ApiConfig, CONFIG } from "../../config.js";
 import { configureApp } from "../../configureApp.js";
 import { DummyDrawDataAdapter } from "./domain/adapter/DummyDrawDataAdapter.js";
 import { CLOCK } from "./domain/port/ClockPort.js";
-import { DRAW_DATA } from "./domain/port/DrawDataPort.js";
+import { DRAW_DATA, type DrawDataPort } from "./domain/port/DrawDataPort.js";
 import { LotterietusFacade } from "./interface/facade/LotterietusFacade.js";
 import { LotterietusModule } from "./LotterietusModule.js";
 
@@ -21,10 +21,13 @@ import { LotterietusModule } from "./LotterietusModule.js";
 })
 class FakeConfigModule {}
 
-async function boot(override?: Partial<LotterietusFacade>): Promise<{ app: INestApplication; base: string }> {
+async function boot(
+  override?: Partial<LotterietusFacade>,
+  drawData: DrawDataPort = new DummyDrawDataAdapter({ rounds: 3 }),
+): Promise<{ app: INestApplication; base: string }> {
   let builder = Test.createTestingModule({ imports: [FakeConfigModule, LotterietusModule] })
     .overrideProvider(DRAW_DATA)
-    .useValue(new DummyDrawDataAdapter({ rounds: 3 }))
+    .useValue(drawData)
     .overrideProvider(CLOCK)
     .useValue(() => new Date("2026-07-01T00:00:00.000Z"));
   if (override) builder = builder.overrideProvider(LotterietusFacade).useValue(override);
@@ -59,6 +62,27 @@ describe("GET /api/lotterietus", () => {
       nextDrawAt: "2026-07-04T11:35:00.000Z",
     });
     expect(body.numbers).toHaveLength(6);
+  });
+});
+
+describe("GET /api/lotterietus — 회차가 하나도 없으면", () => {
+  it("옛 응답 모양 그대로 빈 회차를 200 으로 준다", async () => {
+    const { app, base } = await boot(undefined, { getAllDraws: async () => [] });
+    try {
+      const res = await fetch(`${base}/api/lotterietus`);
+
+      expect(res.status).toBe(200);
+      expect(await res.json()).toEqual({
+        round: 0,
+        numbers: [],
+        bonus: 0,
+        drawnAt: "",
+        nextRound: 1,
+        nextDrawAt: "2026-07-04T11:35:00.000Z",
+      });
+    } finally {
+      await app.close();
+    }
   });
 });
 
