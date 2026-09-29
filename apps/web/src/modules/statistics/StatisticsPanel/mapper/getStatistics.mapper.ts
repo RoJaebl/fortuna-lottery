@@ -1,9 +1,10 @@
 import type { StatisticsGetResponse } from "@fortuna-lottery/contract/statistics";
-import type { StatisticsModel } from "../../model/statistics.model";
+import { StatisticsModel } from "../../model/Statistics.model";
 
-/** 응답 DTO → FE 모델 (와이어 이음새) */
-export function assembleStatistics(dto: StatisticsGetResponse): StatisticsModel {
-  return {
+/** 번역측은 스키마로 파싱하지 않고 자기 원형으로 옮긴다(wire-contract 규칙 3절) — 받는 값이 unknown 이라 여기서 한 번 좁힌다 */
+export function getStatisticsResponse(res: unknown): StatisticsModel {
+  const dto = res as StatisticsGetResponse;
+  return Object.assign(new StatisticsModel(), {
     totalDraws: dto.totalDraws,
     latestRound: dto.latestRound,
     frequency: [...dto.frequency],
@@ -15,5 +16,5 @@ export function assembleStatistics(dto: StatisticsGetResponse): StatisticsModel 
     topPairs: dto.topPairs.map((e) => ({ ...e })),
     recentGrid: dto.recentGrid.map((e) => ({ round: e.round, numbers: [...e.numbers] })),
     totalCombinations: dto.totalCombinations,
-  };
+  });
 }

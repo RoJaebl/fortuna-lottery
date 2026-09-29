@@ -1,12 +1,14 @@
 "use client";
 import { Ball } from "@/shared/ui/ball";
 import { Card } from "@/shared/ui/card";
-import type { StatisticsModel } from "../model/statistics.model";
-import { glowIntensity } from "../viewmodel/presenters";
+import type { StatisticsViewModel } from "../model/Statistics.viewmodel";
 
-export function FrequencyHeatmap({ stats }: { stats: StatisticsModel }) {
-  const min = Math.min(...stats.frequency);
-  const max = Math.max(...stats.frequency);
+export interface FrequencyHeatmapProps {
+  stats: StatisticsViewModel;
+}
+
+export function FrequencyHeatmap({ stats }: FrequencyHeatmapProps) {
+  const glows = stats.glows;
 
   return (
     <Card
@@ -17,7 +19,7 @@ export function FrequencyHeatmap({ stats }: { stats: StatisticsModel }) {
       <div className="grid grid-cols-9 justify-items-center gap-2.5">
         {stats.frequency.map((count, i) => (
           <div key={i + 1} className="flex flex-col items-center gap-0.5">
-            <Ball n={i + 1} size="sm" glow={glowIntensity(count, min, max)} />
+            <Ball n={i + 1} size="sm" glow={glows[i]} />
             <span className="text-[10px] tabular-nums text-slate-500">{count}</span>
           </div>
         ))}

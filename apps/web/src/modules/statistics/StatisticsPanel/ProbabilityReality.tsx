@@ -1,10 +1,13 @@
 "use client";
 import { Card } from "@/shared/ui/card";
-import type { StatisticsModel } from "../model/statistics.model";
-import { probabilityFacts } from "../viewmodel/presenters";
+import type { StatisticsViewModel } from "../model/Statistics.viewmodel";
 
-export function ProbabilityReality({ stats }: { stats: StatisticsModel }) {
-  const facts = probabilityFacts(stats.totalCombinations);
+export interface ProbabilityRealityProps {
+  stats: StatisticsViewModel;
+}
+
+export function ProbabilityReality({ stats }: ProbabilityRealityProps) {
+  const facts = stats.probabilityFacts;
 
   return (
     <Card

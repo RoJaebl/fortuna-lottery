@@ -1,7 +1,16 @@
 "use client";
 import { Card } from "@/shared/ui/card";
-import type { StatisticsModel } from "../model/statistics.model";
-import { lowCountOf, oddCountOf, oddEvenRarity } from "../viewmodel/presenters";
+import type { StatisticsViewModel } from "../model/Statistics.viewmodel";
+
+export interface PatternDistributionProps {
+  stats: StatisticsViewModel;
+  /** 내 조합의 홀짝 패턴이 과거 회차에서 차지한 비율 — 내 조합이 없으면 null */
+  rarity: { label: string; percent: number } | null;
+  /** 내 조합의 홀수 개수 — 강조할 막대. 내 조합이 없으면 null */
+  oddHighlight: number | null;
+  /** 내 조합의 저구간 개수 — 강조할 막대. 내 조합이 없으면 null */
+  lowHighlight: number | null;
+}
 
 function DistBars({
   dist,
@@ -35,15 +44,7 @@ function DistBars({
   );
 }
 
-export function PatternDistribution({
-  stats,
-  myNumbers,
-}: {
-  stats: StatisticsModel;
-  myNumbers: number[] | null;
-}) {
-  const rarity = myNumbers ? oddEvenRarity(myNumbers, stats) : null;
-
+export function PatternDistribution({ stats, rarity, oddHighlight, lowHighlight }: PatternDistributionProps) {
   return (
     <Card
       title="홀짝 · 고저 · 구간 분포"
@@ -60,7 +61,7 @@ export function PatternDistribution({
           <DistBars
             dist={stats.oddCountDist}
             total={stats.totalDraws}
-            highlight={myNumbers ? oddCountOf(myNumbers) : null}
+            highlight={oddHighlight}
             labelOf={(i) => `홀${i}`}
           />
         </div>
@@ -69,7 +70,7 @@ export function PatternDistribution({
           <DistBars
             dist={stats.lowCountDist}
             total={stats.totalDraws}
-            highlight={myNumbers ? lowCountOf(myNumbers) : null}
+            highlight={lowHighlight}
             labelOf={(i) => `저${i}`}
           />
         </div>

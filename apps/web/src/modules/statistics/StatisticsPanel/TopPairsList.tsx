@@ -1,9 +1,13 @@
 "use client";
 import { Ball } from "@/shared/ui/ball";
 import { Card } from "@/shared/ui/card";
-import type { StatisticsModel } from "../model/statistics.model";
+import type { StatisticsViewModel } from "../model/Statistics.viewmodel";
 
-export function TopPairsList({ stats }: { stats: StatisticsModel }) {
+export interface TopPairsListProps {
+  stats: StatisticsViewModel;
+}
+
+export function TopPairsList({ stats }: TopPairsListProps) {
   const maxCount = stats.topPairs[0]?.count ?? 1;
 
   return (

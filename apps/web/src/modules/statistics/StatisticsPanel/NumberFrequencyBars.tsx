@@ -1,9 +1,13 @@
 "use client";
 import { ballColor } from "@/shared/lib/lotto-colors";
 import { Card } from "@/shared/ui/card";
-import type { StatisticsModel } from "../model/statistics.model";
+import type { StatisticsViewModel } from "../model/Statistics.viewmodel";
 
-export function NumberFrequencyBars({ stats }: { stats: StatisticsModel }) {
+export interface NumberFrequencyBarsProps {
+  stats: StatisticsViewModel;
+}
+
+export function NumberFrequencyBars({ stats }: NumberFrequencyBarsProps) {
   const max = Math.max(...stats.frequency, 1);
   const totalPicks = stats.totalDraws * 6;
 

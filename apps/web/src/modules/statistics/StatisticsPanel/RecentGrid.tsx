@@ -1,10 +1,14 @@
 "use client";
 import { ballColor } from "@/shared/lib/lotto-colors";
 import { Card } from "@/shared/ui/card";
-import type { StatisticsModel } from "../model/statistics.model";
+import type { StatisticsViewModel } from "../model/Statistics.viewmodel";
+
+export interface RecentGridProps {
+  stats: StatisticsViewModel;
+}
 
 /** 잔디밭 — 가로 회차 / 세로 1~45, 출현 번호 칸을 공 색으로 칠한다 */
-export function RecentGrid({ stats }: { stats: StatisticsModel }) {
+export function RecentGrid({ stats }: RecentGridProps) {
   const rounds = stats.recentGrid;
   const first = rounds[0]?.round;
   const last = rounds[rounds.length - 1]?.round;

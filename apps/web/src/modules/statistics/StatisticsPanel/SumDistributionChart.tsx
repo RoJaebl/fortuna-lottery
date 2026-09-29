@@ -1,18 +1,17 @@
 "use client";
 import { Card } from "@/shared/ui/card";
-import type { StatisticsModel } from "../model/statistics.model";
-import { sumPosition } from "../viewmodel/presenters";
+import type { StatisticsViewModel } from "../model/Statistics.viewmodel";
 
 const W = 560;
 const H = 140;
 
-export function SumDistributionChart({
-  stats,
-  myNumbers,
-}: {
-  stats: StatisticsModel;
-  myNumbers: number[] | null;
-}) {
+export interface SumDistributionChartProps {
+  stats: StatisticsViewModel;
+  /** 합계 분포 위 내 조합의 위치 — 내 조합이 없으면 null */
+  my: { mySum: number; percentBelow: number } | null;
+}
+
+export function SumDistributionChart({ stats, my }: SumDistributionChartProps) {
   const dist = stats.sumDistribution;
   if (dist.length === 0) return null;
 
@@ -21,8 +20,6 @@ export function SumDistributionChart({
   const maxCount = Math.max(...dist.map((d) => d.count));
   const x = (sum: number) => ((sum - minSum) / Math.max(1, maxSum - minSum)) * W;
   const y = (count: number) => H - (count / maxCount) * (H - 10);
-
-  const my = myNumbers ? sumPosition(myNumbers, stats) : null;
 
   return (
     <Card

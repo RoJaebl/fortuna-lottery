@@ -1,10 +1,16 @@
 "use client";
 import { Ball } from "@/shared/ui/ball";
 import { Card } from "@/shared/ui/card";
-import type { StatisticsModel } from "../model/statistics.model";
-import { coldest, hottest } from "../viewmodel/presenters";
+import type { StatisticsModel } from "../model/Statistics.model";
 
-export function HotColdBoard({ stats }: { stats: StatisticsModel }) {
+export interface HotColdBoardProps {
+  /** 오래 안 나온 번호 — gap 큰 순 */
+  coldest: StatisticsModel["hotCold"];
+  /** 최근 나온 번호 — gap 작은 순 */
+  hottest: StatisticsModel["hotCold"];
+}
+
+export function HotColdBoard({ coldest, hottest }: HotColdBoardProps) {
   return (
     <Card
       title="미출현 기간 (핫/콜드)"
@@ -15,7 +21,7 @@ export function HotColdBoard({ stats }: { stats: StatisticsModel }) {
         <div>
           <p className="mb-2 text-xs font-medium text-slate-500">오래 안 나온 번호 TOP 8</p>
           <div className="flex flex-wrap gap-2">
-            {coldest(stats, 8).map(({ number, gap }) => (
+            {coldest.map(({ number, gap }) => (
               <div key={number} className="flex flex-col items-center gap-0.5">
                 <Ball n={number} size="sm" dimmed />
                 <span className="text-[10px] tabular-nums text-slate-500">{gap}회</span>
@@ -26,7 +32,7 @@ export function HotColdBoard({ stats }: { stats: StatisticsModel }) {
         <div>
           <p className="mb-2 text-xs font-medium text-slate-500">최근 나온 번호 TOP 8</p>
           <div className="flex flex-wrap gap-2">
-            {hottest(stats, 8).map(({ number, gap }) => (
+            {hottest.map(({ number, gap }) => (
               <div key={number} className="flex flex-col items-center gap-0.5">
                 <Ball n={number} size="sm" glow={0.7} />
                 <span className="text-[10px] tabular-nums text-slate-500">
