@@ -4,30 +4,32 @@
 
 ## 설계 문서
 
-- [v2 — 데이터 흐름 중심 아키텍처 (현행)](docs/superpowers/specs/2026-07-03-fortuna-lottery-architecture-v2.md)
-- [v1 — 제품 개요·기능 범위](docs/superpowers/specs/2026-06-04-fortuna-lottery-design.md)
+- [v1 — 제품 개요·기능 범위](<docs/superpowers/specs/2026-06-04-fortuna-lottery-design.md>)
+- [골조 이관 계획 — 지금 구조](<docs/superpowers/plans/2026-09-29-vault-architecture-migration.md>) (옛 v2 아키텍처 문서를 대체한다)
 
 ## 구조
 
+화면 앱과 응용 서버가 각자 프로세스를 갖는 **두 서버** 배치다.
+
 ```
-apps/web/          Next.js 단일 앱
-  src/app/api/     HTTP 입구 (인프라 계층 — core 유스케이스 호출)
-  src/modules/     FMA 프론트 모듈 (view / viewmodel / model / transport(mapper·assembler) / api)
-  src/shared/      디자인 시스템 · fetcher
-  src/server/      컴포지션 루트 (포트에 어댑터 주입)
-packages/core/     순수 TS 도메인 (domain / application / dto / infrastructure) — 프레임워크 0
+apps/web/            Next.js 화면 앱 (:3000) — src/app(셸), src/modules/<도메인>, src/shared
+apps/api/            NestJS 응용 서버 (:4000, /api) — src/modules/<도메인>, 조립 루트, Prisma, 회차 수집 스케줄러
+packages/contract/   zod 와이어 계약 — 두 앱이 참조한다
+packages/kernel/     로또 순수 커널 — apps/api 만 참조한다
 ```
 
-- **경계 규칙(ESLint 강제)**: FE 모듈은 core의 `dto`만 타입 import · 모듈 간 deep import 금지 · 라우트는 조립만
-- **2-tier**: 쓰기 도메인(picks/results/identity)은 풀 파이프라인, 읽기 도메인은 얇게
-- **MVP 어댑터**: `DummyDrawDataAdapter`(시드 고정 생성 데이터) · `InMemoryPickRepository` · 게스트 모드 — 포트 뒤라 실데이터/Supabase 교체 시 도메인 무수정
+- 브라우저는 `apps/web` 의 `/api/*` 를 부르고, Next `rewrites` 가 그것을 `apps/api` 로 넘긴다.
+- 의존 방향과 층 경계는 dependency-cruiser 가, 화면 코드의 모양은 ESLint 가 강제한다.
+- 픽은 아직 서버 메모리에 저장되고, 인증은 없다(게스트 모드).
+
+자세한 규칙과 이 저장소가 정한 것은 [`CLAUDE.md`](<CLAUDE.md>)에 있다.
 
 ## 실행
 
 ```bash
 pnpm install
-pnpm dev      # 개발 서버
-pnpm test     # core 44 + web 10 단위 테스트
-pnpm lint     # 타입체크 + 경계 규칙
-pnpm build    # 프로덕션 빌드
+docker compose up -d   # 로컬 Postgres — apps/api/.env 는 .env.example 을 본뜬다
+pnpm dev               # apps/web 과 apps/api 를 함께 띄운다
+pnpm check             # 타입 검사 · lint · 의존 규칙 · 시험
+pnpm build             # 프로덕션 빌드
 ```
