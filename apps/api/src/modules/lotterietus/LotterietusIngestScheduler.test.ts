@@ -1,6 +1,5 @@
 import { Logger } from "@nestjs/common";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import type { ApiConfig } from "../../config.js";
 import type { LotterietusFacade } from "./interface/facade/LotterietusFacade.js";
 import { LotterietusIngestScheduler } from "./interface/api/LotterietusIngestScheduler.js";
 
@@ -13,11 +12,9 @@ const NOW = new Date("2026-07-01T00:00:00.000Z");
 const UNTIL_NEXT_DRAW_PLUS_BUFFER = new Date("2026-07-04T11:45:00.000Z").getTime() - NOW.getTime();
 
 const result = { startRound: 1, latestRound: 1, ingestedCount: 0, requestCount: 1 };
-const enabled: ApiConfig = { port: 0, schedulerEnabled: true };
-
-function setup(ingest: () => Promise<typeof result>, config: ApiConfig = enabled) {
+function setup(ingest: () => Promise<typeof result>, enabled = true) {
   const facade = { ingest: vi.fn(ingest), nextDrawAt: () => new Date("2026-07-04T11:35:00.000Z") };
-  const scheduler = new LotterietusIngestScheduler(facade as unknown as LotterietusFacade, config);
+  const scheduler = new LotterietusIngestScheduler(facade as unknown as LotterietusFacade, enabled);
   return { facade, scheduler };
 }
 
@@ -90,7 +87,7 @@ describe("LotterietusIngestScheduler", () => {
   });
 
   it("SCHEDULER_ENABLED=false 면 시작하지 않는다", async () => {
-    const { facade, scheduler } = setup(async () => result, { port: 0, schedulerEnabled: false });
+    const { facade, scheduler } = setup(async () => result, false);
 
     scheduler.onApplicationBootstrap();
     await vi.advanceTimersByTimeAsync(UNTIL_NEXT_DRAW_PLUS_BUFFER);

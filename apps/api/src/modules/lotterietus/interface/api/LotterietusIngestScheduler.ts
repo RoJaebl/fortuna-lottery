@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger, type OnApplicationBootstrap, type OnModuleDestroy } from "@nestjs/common";
-import { type ApiConfig, CONFIG } from "../../../../config.js";
+import { INGEST_ENABLED, type IngestEnabledPort } from "../../domain/port/IngestEnabledPort.js";
 import { LotterietusFacade } from "../facade/LotterietusFacade.js";
 
 /** 추첨 시각 이후 원격에 결과가 올라오기까지의 여유 */
@@ -19,11 +19,11 @@ export class LotterietusIngestScheduler implements OnApplicationBootstrap, OnMod
 
   constructor(
     @Inject(LotterietusFacade) private readonly lotterietus: LotterietusFacade,
-    @Inject(CONFIG) private readonly config: ApiConfig,
+    @Inject(INGEST_ENABLED) private readonly enabled: IngestEnabledPort,
   ) {}
 
   onApplicationBootstrap(): void {
-    if (!this.config.schedulerEnabled) return;
+    if (!this.enabled) return;
     this.running = true;
     this.logger.log("수집 워커를 시작합니다.");
     void this.cycle(); // 기동을 막지 않는다 — 첫 사이클(백필일 수 있다)은 뒤에서 돈다

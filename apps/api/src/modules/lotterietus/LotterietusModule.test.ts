@@ -1,6 +1,8 @@
 import { Global, type INestApplication, Module } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
+import { LotterietusDrawSchema } from "@fortuna-lottery/contract/lotterietus";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { z } from "zod";
 import { type ApiConfig, CONFIG } from "../../config.js";
 import { configureApp } from "../../configureApp.js";
 import { DummyDrawDataAdapter } from "./domain/adapter/DummyDrawDataAdapter.js";
@@ -57,6 +59,21 @@ describe("GET /api/lotterietus", () => {
       nextDrawAt: "2026-07-04T11:35:00.000Z",
     });
     expect(body.numbers).toHaveLength(6);
+  });
+});
+
+describe("LotterietusFacade.findAll — 다른 모듈이 받는 모양", () => {
+  it("회차 오름차순의 계약 모양(LotterietusDraw[])이고, 번호는 원형과 떨어진 가변 배열이다", async () => {
+    const { app } = await boot();
+    try {
+      const draws = await app.get(LotterietusFacade).findAll();
+
+      expect(z.array(LotterietusDrawSchema).parse(draws)).toEqual(draws);
+      expect(draws.map((d) => d.round)).toEqual([1, 2, 3]);
+      expect(Object.isFrozen(draws[0]?.numbers)).toBe(false); // 더미 원형은 번호를 얼려 둔다 — 복사본이어야 한다
+    } finally {
+      await app.close();
+    }
   });
 });
 
