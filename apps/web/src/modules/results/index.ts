@@ -1,2 +1,4 @@
-export { ResultsCard } from "./view/results-card";
-export type { ResultsModel } from "./model/results.model";
+export { ResultsCard } from "./ResultsCard";
+export type { ResultsCheckModel, ResultsDrawModel } from "./model/ResultsCheck.model";
+export type { ResultsCheckItemModel } from "./model/ResultsCheckItem.model";
+export type { ResultsCheckItemViewModel } from "./model/ResultsCheckItem.viewmodel";
