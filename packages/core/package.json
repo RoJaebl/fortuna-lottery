@@ -4,7 +4,6 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./shared": "./src/shared/index.ts",
     "./*/domain": "./src/*/domain/index.ts",
     "./*/application": "./src/*/application/index.ts",
     "./*/infrastructure": "./src/*/infrastructure/index.ts"
@@ -25,6 +24,7 @@
   },
   "dependencies": {
     "@fortuna-lottery/contract": "workspace:*",
+    "@fortuna-lottery/kernel": "workspace:*",
     "@prisma/client": "6.19.3"
   }
 }

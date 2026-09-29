@@ -1,4 +1,4 @@
-import { err, ok, type Result } from "./result";
+import { err, ok, type Result } from "./result.js";
 
 export const LOTTO_MIN = 1;
 export const LOTTO_MAX = 45;

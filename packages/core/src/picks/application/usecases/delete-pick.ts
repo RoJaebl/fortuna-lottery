@@ -1,4 +1,4 @@
-import { err, ok, type Result } from "../../../shared/result";
+import { err, ok, type Result } from "@fortuna-lottery/kernel";
 import type { PickRepositoryPort } from "../ports/pick-repository.port";
 
 /** 픽 삭제 유스케이스 — 소유자 검증 포함 */

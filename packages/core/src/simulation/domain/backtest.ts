@@ -1,5 +1,5 @@
-import type { Combination } from "../../shared/combination";
-import { scoreAgainstDraw } from "../../shared/scoring";
+import type { Combination } from "@fortuna-lottery/kernel";
+import { scoreAgainstDraw } from "@fortuna-lottery/kernel";
 import type { Draw } from "../../lotterietus/domain/draw";
 
 export interface BacktestReadModel {

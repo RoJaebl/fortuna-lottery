@@ -1,5 +1,5 @@
-import { createCombination } from "../../../shared/combination";
-import { scoreAgainstDraw } from "../../../shared/scoring";
+import { createCombination } from "@fortuna-lottery/kernel";
+import { scoreAgainstDraw } from "@fortuna-lottery/kernel";
 import type { DrawDataPort } from "../../../lotterietus/application/ports/draw-data.port";
 import type { PickRepositoryPort } from "../../../picks/application/ports/pick-repository.port";
 import type { ResultsCheckResponse } from "@fortuna-lottery/contract/results";

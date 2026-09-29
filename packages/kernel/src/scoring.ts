@@ -1,4 +1,4 @@
-import type { Combination } from "./combination";
+import type { Combination } from "./combination.js";
 
 /** 0 = 낙첨, 1~5 = 등수 */
 export type Rank = 0 | 1 | 2 | 3 | 4 | 5;

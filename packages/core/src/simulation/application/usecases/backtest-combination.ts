@@ -1,5 +1,5 @@
-import { createCombination } from "../../../shared/combination";
-import { ok, type Result } from "../../../shared/result";
+import { createCombination } from "@fortuna-lottery/kernel";
+import { ok, type Result } from "@fortuna-lottery/kernel";
 import type { DrawDataPort } from "../../../lotterietus/application/ports/draw-data.port";
 import { backtest } from "../../domain/backtest";
 import type { SimulationBacktestRequest, SimulationBacktestResponse } from "@fortuna-lottery/contract/simulation";

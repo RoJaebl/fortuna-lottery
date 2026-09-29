@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createCombination } from "../../shared/combination";
+import { createCombination } from "@fortuna-lottery/kernel";
 import type { Draw } from "../../lotterietus/domain/draw";
 import { backtest } from "./backtest";
 

@@ -1,4 +1,4 @@
-import { ok, type Result } from "../../../shared/result";
+import { ok, type Result } from "@fortuna-lottery/kernel";
 import type { PickEntity } from "../../domain/pick.entity";
 import type { PicksItem, PicksSaveRequest } from "@fortuna-lottery/contract/picks";
 import type { PickRepositoryPort } from "../ports/pick-repository.port";

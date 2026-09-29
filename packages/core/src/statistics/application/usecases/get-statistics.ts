@@ -1,4 +1,4 @@
-import { TOTAL_COMBINATIONS } from "../../../shared/combination";
+import { TOTAL_COMBINATIONS } from "@fortuna-lottery/kernel";
 import type { DrawDataPort } from "../../../lotterietus/application/ports/draw-data.port";
 import {
   frequency,

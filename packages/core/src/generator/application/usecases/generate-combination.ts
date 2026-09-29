@@ -1,6 +1,6 @@
-import type { Result } from "../../../shared/result";
-import { ok } from "../../../shared/result";
-import type { RandomPort } from "../../../shared/rng";
+import type { Result } from "@fortuna-lottery/kernel";
+import { ok } from "@fortuna-lottery/kernel";
+import type { RandomPort } from "@fortuna-lottery/kernel";
 import { generate } from "../../domain/generate";
 import type { GeneratorGenerateRequest, GeneratorGenerateResponse } from "@fortuna-lottery/contract/generator";
 

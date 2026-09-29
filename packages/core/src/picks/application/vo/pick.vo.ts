@@ -1,5 +1,5 @@
-import { createCombination, type Combination } from "../../../shared/combination";
-import { err, ok, type Result } from "../../../shared/result";
+import { createCombination, type Combination } from "@fortuna-lottery/kernel";
+import { err, ok, type Result } from "@fortuna-lottery/kernel";
 
 /** 픽 VO — 사용자 키 + 검증된 조합의 결합 (도메인 조합 계층) */
 export interface PickVO {

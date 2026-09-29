@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mulberry32 } from "../../shared/rng";
+import { mulberry32 } from "@fortuna-lottery/kernel";
 import { generate } from "./generate";
 
 describe("generate (조합 생성)", () => {

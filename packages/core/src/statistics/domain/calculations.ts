@@ -1,4 +1,4 @@
-import { LOTTO_MAX } from "../../shared/combination";
+import { LOTTO_MAX } from "@fortuna-lottery/kernel";
 import type { Draw } from "../../lotterietus/domain/draw";
 
 /** 번호별 출현 횟수 — index 0 = 번호 1 */

@@ -1,7 +1,7 @@
 import type { DrawSourcePort } from "../../application/ports/draw-source.port";
 import type { Draw } from "../../domain/draw";
 import { drawnAtFromYmd } from "../../domain/drawn-at";
-import { createCombination, LOTTO_MAX, LOTTO_MIN } from "../../../shared/combination";
+import { createCombination, LOTTO_MAX, LOTTO_MIN } from "@fortuna-lottery/kernel";
 
 const ENDPOINT = "https://www.dhlottery.co.kr/lt645/selectPstLt645InfoNew.do";
 const RESULT_PAGE = "https://www.dhlottery.co.kr/lt645/result";

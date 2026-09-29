@@ -1,5 +1,5 @@
-import { LOTTO_MAX, LOTTO_PICK_COUNT } from "../../../shared/combination";
-import { mulberry32 } from "../../../shared/rng";
+import { LOTTO_MAX, LOTTO_PICK_COUNT } from "@fortuna-lottery/kernel";
+import { mulberry32 } from "@fortuna-lottery/kernel";
 import type { Draw } from "../../domain/draw";
 import type { DrawDataPort } from "../../application/ports/draw-data.port";
 
