@@ -8,14 +8,19 @@ ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 BIN="$ROOT/node_modules/dependency-cruiser/bin/dependency-cruiser.mjs"
 bad=0
 
+# 폴더 이름의 `--` 뒤는 같은 규칙의 다른 표본(예: 패키지 이름 꼴 import)이다.
+# 표본 폴더에 tsconfig.json 이 있으면 그 paths 로 패키지 이름·@/ 별칭을 표본 안의 경로로 푼다.
 for dir in "$ROOT"/tools/checks/violations/*/; do
-  rule="$(basename "$dir")"
-  out="$(cd "$dir" && node "$BIN" --config "$ROOT/tools/checks/violations-config.cjs" --ts-config "$ROOT/tsconfig.base.json" . 2>&1)"
+  name="$(basename "$dir")"
+  rule="${name%%--*}"
+  tsconfig="$ROOT/tsconfig.base.json"
+  [[ -f "$dir/tsconfig.json" ]] && tsconfig="$dir/tsconfig.json"
+  out="$(cd "$dir" && node "$BIN" --config "$ROOT/tools/checks/violations-config.cjs" --ts-config "$tsconfig" . 2>&1)"
   if grep -q "error $rule:" <<<"$out"; then
-    echo "OK   $rule"
+    echo "OK   $name"
     grep "error $rule:" <<<"$out" | sed 's/^/       /'
   else
-    echo "FAIL $rule — 표본이 이 규칙에 걸리지 않았다"
+    echo "FAIL $name — 표본이 규칙 $rule 에 걸리지 않았다"
     bad=1
   fi
 done

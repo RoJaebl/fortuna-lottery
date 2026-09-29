@@ -100,14 +100,22 @@ module.exports = {
       severity: 'error',
       from: { path: '^apps/api/src/', pathNot: '/(domain/adapter|infrastructure)/' },
       // 이 저장소는 DB 드라이버로 Prisma 를 쓴다
-      to:   { path: '(^(node:)?(fs|net|http|https|dns)$|@prisma/client)' },
+      // 하위 경로(fs/promises, node:fs/promises)도 잡고, @prisma/client 는 풀리면 node_modules 아래 경로가 된다
+      to:   { path: '(^(node:)?(fs|net|http|https|dns)(/|$)|(^|/node_modules/)@prisma/client(/|$))' },
     },
   ],
   options: {
     // 골조 이관 전 구역(exclude)은 비었다 — 도메인을 다 옮기고 packages/core·apps/web/src/server·Next 경로 처리기를 지웠다.
     // 이제 모든 파일에 골조 규칙이 걸린다. 옛 구역을 다시 만들지 않는다 — incremental-migration 규칙 3절.
     doNotFollow: { path: 'node_modules' },
-    tsConfig: { fileName: 'tsconfig.base.json' },
+    // @/ 별칭은 tsconfig.depcruise.json 의 paths 로, 작업 공간 패키지는 package.json 의 exports 로 푼다.
+    // 풀지 못하면 couldNotResolve 로 남아 계약·커널·배럴 규칙이 아무것도 보지 못한다. 계약·커널의 exports 는 dist 를 가리키므로 build 가 먼저다.
+    tsConfig: { fileName: 'tsconfig.depcruise.json' },
     tsPreCompilationDeps: true,
+    enhancedResolveOptions: {
+      exportsFields: ['exports'],
+      conditionNames: ['import', 'require', 'node', 'default', 'types'],
+      mainFields: ['module', 'main', 'types'],
+    },
   },
 }

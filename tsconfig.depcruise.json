@@ -1,0 +1,8 @@
+{
+  "//": "dependency-cruiser 전용 — 화면 앱의 @/ 별칭을 저장소 루트 기준으로 풀어 준다. 앱 빌드는 이 파일을 보지 않는다",
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": { "@/*": ["apps/web/src/*"] }
+  }
+}
