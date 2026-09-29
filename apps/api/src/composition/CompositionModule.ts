@@ -2,6 +2,7 @@ import { Global, Module, type Type } from "@nestjs/common";
 import { GeneratorModule } from "../modules/generator/GeneratorModule.js";
 import { IdentityModule } from "../modules/identity/IdentityModule.js";
 import { IdentityFacade } from "../modules/identity/interface/facade/IdentityFacade.js";
+import { LotterietusModule } from "../modules/lotterietus/LotterietusModule.js";
 import { CURRENT_USER, type CurrentUserPort } from "../modules/picks/domain/port/CurrentUserPort.js";
 import { PicksModule } from "../modules/picks/PicksModule.js";
 
@@ -11,7 +12,7 @@ import { PicksModule } from "../modules/picks/PicksModule.js";
  */
 @Global()
 @Module({
-  imports: [IdentityModule, GeneratorModule, PicksModule],
+  imports: [IdentityModule, GeneratorModule, PicksModule, LotterietusModule],
   providers: [
     // picks 가 필요로 하는 「현재 사용자」는 identity 가 준다
     { provide: CURRENT_USER, useExisting: IdentityFacade satisfies Type<CurrentUserPort> },

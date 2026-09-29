@@ -41,7 +41,8 @@ module.exports = {
       name: 'domain-model-has-zero-dependencies',
       comment: '도메인 원형은 같은 폴더와 계약 패키지 밖의 어떤 것도 참조하지 않는다',
       severity: 'error',
-      from: { path: '/domain/model/' },
+      // 이 저장소만의 완화: 원형 옆의 시험 파일은 시험 러너(vitest)를 가져와야 한다 — 시험은 제품 코드가 아니다
+      from: { path: '/domain/model/', pathNot: '\\.test\\.ts$' },
       to:   { pathNot: '(/domain/model/|^packages/contract/)' },
     },
     {
