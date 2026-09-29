@@ -4,13 +4,12 @@ import {
   createPrismaClient,
   createPrismaDrawDataAdapter,
 } from "@fortuna-lottery/core/lotterietus/infrastructure";
-import { makeBacktestCombination } from "@fortuna-lottery/core/simulation/application";
 import { createInMemoryPickRepository } from "@fortuna-lottery/core/picks/infrastructure";
 import { makeCheckResults } from "@fortuna-lottery/core/results/application";
 
 function buildContainer() {
   // draws는 apps/api 의 수집 스케줄러가 Postgres에 넣은 실데이터를 읽는다.
-  // lotterietus 는 apps/api 로 옮겼다. 아직 남은 simulation·results 처리기가 옮겨질 때까지 옛 읽기 어댑터를 여기 둔다
+  // lotterietus 는 apps/api 로 옮겼다. 아직 남은 results 처리기가 옮겨질 때까지 옛 읽기 어댑터를 여기 둔다
   // picks 는 apps/api 로 옮겼다. 아직 남은 results 처리기가 옮겨질 때까지 옛 저장소(core/picks 의 남은 파일)를 여기 둔다 —
   // 저장은 apps/api 가 받으므로 이 저장소는 비어 있다. 후속: results 이관(Task 8)에서 함께 걷는다
   const drawData = createPrismaDrawDataAdapter(createPrismaClient());
@@ -19,7 +18,6 @@ function buildContainer() {
   return {
     // identity 는 apps/api 로 옮겼다. 남은 picks·results 처리기가 옮겨질 때까지 옛 게스트 어댑터의 값을 여기 둔다
     identity: { getCurrentUser: async () => ({ id: "guest", isGuest: true }) },
-    backtestCombination: makeBacktestCombination(drawData),
     checkResults: makeCheckResults(pickRepository, drawData),
   };
 }
