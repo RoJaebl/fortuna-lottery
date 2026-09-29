@@ -1,28 +1,20 @@
-// 아키텍처 경계 규칙 (설계 문서 v2 §4) — 위반 = 빌드 실패
+// 의존 방향·층 경계는 루트의 .dependency-cruiser.cjs 가 맡는다 (boundary-enforcement §2).
+// 여기에는 코드 모양 규칙만 둔다 (boundary-enforcement §4, fractal-view-promotion §7).
 import tseslint from "typescript-eslint";
 
-/** FE가 core 내부(도메인/유스케이스/인프라)에 접근하는 것을 금지하는 패턴 */
-const coreInternalPatterns = [
-  {
-    group: [
-      "@fortuna-lottery/core/*/application",
-      "@fortuna-lottery/core/*/domain",
-      "@fortuna-lottery/core/*/infrastructure",
-      "@fortuna-lottery/core/shared",
-    ],
-    message:
-      "FE 모듈은 core의 dto만 타입 import할 수 있습니다 (경계 규칙). 로직이 필요하면 API route를 통하세요.",
-  },
-  {
-    group: ["@/server/*", "@/server"],
-    message: "FE 모듈은 서버 컴포지션 루트에 접근할 수 없습니다. HTTP(api-client)를 통하세요.",
-  },
-];
+// 골조 이관 전 구역(옛 OLD_ZONE ignores)은 비어 지웠다 — .dependency-cruiser.cjs 의 exclude 와 함께 없어졌다.
 
-/** 모듈 간 deep import 금지 — 공개 index.ts로만 소통 */
-const deepImportPattern = {
-  group: ["@/modules/*/*"],
-  message: "모듈 간에는 공개 API(@/modules/<name>)로만 import하세요 (deep import 금지).",
+const VIEW_STATE = {
+  selector: "CallExpression[callee.name=/^use(State|Reducer|Effect)$/]",
+  message: "화면은 상태를 갖지 않는다. 상호작용 상태는 표시 조정자로, 서버 상태는 action 으로.",
+};
+
+// 이름에 기댄 근사다 — 변수 이름이 ViewModel 로 끝나거나 vm 인 것만 잡는다(boundary-enforcement §4).
+const VIEWMODEL_SPREAD = {
+  selector: "ObjectExpression > SpreadElement[argument.name=/ViewModel$|^vm$/]",
+  message:
+    "표시 모델을 얕은 전개로 복제하면 프로토타입이 떨어져 나간다. " +
+    "Object.assign(new XViewModel(), vm, patch) 또는 withX() 를 쓴다.",
 };
 
 export default tseslint.config(
@@ -30,19 +22,35 @@ export default tseslint.config(
     ignores: [".next/**", "node_modules/**", "next-env.d.ts"],
   },
   {
-    files: ["src/modules/**/*.{ts,tsx}", "src/shared/**/*.{ts,tsx}"],
+    files: ["src/**/*.{ts,tsx}"],
     languageOptions: { parser: tseslint.parser },
+  },
+  {
+    files: ["src/modules/**/*.{ts,tsx}"],
     rules: {
-      "no-restricted-imports": ["error", { patterns: [...coreInternalPatterns, deepImportPattern] }],
+      "no-restricted-syntax": ["error", VIEWMODEL_SPREAD],
+      // 뷰 폴더(PascalCase)도 index 만 공개한다 — 폴더 이름 뒤에 경로가 더 붙으면 그 안쪽을 짚은 것이다.
+      // 모듈 사이 봉쇄는 dependency-cruiser 의 no-deep-module-import 가 맡는다.
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              regex: "^\\.{1,2}/(?:\\.\\./)*(?:[^/]+/)*[A-Z][A-Za-z0-9]*/",
+              caseSensitive: true,
+              message: "뷰 폴더 밖에서는 그 폴더의 index 만 가져온다 (fractal-view-promotion §6).",
+            },
+          ],
+        },
+      ],
     },
   },
   {
-    // 라우트 페이지는 모듈 조립만 — core 직접 접근 금지 (api/는 예외: 인프라 계층)
-    files: ["src/app/**/*.{ts,tsx}"],
-    ignores: ["src/app/api/**"],
-    languageOptions: { parser: tseslint.parser },
+    // 규칙 이름이 같으면 뒤의 설정이 앞의 것을 통째로 덮는다 — 화면 파일에는 두 선택자를 함께 건다
+    files: ["src/modules/**/*.tsx", "src/app/**/*.tsx"], // app/ 의 셸도 화면이다 — 상태는 Home.presenter 가 쥔다
+    ignores: ["src/**/*.presenter.tsx"], // JSX 를 담은 조정자는 화면이 아니다
     rules: {
-      "no-restricted-imports": ["error", { patterns: [...coreInternalPatterns, deepImportPattern] }],
+      "no-restricted-syntax": ["error", VIEW_STATE, VIEWMODEL_SPREAD],
     },
   },
 );

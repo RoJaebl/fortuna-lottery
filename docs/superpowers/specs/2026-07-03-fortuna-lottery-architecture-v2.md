@@ -1,5 +1,7 @@
 # fortuna-lottery 아키텍처 설계 문서 v2 — 데이터 흐름 중심 재설계
 
+> vault 골조로 대체됨(2026-09-29 계획) — [골조 이관 계획](<../plans/2026-09-29-vault-architecture-migration.md>)
+
 - 작성일: 2026-07-03
 - 상태: 확정 (본 문서 기준으로 MVP 구현 진행)
 - 선행 문서: [2026-06-04-fortuna-lottery-design.md](./2026-06-04-fortuna-lottery-design.md) (제품 개요·기능 범위·정직성 원칙은 v1을 그대로 계승한다. 본 문서는 **애플리케이션 아키텍처와 데이터 흐름**을 재설계한 것이다.)

@@ -1,14 +1,19 @@
 {
   "name": "fortuna-lottery",
   "private": true,
-  "packageManager": "pnpm@10.33.0",
+  "packageManager": "pnpm@11.18.0",
   "scripts": {
     "dev": "turbo dev",
-    "build": "turbo build",
-    "test": "turbo test",
-    "lint": "turbo lint"
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "lint:deps": "depcruise apps packages --config .dependency-cruiser.cjs",
+    "check": "pnpm typecheck && pnpm lint && pnpm lint:deps && pnpm test",
+    "check:migration": "bash tools/checks/migration-status.sh"
   },
   "devDependencies": {
+    "dependency-cruiser": "^18.4.0",
     "turbo": "^2.5.0"
   }
 }

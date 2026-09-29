@@ -1,6 +1,6 @@
 "use client";
-// 라우트 = 모듈 조립만 (경계 규칙). 모듈 간 데이터 흐름(현재 조합)과 화면 전환 상태를 여기서 중개한다.
-import { useState, type ReactNode } from "react";
+// 셸 = 조립과 입력 묶음 전개만. 모듈 간 공유 상태는 Home.presenter 가 쥔다.
+import type { ReactNode } from "react";
 import { GeneratorCard } from "@/modules/generator";
 import { IdentityBadge } from "@/modules/identity";
 import { LotterietusCard } from "@/modules/lotterietus";
@@ -8,27 +8,17 @@ import { PicksCard } from "@/modules/picks";
 import { ResultsCard } from "@/modules/results";
 import { SimulationCard } from "@/modules/simulation";
 import { StatisticsPanel } from "@/modules/statistics";
-import { Tabs, type TabItem } from "@/shared/ui/tabs";
-
-type TabKey = "statistics" | "simulation" | "picks" | "results";
-
-/** 각 카드의 기존 title을 탭 라벨로 그대로 사용 (설계 문서 §3) */
-const TABS: readonly TabItem<TabKey>[] = [
-  { key: "statistics", label: "통계" },
-  { key: "simulation", label: "시뮬레이션" },
-  { key: "picks", label: "내 번호" },
-  { key: "results", label: "결과 확인" },
-];
+import { Tabs } from "@/shared/ui/tabs";
+import { useHomePresenter, type HomeTabKey } from "./Home.presenter";
 
 export default function HomePage() {
-  const [currentNumbers, setCurrentNumbers] = useState<number[] | null>(null);
-  const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<TabKey>("statistics");
+  const { isGeneratorOpen, lotterietus, generator, tabs, statistics, simulation, picks } =
+    useHomePresenter();
 
-  const panels: Record<TabKey, ReactNode> = {
-    statistics: <StatisticsPanel myNumbers={currentNumbers} />,
-    simulation: <SimulationCard numbers={currentNumbers} />,
-    picks: <PicksCard currentNumbers={currentNumbers} />,
+  const panels: Record<HomeTabKey, ReactNode> = {
+    statistics: <StatisticsPanel {...statistics} />,
+    simulation: <SimulationCard {...simulation} />,
+    picks: <PicksCard {...picks} />,
     results: <ResultsCard />,
   };
 
@@ -47,23 +37,20 @@ export default function HomePage() {
         <IdentityBadge />
       </header>
 
-      <LotterietusCard
-        generatorOpen={isGeneratorOpen}
-        onToggleGenerator={() => setIsGeneratorOpen((open) => !open)}
-      />
+      <LotterietusCard {...lotterietus} />
 
       {isGeneratorOpen ? (
         <div className="mt-4">
-          <GeneratorCard onGenerated={setCurrentNumbers} />
+          <GeneratorCard {...generator} />
         </div>
       ) : null}
 
       <div className="mt-8">
-        <Tabs items={TABS} active={activeTab} onChange={setActiveTab} label="주요 화면" />
+        <Tabs {...tabs} />
       </div>
 
       <div role="tabpanel" className="mt-4">
-        {panels[activeTab]}
+        {panels[tabs.active]}
       </div>
     </main>
   );

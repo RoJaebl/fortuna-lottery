@@ -1,0 +1,11 @@
+{
+  "//": "위반 표본 전용 — 실제 import 꼴(패키지 이름, @/ 별칭)을 이 표본 폴더 안의 packages/·apps/ 로 푼다",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["apps/web/src/*"],
+      "@fortuna-lottery/contract/*": ["packages/contract/*"],
+      "@fortuna-lottery/kernel": ["packages/kernel/index.ts"]
+    }
+  }
+}

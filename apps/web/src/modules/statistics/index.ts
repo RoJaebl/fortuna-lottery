@@ -1,2 +1,3 @@
-export { StatisticsPanel } from "./view/statistics-panel";
-export type { StatisticsModel } from "./model/statistics.model";
+export { StatisticsPanel } from "./StatisticsPanel";
+export type { StatisticsModel } from "./model/Statistics.model";
+export type { StatisticsViewModel } from "./model/Statistics.viewmodel";

@@ -1,0 +1,45 @@
+{
+  "name": "@fortuna-lottery/contract",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./generator": {
+      "types": "./dist/generator/index.d.ts",
+      "import": "./dist/generator/index.js"
+    },
+    "./lotterietus": {
+      "types": "./dist/lotterietus/index.d.ts",
+      "import": "./dist/lotterietus/index.js"
+    },
+    "./picks": {
+      "types": "./dist/picks/index.d.ts",
+      "import": "./dist/picks/index.js"
+    },
+    "./results": {
+      "types": "./dist/results/index.d.ts",
+      "import": "./dist/results/index.js"
+    },
+    "./simulation": {
+      "types": "./dist/simulation/index.d.ts",
+      "import": "./dist/simulation/index.js"
+    },
+    "./statistics": {
+      "types": "./dist/statistics/index.d.ts",
+      "import": "./dist/statistics/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.1.0"
+  }
+}

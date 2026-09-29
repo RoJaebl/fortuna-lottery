@@ -1,2 +1,3 @@
-export { LotterietusCard } from "./view/lotterietus-card";
-export type { LotterietusModel } from "./model/lotterietus.model";
+export { LotterietusCard } from "./LotterietusCard";
+export type { LotterietusModel } from "./model/Lotterietus.model";
+export type { LotterietusViewModel } from "./model/Lotterietus.viewmodel";

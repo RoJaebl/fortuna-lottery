@@ -1,2 +1,3 @@
-export { SimulationCard } from "./view/simulation-card";
-export type { BacktestModel } from "./model/simulation.model";
+export { SimulationCard } from "./SimulationCard";
+export type { SimulationResultModel } from "./model/SimulationResult.model";
+export type { SimulationResultViewModel } from "./model/SimulationResult.viewmodel";
