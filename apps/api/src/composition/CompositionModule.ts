@@ -1,4 +1,5 @@
 import { Global, Module, type Type } from "@nestjs/common";
+import { CONFIG, loadConfig } from "../config.js";
 import { GeneratorModule } from "../modules/generator/GeneratorModule.js";
 import { IdentityModule } from "../modules/identity/IdentityModule.js";
 import { IdentityFacade } from "../modules/identity/interface/facade/IdentityFacade.js";
@@ -14,9 +15,11 @@ import { PicksModule } from "../modules/picks/PicksModule.js";
 @Module({
   imports: [IdentityModule, GeneratorModule, PicksModule, LotterietusModule],
   providers: [
+    // 설정은 여기서 한 번 읽어 전역으로 내준다 — 모듈이 CONFIG 를 다시 선언하지 않는다
+    { provide: CONFIG, useFactory: loadConfig },
     // picks 가 필요로 하는 「현재 사용자」는 identity 가 준다
     { provide: CURRENT_USER, useExisting: IdentityFacade satisfies Type<CurrentUserPort> },
   ],
-  exports: [CURRENT_USER],
+  exports: [CONFIG, CURRENT_USER],
 })
 export class CompositionModule {}

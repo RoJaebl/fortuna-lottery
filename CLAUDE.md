@@ -160,8 +160,8 @@ ViewModel/Model/DTO/Domain 코드는 한 줄도 바뀌지 않는다 — 단일 �
 ## MVP 현황
 
 데이터 소스는 `PrismaDrawDataAdapter`(PostgreSQL, `docker-compose.yml`로 로컬 기동) — 실제 동행복권
-당첨 데이터가 회차 1부터 빈틈없이 들어 있다. 별도 프로세스인 `apps/worker`가 동행복권 비공식
-엔드포인트를 `IngestDraws` 유스케이스로 주기적으로(매주 추첨 이후) 수집해 채워 넣는다;
+당첨 데이터가 회차 1부터 빈틈없이 들어 있다. `apps/api` 안의 `LotterietusIngestScheduler`가 동행복권 비공식
+엔드포인트를 `IngestDraws` 유스케이스로 주기적으로(매주 추첨 이후) 수집해 채워 넣는다(`SCHEDULER_ENABLED=false`면 끈다);
 `DummyDrawDataAdapter`는 코드로는 남아 있지만(테스트/시드 용도) 앱 컨테이너 기본값에서는 빠졌다.
 픽은 `PickRepositoryPort` 뒤의 `InMemoryPickRepository`(서버 프로세스 메모리, 실제 DB 아님)로
 저장된다 — 이후 Supabase로 교체해도 어댑터만 바뀌고 유스케이스/DTO/FE는 무수정이다. 인증은 아직

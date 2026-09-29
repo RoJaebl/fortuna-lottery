@@ -112,7 +112,6 @@ module.exports = {
     exclude: {
       path:
         '^(packages/core/(src/(lotterietus|picks|results|simulation|statistics)/|vitest)' +
-        '|apps/worker/' +
         '|apps/web/src/(modules/(lotterietus|results|simulation|statistics)/(view|viewmodel|transport|api)/|server/|app/api/))',
     },
     doNotFollow: { path: 'node_modules' },

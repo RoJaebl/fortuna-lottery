@@ -1,6 +1,7 @@
-import type { INestApplication } from "@nestjs/common";
+import { Global, type INestApplication, Module } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { type ApiConfig, CONFIG } from "../../config.js";
 import { configureApp } from "../../configureApp.js";
 import { DummyDrawDataAdapter } from "./domain/adapter/DummyDrawDataAdapter.js";
 import { CLOCK } from "./domain/port/ClockPort.js";
@@ -9,9 +10,17 @@ import { LotterietusFacade } from "./interface/facade/LotterietusFacade.js";
 import { LotterietusModule } from "./LotterietusModule.js";
 
 // 컨트롤러 시험 — interface/api 안에서는 모듈 파일을 import 할 수 없어(api-imports-no-module) 모듈 루트에 둔다.
-// 실제 DB 를 쓰지 않는다 — 회차 데이터는 결정적 더미 어댑터가, 시각은 고정 시계가 준다
+// 실제 DB 를 쓰지 않는다 — 회차 데이터는 결정적 더미 어댑터가, 시각은 고정 시계가 준다.
+// 조립 루트가 전역으로 내줄 CONFIG 는 여기서 가짜를 꽂는다 — 수집 스케줄러는 끈다(원격을 부르지 않는다)
+@Global()
+@Module({
+  providers: [{ provide: CONFIG, useValue: { port: 0, schedulerEnabled: false } satisfies ApiConfig }],
+  exports: [CONFIG],
+})
+class FakeConfigModule {}
+
 async function boot(override?: Partial<LotterietusFacade>): Promise<{ app: INestApplication; base: string }> {
-  let builder = Test.createTestingModule({ imports: [LotterietusModule] })
+  let builder = Test.createTestingModule({ imports: [FakeConfigModule, LotterietusModule] })
     .overrideProvider(DRAW_DATA)
     .useValue(new DummyDrawDataAdapter({ rounds: 3 }))
     .overrideProvider(CLOCK)

@@ -10,15 +10,18 @@ import { DRAW_DATA } from "./domain/port/DrawDataPort.js";
 import { DRAW_SOURCE } from "./domain/port/DrawSourcePort.js";
 import { DRAW_WRITER } from "./domain/port/DrawWriterPort.js";
 import { LotterietusController } from "./interface/api/LotterietusController.js";
+import { LotterietusIngestScheduler } from "./interface/api/LotterietusIngestScheduler.js";
 import { LotterietusFacade } from "./interface/facade/LotterietusFacade.js";
 
 const ingestOptions: IngestDrawsOptions = { logger: (message) => Logger.log(message, "LotterietusIngest") };
 
+// CONFIG 는 여기서 묶지 않는다 — 조립 루트가 전역으로 내준다
 @Module({
   imports: [PrismaModule],
   controllers: [LotterietusController],
   providers: [
     LotterietusFacade,
+    LotterietusIngestScheduler,
     GetLotterietusStatus,
     IngestDraws,
     { provide: DRAW_DATA, useClass: PrismaDrawDataAdapter },

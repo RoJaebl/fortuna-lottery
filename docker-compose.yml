@@ -1,4 +1,4 @@
-# 로컬 개발 전용 Postgres — 앱/워커는 컨테이너 밖에서 pnpm으로 실행한다
+# 로컬 개발 전용 Postgres — 앱(web·api)은 컨테이너 밖에서 pnpm으로 실행한다
 services:
   postgres:
     image: postgres:17-alpine
