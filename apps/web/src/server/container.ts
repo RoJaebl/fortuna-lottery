@@ -7,17 +7,13 @@ import {
 } from "@fortuna-lottery/core/lotterietus/infrastructure";
 import { makeGetStatistics } from "@fortuna-lottery/core/statistics/application";
 import { makeBacktestCombination } from "@fortuna-lottery/core/simulation/application";
-import {
-  makeDeletePick,
-  makeListPicks,
-  makeSavePick,
-} from "@fortuna-lottery/core/picks/application";
 import { createInMemoryPickRepository } from "@fortuna-lottery/core/picks/infrastructure";
 import { makeCheckResults } from "@fortuna-lottery/core/results/application";
 
 function buildContainer() {
   // draws는 워커가 수집해 Postgres에 넣은 실데이터를 읽는다.
-  // picks/identity는 아직 MVP 어댑터 — 후속: SupabasePickRepository / SupabaseIdentityAdapter로 교체
+  // picks 는 apps/api 로 옮겼다. 아직 남은 results 처리기가 옮겨질 때까지 옛 저장소(core/picks 의 남은 파일)를 여기 둔다 —
+  // 저장은 apps/api 가 받으므로 이 저장소는 비어 있다. 후속: results 이관(Task 8)에서 함께 걷는다
   const drawData = createPrismaDrawDataAdapter(createPrismaClient());
   const pickRepository = createInMemoryPickRepository();
 
@@ -27,9 +23,6 @@ function buildContainer() {
     getLotterietusStatus: makeGetLotterietusStatus(drawData),
     getStatistics: makeGetStatistics(drawData),
     backtestCombination: makeBacktestCombination(drawData),
-    savePick: makeSavePick({ repository: pickRepository }),
-    listPicks: makeListPicks(pickRepository),
-    deletePick: makeDeletePick(pickRepository),
     checkResults: makeCheckResults(pickRepository, drawData),
   };
 }

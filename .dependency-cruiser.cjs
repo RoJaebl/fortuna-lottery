@@ -107,11 +107,12 @@ module.exports = {
     // 여기 있는 경로에는 어떤 골조 규칙도 걸리지 않는다.
     // 새 파일을 여기 만들지 않는다 — 규칙 3절.
     // 옮긴 도메인이 빠지면서 packages/core 와 화면 모듈은 남은 도메인을 풀어 쓴다.
+    // core 의 picks 는 저장소 포트·엔티티·인메모리 어댑터 셋만 남았다 — 옛 results 가 results 이관(과업 8)까지 읽는다.
     exclude: {
       path:
         '^(packages/core/(src/(lotterietus|picks|results|simulation|statistics)/|vitest)' +
         '|apps/worker/' +
-        '|apps/web/src/(modules/(lotterietus|picks|results|simulation|statistics)/(view|viewmodel|transport|api)/|server/|app/api/))',
+        '|apps/web/src/(modules/(lotterietus|results|simulation|statistics)/(view|viewmodel|transport|api)/|server/|app/api/))',
     },
     doNotFollow: { path: 'node_modules' },
     tsConfig: { fileName: 'tsconfig.base.json' },
