@@ -18,8 +18,9 @@ describe.each([
   it("46 이 섞인 조합을 거부한다", () => {
     expect(parse([1, 2, 3, 4, 5, 46])).toBe(false);
   });
-  it("중복을 거부한다", () => {
-    expect(parse([1, 1, 2, 3, 4, 5])).toBe(false);
+  it("중복은 모양 검사에서 통과한다", () => {
+    // 중복 금지는 도메인 규칙이라 kernel createCombination 이 지킨다. 와이어 계약은 모양만 본다.
+    expect(parse([1, 1, 2, 3, 4, 5])).toBe(true);
   });
 });
 
@@ -27,6 +28,6 @@ describe("PicksListResponseSchema", () => {
   it("PicksItem 배열이다", () => {
     const one = (numbers: number[]) => ({ id: "a", numbers, createdAt: "2026-01-01T00:00:00Z" });
     expect(PicksListResponseSchema.safeParse([one([1, 2, 3, 4, 5, 6])]).success).toBe(true);
-    expect(PicksListResponseSchema.safeParse([one([1, 1, 2, 3, 4, 5])]).success).toBe(false);
+    expect(PicksListResponseSchema.safeParse([one([1, 2, 3, 4, 5, 46])]).success).toBe(false);
   });
 });
