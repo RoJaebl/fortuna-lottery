@@ -1,7 +1,7 @@
 "use client";
 import { Ball } from "@/shared/ui/ball";
 import { Card } from "@/shared/ui/card";
-import { usePicksViewModel } from "../viewmodel/use-picks.viewmodel";
+import { usePicksCardPresenter } from "./PicksCard.presenter";
 
 interface PicksCardProps {
   /** 현재 생성된 조합 (없으면 저장 버튼 비활성) */
@@ -9,7 +9,7 @@ interface PicksCardProps {
 }
 
 export function PicksCard({ currentNumbers }: PicksCardProps) {
-  const vm = usePicksViewModel();
+  const card = usePicksCardPresenter(currentNumbers);
 
   return (
     <Card
@@ -19,20 +19,20 @@ export function PicksCard({ currentNumbers }: PicksCardProps) {
     >
       <button
         type="button"
-        onClick={() => currentNumbers && vm.save(currentNumbers)}
-        disabled={!currentNumbers || vm.busy}
+        onClick={card.saveCurrent}
+        disabled={card.saveDisabled}
         className="mb-4 rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-40"
       >
-        {vm.busy ? "저장 중…" : currentNumbers ? "현재 번호 저장" : "먼저 번호를 생성하세요"}
+        {card.saveLabel}
       </button>
 
-      {vm.error ? <p className="mb-3 text-sm text-red-600">{vm.error}</p> : null}
+      {card.error ? <p className="mb-3 text-sm text-red-600">{card.error}</p> : null}
 
-      {vm.picks.length === 0 ? (
-        <p className="text-sm text-slate-500">아직 저장한 번호가 없습니다.</p>
-      ) : (
+      {card.empty ? <p className="text-sm text-slate-500">아직 저장한 번호가 없습니다.</p> : null}
+
+      {card.picks.length > 0 ? (
         <ul className="space-y-2.5">
-          {vm.picks.map((pick) => (
+          {card.picks.map((pick) => (
             <li key={pick.id} className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-1">
                 {pick.numbers.map((n) => (
@@ -40,10 +40,10 @@ export function PicksCard({ currentNumbers }: PicksCardProps) {
                 ))}
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[11px] text-slate-500">{vm.formatSavedAt(pick.createdAt)}</span>
+                <span className="text-[11px] text-slate-500">{pick.savedAt}</span>
                 <button
                   type="button"
-                  onClick={() => vm.remove(pick.id)}
+                  onClick={() => card.removePick(pick.id)}
                   className="rounded px-2 py-1 text-xs text-slate-500 transition-colors hover:bg-slate-100 hover:text-red-600"
                   aria-label="삭제"
                 >
@@ -53,7 +53,7 @@ export function PicksCard({ currentNumbers }: PicksCardProps) {
             </li>
           ))}
         </ul>
-      )}
+      ) : null}
     </Card>
   );
 }
