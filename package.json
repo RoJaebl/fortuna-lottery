@@ -7,9 +7,13 @@
     "build": "turbo run build",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
-    "lint": "turbo run lint"
+    "lint": "turbo run lint",
+    "lint:deps": "depcruise apps packages --config .dependency-cruiser.cjs",
+    "check": "pnpm typecheck && pnpm lint && pnpm lint:deps && pnpm test",
+    "check:migration": "bash tools/checks/migration-status.sh"
   },
   "devDependencies": {
+    "dependency-cruiser": "^18.4.0",
     "turbo": "^2.5.0"
   }
 }
