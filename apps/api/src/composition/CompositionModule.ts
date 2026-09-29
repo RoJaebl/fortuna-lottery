@@ -1,4 +1,5 @@
 import { Global, Module } from "@nestjs/common";
+import { GeneratorModule } from "../modules/generator/GeneratorModule.js";
 import { IdentityModule } from "../modules/identity/IdentityModule.js";
 
 /**
@@ -6,5 +7,5 @@ import { IdentityModule } from "../modules/identity/IdentityModule.js";
  * 모듈 등록도 여기서 한다 — app.module 은 조립 루트만 import 한다.
  */
 @Global()
-@Module({ imports: [IdentityModule] })
+@Module({ imports: [IdentityModule, GeneratorModule] })
 export class CompositionModule {}

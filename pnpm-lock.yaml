@@ -17,6 +17,12 @@ importers:
 
   apps/api:
     dependencies:
+      '@fortuna-lottery/contract':
+        specifier: workspace:*
+        version: link:../../packages/contract
+      '@fortuna-lottery/kernel':
+        specifier: workspace:*
+        version: link:../../packages/kernel
       '@nestjs/common':
         specifier: ^12.1.0
         version: 12.1.0(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0)
@@ -35,6 +41,9 @@ importers:
       rxjs:
         specifier: ^7.8.2
         version: 7.8.2
+      zod:
+        specifier: ^4.6.5
+        version: 4.6.5
     devDependencies:
       '@nestjs/cli':
         specifier: ^12.0.7

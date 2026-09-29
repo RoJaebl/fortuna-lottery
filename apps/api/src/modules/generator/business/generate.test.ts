@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { mulberry32 } from "@fortuna-lottery/kernel";
-import { generate } from "./generate";
+import { generate } from "./generate.js";
 
 describe("generate (조합 생성)", () => {
   it("자동 — 유효한 6개 조합을 만든다 (결정적 시드)", () => {
