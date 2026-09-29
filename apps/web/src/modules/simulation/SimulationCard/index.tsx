@@ -1,13 +1,13 @@
 "use client";
 import { Card } from "@/shared/ui/card";
-import { useSimulationViewModel } from "../viewmodel/use-simulation.viewmodel";
+import { useSimulationCardPresenter } from "./SimulationCard.presenter";
 
 interface SimulationCardProps {
   numbers: number[] | null;
 }
 
 export function SimulationCard({ numbers }: SimulationCardProps) {
-  const vm = useSimulationViewModel(numbers);
+  const card = useSimulationCardPresenter(numbers);
 
   return (
     <Card
@@ -17,21 +17,21 @@ export function SimulationCard({ numbers }: SimulationCardProps) {
     >
       <button
         type="button"
-        onClick={vm.run}
-        disabled={!numbers || vm.busy}
+        onClick={card.run}
+        disabled={card.runDisabled}
         className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-40"
       >
-        {vm.busy ? "확인 중…" : numbers ? "과거 전 회차 대입" : "먼저 번호를 생성하세요"}
+        {card.runLabel}
       </button>
 
-      {vm.error ? <p className="mt-3 text-sm text-red-600">{vm.error}</p> : null}
+      {card.error ? <p className="mt-3 text-sm text-red-600">{card.error}</p> : null}
 
-      {vm.result ? (
+      {card.result ? (
         <div className="mt-4 space-y-3">
-          <p className="text-sm text-slate-700">{vm.summaryLine(vm.result)}</p>
-          {vm.summarizeRanks(vm.result).length > 0 ? (
+          <p className="text-sm text-slate-700">{card.result.summaryLine}</p>
+          {card.result.summarizeRanks.length > 0 ? (
             <ul className="flex flex-wrap gap-2">
-              {vm.summarizeRanks(vm.result).map(({ rank, label, count }) => (
+              {card.result.summarizeRanks.map(({ rank, label, count }) => (
                 <li
                   key={rank}
                   className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${
