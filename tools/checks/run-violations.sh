@@ -25,6 +25,21 @@ for dir in "$ROOT"/tools/checks/violations/*/; do
   fi
 done
 
+# 허용 표본 — 합법 import 를 규칙이 잘못 막지 않는지 확인한다. 어느 규칙에도 위반이 하나도 없어야 한다.
+for dir in "$ROOT"/tools/checks/allowed/*/; do
+  name="$(basename "$dir")"
+  tsconfig="$ROOT/tsconfig.base.json"
+  [[ -f "$dir/tsconfig.json" ]] && tsconfig="$dir/tsconfig.json"
+  out="$(cd "$dir" && node "$BIN" --config "$ROOT/tools/checks/violations-config.cjs" --ts-config "$tsconfig" . 2>&1)"
+  if grep -q "error " <<<"$out"; then
+    echo "FAIL $name — 허용 표본이 규칙에 걸렸다"
+    grep "error " <<<"$out" | sed 's/^/       /'
+    bad=1
+  else
+    echo "OK   $name (allowed)"
+  fi
+done
+
 # ESLint 모양 규칙 표본 — 규칙 이름이 no-restricted-* 로 겹치므로 메시지 조각으로 어느 규칙인지 가린다.
 # 표본 안의 apps/web 을 작업 디렉터리로 삼는다(-c 로 준 설정의 글롭은 작업 디렉터리 기준이다).
 ESLINT="$ROOT/apps/web/node_modules/eslint/bin/eslint.js"

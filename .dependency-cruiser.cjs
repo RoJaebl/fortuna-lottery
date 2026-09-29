@@ -28,7 +28,7 @@ module.exports = {
       comment: '화면 모듈 간 소통은 배럴로만 한다',
       severity: 'error',
       from: { path: '^apps/web/src/modules/([^/]+)/' },
-      to:   { path: '^apps/web/src/modules/([^/]+)/.+', pathNot: '^apps/web/src/modules/$1/' },
+      to:   { path: '^apps/web/src/modules/([^/]+)/.+', pathNot: ['^apps/web/src/modules/$1/', '^apps/web/src/modules/[^/]+/index\\.tsx?$'] },
     },
     {
       name: 'mapper-only-from-action',

@@ -161,6 +161,10 @@ tools/checks/        이관 상태 스크립트와 규칙마다 하나씩 둔 �
 - **변환기 파일 이름은 `<유스케이스>.mapper.ts` 다.** 예: `generateCombination.mapper.ts`.
   [frontend-module-layout §10 파일 이름 — 역할을 점 접미로 적는다](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend-module-layout.md#10-파일-이름--역할을-점-접미로-적는다>)를
   따른다.
+- **`no-deep-module-import` 는 다른 모듈의 배럴(`modules/<다른>/index.ts(x)`)을 허용한다.**
+  [frontend-module-layout §8 공개 표면 — 배럴이 내보내는 것](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend-module-layout.md>)이
+  모듈 간 소통을 배럴로만 하라고 하므로 배럴 import 는 합법이다. boundary-enforcement §3 의 설정 문구는
+  `.+` 가 배럴까지 잡아 이와 어긋난다 — vault 에 보고할 것. `tools/checks/allowed/` 표본이 이를 지킨다.
 - **`Entity` 부류는 없다.** 픽은 `picks/domain/model/Pick.model.ts` 의 도메인 원형이다.
 - **도구 판본.** `packageManager` 는 `pnpm@11.18.0` 이고, 설치 때 빌드 스크립트를 허용할 패키지(prisma,
   엔진, esbuild, sharp)를 `pnpm-workspace.yaml` 의 `allowBuilds` 에 둔다. NestJS 는 12 이고, `apps/api` 는
