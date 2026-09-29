@@ -1,7 +1,8 @@
 import type { INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { AppModule, GLOBAL_PREFIX } from "./app.module.js";
+import { AppModule } from "./app.module.js";
+import { configureApp } from "./configureApp.js";
 
 describe("AppModule", () => {
   let app: INestApplication;
@@ -9,8 +10,7 @@ describe("AppModule", () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
-    app = moduleRef.createNestApplication();
-    app.setGlobalPrefix(GLOBAL_PREFIX);
+    app = configureApp(moduleRef.createNestApplication());
     await app.listen(0);
     const { port } = app.getHttpServer().address() as { port: number };
     base = `http://127.0.0.1:${port}`;

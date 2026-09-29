@@ -1,8 +1,8 @@
 import { NestFactory } from "@nestjs/core";
-import { AppModule, GLOBAL_PREFIX } from "./app.module.js";
+import { AppModule } from "./app.module.js";
 import { loadConfig } from "./config.js";
+import { configureApp } from "./configureApp.js";
 
-const app = await NestFactory.create(AppModule);
-app.setGlobalPrefix(GLOBAL_PREFIX);
+const app = configureApp(await NestFactory.create(AppModule));
 app.enableShutdownHooks();
 await app.listen(loadConfig().port);
