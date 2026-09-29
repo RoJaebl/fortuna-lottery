@@ -8,6 +8,11 @@ import { LotterietusModule } from "../modules/lotterietus/LotterietusModule.js";
 import { CURRENT_USER, type CurrentUserPort } from "../modules/picks/domain/port/CurrentUserPort.js";
 import { PicksModule } from "../modules/picks/PicksModule.js";
 import {
+  DRAW_HISTORY as SIMULATION_DRAW_HISTORY,
+  type DrawHistoryPort as SimulationDrawHistoryPort,
+} from "../modules/simulation/domain/port/DrawHistoryPort.js";
+import { SimulationModule } from "../modules/simulation/SimulationModule.js";
+import {
   DRAW_HISTORY as STATISTICS_DRAW_HISTORY,
   type DrawHistoryPort as StatisticsDrawHistoryPort,
 } from "../modules/statistics/domain/port/DrawHistoryPort.js";
@@ -19,15 +24,16 @@ import { StatisticsModule } from "../modules/statistics/StatisticsModule.js";
  */
 @Global()
 @Module({
-  imports: [IdentityModule, GeneratorModule, PicksModule, LotterietusModule, StatisticsModule],
+  imports: [IdentityModule, GeneratorModule, PicksModule, LotterietusModule, StatisticsModule, SimulationModule],
   providers: [
     // 설정은 여기서 한 번 읽어 전역으로 내준다 — 모듈이 CONFIG 를 다시 선언하지 않는다
     { provide: CONFIG, useFactory: loadConfig },
     // picks 가 필요로 하는 「현재 사용자」는 identity 가 준다
     { provide: CURRENT_USER, useExisting: IdentityFacade satisfies Type<CurrentUserPort> },
-    // statistics 가 필요로 하는 과거 회차는 lotterietus 가 준다
+    // statistics 와 simulation 이 필요로 하는 과거 회차는 lotterietus 가 준다 — 포트는 모듈마다 따로다
     { provide: STATISTICS_DRAW_HISTORY, useExisting: LotterietusFacade satisfies Type<StatisticsDrawHistoryPort> },
+    { provide: SIMULATION_DRAW_HISTORY, useExisting: LotterietusFacade satisfies Type<SimulationDrawHistoryPort> },
   ],
-  exports: [CONFIG, CURRENT_USER, STATISTICS_DRAW_HISTORY],
+  exports: [CONFIG, CURRENT_USER, STATISTICS_DRAW_HISTORY, SIMULATION_DRAW_HISTORY],
 })
 export class CompositionModule {}
