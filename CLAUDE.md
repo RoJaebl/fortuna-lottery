@@ -49,6 +49,7 @@ PARA/MOC 규칙과는 무관하다.
 ```bash
 pnpm install                 # apps/api 의 postinstall 이 prisma generate 를 돈다
 docker compose up -d         # 로컬 Postgres (docker-compose.yml)
+pnpm --filter @fortuna-lottery/api db:migrate   # prisma migrate dev — draws 테이블을 만든다
 pnpm dev                     # turbo dev — apps/web(next dev, :3000)과 apps/api(nest --watch, :4000)를 함께 띄운다
 pnpm check                   # typecheck → lint → lint:deps → test. 과업 끝의 검증 명령이다
 pnpm lint:deps               # dependency-cruiser 로 의존 방향·층 경계를 검사한다
@@ -56,10 +57,13 @@ pnpm check:migration         # 골조 이관 상태를 낸다. 지금은 「옛 
 pnpm build                   # turbo build
 ```
 
-`apps/api` 는 `apps/api/.env` 에서 `DATABASE_URL` 과 `SCHEDULER_ENABLED` 를 읽는다. 값의 모양은
-루트의 `.env.example` 에 있다. `SCHEDULER_ENABLED` 의 기본값은 켜짐이라, `apps/api` 를 띄우면 회차 수집
-스케줄러가 동행복권 원격을 부른다. 원격을 부르지 않고 띄우려면 `SCHEDULER_ENABLED=false` 로 둔다.
-`apps/web` 은 `API_ORIGIN`(기본값 `http://localhost:4000`)으로 `apps/api` 의 주소를 받는다.
+`apps/api` 는 기동할 때 `apps/api/.env` 를 스스로 싣고(`main.ts` 의 `loadEnvFile`, 이미 있는 환경 변수가
+이긴다) 거기서 `DATABASE_URL` 과 `SCHEDULER_ENABLED` 를 읽는다. 값의 모양은 루트의 `.env.example` 에 있다.
+`SCHEDULER_ENABLED` 를 적지 않으면 회차 수집 스케줄러는 `dev` 스크립트(watch 로 자주 재시작한다)에서
+꺼지고 `start` 에서 켜져 동행복권 원격을 부른다. 적으면 그 값이 이긴다 — `dev` 에서 수집하려면 `true`,
+`start` 에서 끄려면 `false`.
+`apps/web` 은 `API_ORIGIN`(기본값 `http://localhost:4000`)으로 `apps/api` 의 주소를 받는다. 이 값은
+`next build` 때 굳는다 — `rewrites` 가 빌드 때 평가되므로, 바꾸려면 그 값으로 다시 빌드한다.
 
 특정 패키지만 빠르게 돌릴 때는 turbo 를 거치지 않는다.
 

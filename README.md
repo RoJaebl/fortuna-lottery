@@ -29,7 +29,12 @@ packages/kernel/     로또 순수 커널 — apps/api 만 참조한다
 ```bash
 pnpm install
 docker compose up -d   # 로컬 Postgres — apps/api/.env 는 .env.example 을 본뜬다
-pnpm dev               # apps/web 과 apps/api 를 함께 띄운다
+pnpm --filter @fortuna-lottery/api db:migrate   # draws 테이블을 만든다 (prisma migrate dev)
+pnpm dev               # apps/web 과 apps/api 를 함께 띄운다 — 회차 수집 스케줄러는 꺼진 채로
 pnpm check             # 타입 검사 · lint · 의존 규칙 · 시험
 pnpm build             # 프로덕션 빌드
 ```
+
+- `apps/api` 는 기동할 때 `apps/api/.env` 를 스스로 싣는다(이미 있는 환경 변수가 이긴다).
+- 회차 수집 스케줄러는 `SCHEDULER_ENABLED` 를 적지 않으면 `dev` 에서 꺼지고 `start` 에서 켜진다. 적으면 그 값이 이긴다.
+- `apps/web` 이 `apps/api` 로 넘기는 주소 `API_ORIGIN`(기본값 `http://localhost:4000`)은 `next build` 때 굳는다 — `rewrites` 가 빌드 때 평가되기 때문이다. 바꾸려면 그 값으로 다시 빌드한다.
