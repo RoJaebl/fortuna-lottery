@@ -53,6 +53,43 @@ describe("createServerCache", () => {
     expect(cache.read(1)?.value).toBe("새 값");
   });
 
+  it("invalidate 로 다시 받는 동안에는 앞선 값을 그대로 보인다", async () => {
+    let resolveSecond!: (v: string) => void;
+    const load = vi
+      .fn<(q: number) => Promise<string>>()
+      .mockImplementationOnce(async () => "앞선 값")
+      .mockImplementationOnce(() => new Promise((r) => (resolveSecond = r)));
+    const cache = createServerCache((q: number) => String(q), load);
+    cache.subscribe(1, () => {});
+    cache.ensure(1);
+    await flush();
+
+    cache.invalidate();
+
+    expect(cache.read(1)).toEqual({ status: "loading", value: "앞선 값", error: null });
+    resolveSecond("새 값");
+    await flush();
+    expect(cache.read(1)).toEqual({ status: "ready", value: "새 값", error: null });
+  });
+
+  it("invalidate 로 다시 받기에 실패하면 앞선 값을 지키고 오류를 알린다", async () => {
+    const load = vi
+      .fn<(q: number) => Promise<string>>()
+      .mockImplementationOnce(async () => "앞선 값")
+      .mockImplementationOnce(async () => {
+        throw new Error("실패");
+      });
+    const cache = createServerCache((q: number) => String(q), load);
+    cache.subscribe(1, () => {});
+    cache.ensure(1);
+    await flush();
+
+    cache.invalidate();
+    await flush();
+
+    expect(cache.read(1)).toEqual({ status: "error", value: "앞선 값", error: "실패" });
+  });
+
   it("보는 화면이 없어지면 쥔 값을 놓는다", async () => {
     const cache = createServerCache((q: number) => String(q), async (q: number) => q);
     const off = cache.subscribe(1, () => {});
