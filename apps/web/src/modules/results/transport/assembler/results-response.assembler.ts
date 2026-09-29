@@ -1,7 +1,7 @@
-import type { ResultsResponse } from "@fortuna-lottery/core/results/dto";
+import type { ResultsCheckResponse } from "@fortuna-lottery/contract/results";
 import type { ResultsModel } from "../../model/results.model";
 
-export function assembleResults(dto: ResultsResponse): ResultsModel {
+export function assembleResults(dto: ResultsCheckResponse): ResultsModel {
   return {
     draw: dto.draw
       ? { round: dto.draw.round, numbers: [...dto.draw.numbers], bonus: dto.draw.bonus }

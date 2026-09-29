@@ -2,12 +2,12 @@ import type { Result } from "../../../shared/result";
 import { ok } from "../../../shared/result";
 import type { RandomPort } from "../../../shared/rng";
 import { generate } from "../../domain/generate";
-import type { GenerateRequest, GenerateResponse } from "../../dto/generator.dto";
+import type { GeneratorGenerateRequest, GeneratorGenerateResponse } from "@fortuna-lottery/contract/generator";
 
 /** 조합 생성 유스케이스 — 난수 포트 주입 (프로덕션: Math.random / 테스트: 시드 고정) */
 export const makeGenerateCombination =
   (random: RandomPort) =>
-  (request: GenerateRequest): Result<GenerateResponse> => {
+  (request: GeneratorGenerateRequest): Result<GeneratorGenerateResponse> => {
     const result = generate(random, request.fixedNumbers ?? [], request.excludedNumbers ?? []);
     if (!result.ok) return result;
     return ok({ numbers: [...result.value] });

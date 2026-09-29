@@ -1,5 +1,5 @@
-import type { SimulationRequest } from "@fortuna-lottery/core/simulation/dto";
+import type { SimulationBacktestRequest } from "@fortuna-lottery/contract/simulation";
 
-export function mapSimulationRequest(numbers: number[]): SimulationRequest {
+export function mapSimulationRequest(numbers: number[]): SimulationBacktestRequest {
   return { numbers: [...numbers] };
 }

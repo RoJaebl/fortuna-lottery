@@ -1,8 +1,8 @@
-import type { StatisticsResponse } from "@fortuna-lottery/core/statistics/dto";
+import type { StatisticsGetResponse } from "@fortuna-lottery/contract/statistics";
 import type { StatisticsModel } from "../../model/statistics.model";
 
 /** 응답 DTO → FE 모델 (와이어 이음새) */
-export function assembleStatistics(dto: StatisticsResponse): StatisticsModel {
+export function assembleStatistics(dto: StatisticsGetResponse): StatisticsModel {
   return {
     totalDraws: dto.totalDraws,
     latestRound: dto.latestRound,

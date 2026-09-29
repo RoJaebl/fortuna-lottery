@@ -2,7 +2,7 @@ import { createCombination } from "../../../shared/combination";
 import { scoreAgainstDraw } from "../../../shared/scoring";
 import type { DrawDataPort } from "../../../lotterietus/application/ports/draw-data.port";
 import type { PickRepositoryPort } from "../../../picks/application/ports/pick-repository.port";
-import type { ResultsResponse } from "../../dto/results.dto";
+import type { ResultsCheckResponse } from "@fortuna-lottery/contract/results";
 
 /**
  * 당첨 대조 유스케이스 — 저장된 픽을 최신 회차와 대조해 채점한다.
@@ -10,7 +10,7 @@ import type { ResultsResponse } from "../../dto/results.dto";
  */
 export const makeCheckResults =
   (pickRepository: PickRepositoryPort, drawData: DrawDataPort) =>
-  async (userId: string): Promise<ResultsResponse> => {
+  async (userId: string): Promise<ResultsCheckResponse> => {
     const [picks, draws] = await Promise.all([
       pickRepository.findAllByUser(userId),
       drawData.getAllDraws(),

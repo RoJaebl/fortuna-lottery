@@ -1,4 +1,4 @@
-import type { LotterietusStatusResponse } from "@fortuna-lottery/core/lotterietus/dto";
+import type { LotterietusStatusResponse } from "@fortuna-lottery/contract/lotterietus";
 import type { LotterietusModel } from "../../model/lotterietus.model";
 
 /** 응답 DTO → FE 모델 (와이어 이음새) */

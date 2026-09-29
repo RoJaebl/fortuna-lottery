@@ -1,7 +1,7 @@
-import type { SimulationResponse } from "@fortuna-lottery/core/simulation/dto";
+import type { SimulationBacktestResponse } from "@fortuna-lottery/contract/simulation";
 import type { BacktestModel } from "../../model/simulation.model";
 
-export function assembleBacktest(dto: SimulationResponse): BacktestModel {
+export function assembleBacktest(dto: SimulationBacktestResponse): BacktestModel {
   return {
     totalDraws: dto.totalDraws,
     rankCounts: [...dto.rankCounts],

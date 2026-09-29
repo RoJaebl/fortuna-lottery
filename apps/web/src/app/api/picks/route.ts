@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import type { SavePickRequest } from "@fortuna-lottery/core/picks/dto";
+import type { PicksSaveRequest } from "@fortuna-lottery/contract/picks";
 import { container } from "@/server/container";
 
 export async function GET() {
@@ -10,9 +10,9 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   const user = await container.identity.getCurrentUser();
-  let body: SavePickRequest;
+  let body: PicksSaveRequest;
   try {
-    body = (await request.json()) as SavePickRequest;
+    body = (await request.json()) as PicksSaveRequest;
   } catch {
     return NextResponse.json({ error: "잘못된 요청 형식입니다" }, { status: 400 });
   }

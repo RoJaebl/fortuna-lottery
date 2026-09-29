@@ -9,7 +9,7 @@ import {
   topPairs,
   zoneCounts,
 } from "../../domain/calculations";
-import type { StatisticsResponse } from "../../dto/statistics.dto";
+import type { StatisticsGetResponse } from "@fortuna-lottery/contract/statistics";
 
 const GRID_ROUNDS = 52; // 잔디밭: 최근 1년치
 const TOP_PAIRS = 15;
@@ -19,7 +19,7 @@ const TOP_PAIRS = 15;
  * 주 1회 갱신 데이터이므로 호출측에서 캐시(ISR 등) 가능.
  */
 export const makeGetStatistics =
-  (drawData: DrawDataPort) => async (): Promise<StatisticsResponse> => {
+  (drawData: DrawDataPort) => async (): Promise<StatisticsGetResponse> => {
     const draws = await drawData.getAllDraws();
     const latest = draws[draws.length - 1];
     return {

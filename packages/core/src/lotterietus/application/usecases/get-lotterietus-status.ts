@@ -1,5 +1,5 @@
 import { nextDrawAt } from "../../domain/schedule";
-import type { LotterietusStatusResponse } from "../../dto/lotterietus.dto";
+import type { LotterietusStatusResponse } from "@fortuna-lottery/contract/lotterietus";
 import type { DrawDataPort } from "../ports/draw-data.port";
 
 /** 로또 현황 유스케이스 — 최근 회차 + 다음 추첨 정보를 getAllDraws 한 번으로 계산한다 */

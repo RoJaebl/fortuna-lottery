@@ -1,6 +1,6 @@
 import { ok, type Result } from "../../../shared/result";
 import type { PickEntity } from "../../domain/pick.entity";
-import type { PickResponse, SavePickRequest } from "../../dto/pick.dto";
+import type { PicksItem, PicksSaveRequest } from "@fortuna-lottery/contract/picks";
 import type { PickRepositoryPort } from "../ports/pick-repository.port";
 import { createPickVO } from "../vo/pick.vo";
 
@@ -17,7 +17,7 @@ const defaultIdGenerator = () =>
 /** 픽 저장 유스케이스 — VO 검증 → Entity 저장 → 응답 DTO */
 export const makeSavePick =
   ({ repository, idGenerator = defaultIdGenerator, clock = () => new Date() }: SavePickDeps) =>
-  async (userId: string, request: SavePickRequest): Promise<Result<PickResponse>> => {
+  async (userId: string, request: PicksSaveRequest): Promise<Result<PicksItem>> => {
     const vo = createPickVO(userId, request.numbers);
     if (!vo.ok) return vo;
 

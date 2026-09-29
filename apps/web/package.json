@@ -6,9 +6,11 @@
     "build": "next build",
     "start": "next start",
     "test": "vitest run",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@fortuna-lottery/contract": "workspace:*",
     "@fortuna-lottery/core": "workspace:*",
     "next": "^15.3.4",
     "react": "^19.1.0",
