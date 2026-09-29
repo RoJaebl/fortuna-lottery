@@ -104,14 +104,8 @@ module.exports = {
     },
   ],
   options: {
-    // 골조 이관 전 구역. 이 목록이 짧아지는 것이 진행이다.
-    // 여기 있는 경로에는 어떤 골조 규칙도 걸리지 않는다.
-    // 새 파일을 여기 만들지 않는다 — 규칙 3절.
-    // 도메인은 다 옮겼다 — packages/core·apps/web/src/server·Next 경로 처리기는 지워졌다.
-    // 남은 것은 상태를 쥔 옛 셸(app/page.tsx) 하나다. 셸을 옮기는 과업 9 에서 이 옵션을 지운다.
-    exclude: {
-      path: '^apps/web/src/app/page\\.tsx$',
-    },
+    // 골조 이관 전 구역(exclude)은 비었다 — 도메인을 다 옮기고 packages/core·apps/web/src/server·Next 경로 처리기를 지웠다.
+    // 이제 모든 파일에 골조 규칙이 걸린다. 옛 구역을 다시 만들지 않는다 — incremental-migration 규칙 3절.
     doNotFollow: { path: 'node_modules' },
     tsConfig: { fileName: 'tsconfig.base.json' },
     tsPreCompilationDeps: true,

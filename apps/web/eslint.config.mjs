@@ -2,9 +2,7 @@
 // 여기에는 코드 모양 규칙만 둔다 (boundary-enforcement §4, fractal-view-promotion §7).
 import tseslint from "typescript-eslint";
 
-// 골조 이관 전 구역 — .dependency-cruiser.cjs 의 options.exclude 가운데 apps/web 몫과 같은 경로여야 한다.
-// 그쪽 정규식에서 도메인이 빠질 때마다 여기서도 함께 뺀다. 이 목록도 줄기만 한다.
-export const OLD_ZONE = ["src/app/page.tsx"];
+// 골조 이관 전 구역(옛 OLD_ZONE ignores)은 비어 지웠다 — .dependency-cruiser.cjs 의 exclude 와 함께 없어졌다.
 
 const VIEW_STATE = {
   selector: "CallExpression[callee.name=/^use(State|Reducer|Effect)$/]",
@@ -22,9 +20,6 @@ const VIEWMODEL_SPREAD = {
 export default tseslint.config(
   {
     ignores: [".next/**", "node_modules/**", "next-env.d.ts"],
-  },
-  {
-    ignores: OLD_ZONE,
   },
   {
     files: ["src/**/*.{ts,tsx}"],
