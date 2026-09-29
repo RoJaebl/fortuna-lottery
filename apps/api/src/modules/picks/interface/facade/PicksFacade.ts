@@ -25,7 +25,12 @@ export class PicksFacade {
 
   async list(): Promise<PicksListResponse> {
     const { id } = await this.user.currentUser();
-    return (await this.listPicks.execute(id)).map(toItem);
+    return this.listByUser(id);
+  }
+
+  /** 사용자 한 사람의 픽 전부(최신 저장순) — 조립 루트가 results 의 PICK_SOURCE 에 꽂는다 */
+  async listByUser(userId: string): Promise<PicksListResponse> {
+    return (await this.listPicks.execute(userId)).map(toItem);
   }
 
   async save(request: PicksSaveRequest): Promise<PicksItem> {
