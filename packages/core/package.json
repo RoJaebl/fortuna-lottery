@@ -8,12 +8,14 @@
     "./*/application": "./src/*/application/index.ts",
     "./*/infrastructure": "./src/*/infrastructure/index.ts"
   },
+  "prisma": {
+    "schema": "../../apps/api/prisma/schema.prisma"
+  },
   "scripts": {
     "postinstall": "prisma generate",
     "test": "vitest run",
     "lint": "tsc --noEmit",
     "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {

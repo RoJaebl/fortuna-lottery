@@ -20,4 +20,24 @@ for dir in "$ROOT"/tools/checks/violations/*/; do
   fi
 done
 
+# ESLint 모양 규칙 표본 — 규칙 이름이 no-restricted-* 로 겹치므로 메시지 조각으로 어느 규칙인지 가린다.
+# 표본 안의 apps/web 을 작업 디렉터리로 삼는다(-c 로 준 설정의 글롭은 작업 디렉터리 기준이다).
+ESLINT="$ROOT/apps/web/node_modules/eslint/bin/eslint.js"
+declare -A EXPECT=(
+  [view-with-state]='화면은 상태를 갖지 않는다'
+  [viewmodel-spread]='표시 모델을 얕은 전개로 복제하면'
+  [view-folder-public-surface]='뷰 폴더 밖에서는 그 폴더의 index 만'
+)
+for dir in "$ROOT"/tools/checks/eslint-violations/*/; do
+  rule="$(basename "$dir")"
+  out="$(cd "$dir/apps/web" && node "$ESLINT" -c "$ROOT/tools/checks/eslint-violations.config.mjs" src 2>&1)"
+  if [[ -n "${EXPECT[$rule]:-}" ]] && grep -q "${EXPECT[$rule]}" <<<"$out"; then
+    echo "OK   $rule (eslint)"
+    grep "error" <<<"$out" | sed 's/^/       /'
+  else
+    echo "FAIL $rule (eslint) — 표본이 이 규칙에 걸리지 않았다"
+    bad=1
+  fi
+done
+
 exit $bad
