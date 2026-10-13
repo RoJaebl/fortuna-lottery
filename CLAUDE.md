@@ -158,6 +158,17 @@ tools/launch/        런처 — pnpm dev·pnpm start 가 부르고 포트를 고
 - **수집 스케줄러는 `lotterietus/interface/schedule/LotterietusIngestScheduler.ts` 다.** 옛 워커처럼 「다음 추첨 +
   10분, 실패하면 5분 뒤」로 `setTimeout` 을 걸고, 종료 때 타이머를 지운다. 고정 cron 으로는 이 동작을
   옮길 수 없어 `@nestjs/schedule` 을 쓰지 않는다. 설정(`CONFIG`)의 `schedulerEnabled` 로 켠다.
+- **컨트롤러는 `apps/api/src/infrastructure/http/parseRequest` 를 쓴다.** 계약 스키마로 요청 모양을 검사하는
+  공용 도구다. backend-module-layout §2 표는 `interface/api` 가 `infrastructure/` 를 보게 하지 않지만 이 저장소는
+  보게 한다(의도한 이탈).
+- **스케줄러는 `interface/schedule/` 에 두고 `CONFIG` 를 직접 읽는다.** 골조에 HTTP 가 아닌 들어오는 자리의 폴더가
+  없어 정했다. 의존 규칙은 `interface/api` 와 같다(`api-imports-no-module`). 골조는 설정을 `interface/facade/` 만
+  보게 하지만 스케줄러도 본다.
+- **`business-must-not-reach-adapter` 는 이 저장소가 더한 규칙이다.** `business/`·`context/` 는 `domain/adapter` 를
+  가져오지 못한다. 시험 파일도 예외가 아니다 — `picks` 의 `business/` 시험은 시험 안의 가짜 저장소를 쓴다.
+- **`pnpm start` 의 운영자 포트는 고정이다.** `FORTUNA_WEB_PORT`·`FORTUNA_API_PORT` 가 쥐여 있으면 실패한다
+  (launcher-ports 의 「피해 간다」에서 의도해 벗어난 자리).
+- **vault 골조 문서에 올릴 어긋남은 [보고 문서](<docs/superpowers/reports/2026-10-13-vault-feedback.md>)에 모았다.**
 - **모듈 시험은 모듈 뿌리에 둔다.** `modules/<도메인>/<도메인>Module.test.ts` 가 그 모듈 하나를 띄우고
   `configureApp` 으로 실제 접두를 건 뒤 HTTP 로 부른다. 유스케이스 시험은 `business/` 의 파일 옆에 둔다.
 - **셸의 조정자는 `apps/web/src/app/Home.presenter.ts` 다.** 모듈 사이에 오가는 상태 셋(현재 조합,
