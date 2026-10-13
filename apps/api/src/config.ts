@@ -1,6 +1,8 @@
 /** 환경 변수를 읽는 유일한 자리 (backend-module-layout 규칙 1절) */
 export interface ApiConfig {
   port: number;
+  /** 받은 포트를 옮기지 않는다 — 띄우는 프로그램이 FORTUNA_STRICT_PORT=1 로 넘긴다 */
+  strictPort: boolean;
   /** 회차 수집 스케줄러를 돌리는가 — 시험과 두 번째 인스턴스는 SCHEDULER_ENABLED=false 로 끈다 */
   schedulerEnabled: boolean;
 }
@@ -21,11 +23,14 @@ export function loadEnvFile(): void {
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): ApiConfig {
-  // 스케줄러 기본값: `dev` 스크립트(watch 로 자주 재시작한다)에서는 꺼짐, 그 밖(`start`)에서는 켜짐.
-  // SCHEDULER_ENABLED 를 적으면 그 값이 이긴다. pnpm 이 돌리는 스크립트 이름을 npm_lifecycle_event 로 알려 준다.
-  const schedulerDefault = env.npm_lifecycle_event === "dev" ? "false" : "true";
+  // 스케줄러 기본값: FORTUNA_MODE(띄우는 프로그램이 넘긴다)가 "dev" 이면 꺼짐, "start" 이면 켜짐.
+  // 없으면 pnpm 이 알려 주는 npm_lifecycle_event 로 `dev` 스크립트(watch 로 자주 재시작한다)에서는 꺼짐, 그 밖에서는 켜짐.
+  // SCHEDULER_ENABLED 를 적으면 그 값이 이긴다.
+  const isDev = env.FORTUNA_MODE === undefined ? env.npm_lifecycle_event === "dev" : env.FORTUNA_MODE === "dev";
+  const schedulerDefault = isDev ? "false" : "true";
   return {
     port: Number(env.PORT ?? 4000),
+    strictPort: env.FORTUNA_STRICT_PORT === "1",
     schedulerEnabled: (env.SCHEDULER_ENABLED ?? schedulerDefault) !== "false",
   };
 }

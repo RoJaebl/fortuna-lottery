@@ -15,7 +15,7 @@ const UNTIL_NEXT_DRAW_PLUS_BUFFER = new Date("2026-07-04T11:45:00.000Z").getTime
 const result = { latestRound: 1, ingestedCount: 0 };
 function setup(ingest: () => Promise<typeof result>, enabled = true) {
   const facade = { ingest: vi.fn(ingest), nextDrawAt: () => "2026-07-04T11:35:00.000Z" };
-  const config = { port: 0, schedulerEnabled: enabled } satisfies ApiConfig;
+  const config = { port: 0, strictPort: false, schedulerEnabled: enabled } satisfies ApiConfig;
   const scheduler = new LotterietusIngestScheduler(facade as unknown as LotterietusFacade, config);
   return { facade, scheduler };
 }

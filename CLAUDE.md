@@ -61,7 +61,9 @@ pnpm build                   # turbo build
 이긴다) 거기서 `DATABASE_URL` 과 `SCHEDULER_ENABLED` 를 읽는다. 값의 모양은 루트의 `.env.example` 에 있다.
 `SCHEDULER_ENABLED` 를 적지 않으면 회차 수집 스케줄러는 `dev` 스크립트(watch 로 자주 재시작한다)에서
 꺼지고 `start` 에서 켜져 동행복권 원격을 부른다. 적으면 그 값이 이긴다 — `dev` 에서 수집하려면 `true`,
-`start` 에서 끄려면 `false`.
+`start` 에서 끄려면 `false`. 런처가 `FORTUNA_MODE`(`dev`/`start`)를 넘기면 스크립트 이름보다 그 값이 기본값을
+정한다. `FORTUNA_STRICT_PORT=1` 이면 `apps/api` 는 받은 `PORT` 를 옮기지 않고, 쥐여 있으면 5 초 기다린 뒤
+`EADDRINUSE` 로 죽는다.
 `apps/web` 은 `API_ORIGIN`(기본값 `http://127.0.0.1:4000`)으로 `apps/api` 의 주소를 받는다. 이 값은
 요청마다 실행 때 읽으므로 빌드 때 굳지 않는다 — 바꾸려면 프로세스를 다시 띄우면 된다.
 
