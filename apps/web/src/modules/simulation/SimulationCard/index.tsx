@@ -29,13 +29,13 @@ export function SimulationCard({ numbers }: SimulationCardProps) {
       {card.result ? (
         <div className="mt-4 space-y-3">
           <p className="text-sm text-slate-700">{card.result.summaryLine}</p>
-          {card.result.summarizeRanks.length > 0 ? (
+          {card.result.rankRows.length > 0 ? (
             <ul className="flex flex-wrap gap-2">
-              {card.result.summarizeRanks.map(({ rank, label, count }) => (
+              {card.result.rankRows.map(({ rank, label, count, emphasized }) => (
                 <li
                   key={rank}
                   className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${
-                    rank <= 2
+                    emphasized
                       ? "border border-amber-200 bg-amber-50 text-amber-600"
                       : "bg-slate-100 text-slate-700"
                   }`}

@@ -4,10 +4,15 @@ export const RANK_LABELS = ["낙첨", "1등", "2등", "3등", "4등", "5등"] as
 
 /** 표시 모델 — 백테스트 결과 하나만 보고 정해지는 요약을 갖는다(model-vocabulary 규칙 4절) */
 export class SimulationResultViewModel extends SimulationResultModel {
-  /** 등수별 요약 행 (당첨 있는 등수만) */
-  get summarizeRanks(): { rank: number; label: string; count: number }[] {
+  /** 등수별 요약 행 (당첨 있는 등수만) — 1·2등은 강조한다 */
+  get rankRows(): { rank: number; label: string; count: number; emphasized: boolean }[] {
     return [1, 2, 3, 4, 5]
-      .map((rank) => ({ rank, label: RANK_LABELS[rank] as string, count: this.rankCounts[rank] ?? 0 }))
+      .map((rank) => ({
+        rank,
+        label: RANK_LABELS[rank] as string,
+        count: this.rankCounts[rank] ?? 0,
+        emphasized: rank <= 2,
+      }))
       .filter((r) => r.count > 0);
   }
 

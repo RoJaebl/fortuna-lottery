@@ -10,7 +10,7 @@ export interface LotterietusCardProps {
 
 /** 홈 최상단 Hero — 최근 회차와 다음 추첨 카운트다운을 동등한 비중으로 보여주고 생성기 CTA를 제공 */
 export function LotterietusCard({ generatorOpen, onToggleGenerator }: LotterietusCardProps) {
-  const { loading, status, error, remaining } = useLotterietusCardPresenter();
+  const { loading, status, error, remaining, ctaLabel } = useLotterietusCardPresenter(generatorOpen);
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
@@ -48,7 +48,7 @@ export function LotterietusCard({ generatorOpen, onToggleGenerator }: Lotterietu
         aria-expanded={generatorOpen}
         className="mt-6 w-full rounded-xl bg-emerald-600 px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-emerald-500 sm:w-auto"
       >
-        {generatorOpen ? "생성기 닫기" : "번호 생성하기"}
+        {ctaLabel}
       </button>
     </section>
   );

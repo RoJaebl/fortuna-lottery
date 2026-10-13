@@ -2,12 +2,13 @@
 import { useState } from "react";
 import type { TabItem } from "@/shared/ui/tabs";
 import type { StatisticsModel } from "../model/Statistics.model";
+import type { DistBar } from "../model/Statistics.viewmodel";
 import { useGetStatisticsAction } from "./action/getStatistics.action";
 import type { FrequencyHeatmapProps } from "./FrequencyHeatmap";
 import type { HotColdBoardProps } from "./HotColdBoard";
 import { lowCountOf, oddCountOf, sumOf } from "./model/Combination.model";
 import type { NumberFrequencyBarsProps } from "./NumberFrequencyBars";
-import type { PatternDistributionProps } from "./PatternDistribution";
+import type { PatternBar, PatternDistributionProps } from "./PatternDistribution";
 import type { ProbabilityRealityProps } from "./ProbabilityReality";
 import type { RecentGridProps } from "./RecentGrid";
 import type { SumDistributionChartProps } from "./SumDistributionChart";
@@ -36,6 +37,9 @@ const STAT_VIEWS: readonly TabItem<StatView>[] = [
 ];
 
 const HOT_COLD_TOP = 8;
+
+/** 서버가 내는 상위 페어 개수(GetStatistics 의 TOP_PAIRS) — 카드 제목 「TOP 15」 */
+const TOP_PAIRS = 15;
 
 /**
  * 패턴 희귀도 배지 — 내 조합의 홀짝 패턴이 과거 회차에서 차지한 비율 (사실 기반).
@@ -82,6 +86,19 @@ export function hottest(stats: StatisticsModel, n: number): StatisticsModel["hot
   return [...stats.hotCold].sort((a, b) => a.gap - b.gap || a.number - b.number).slice(0, n);
 }
 
+/** gap 표기 — 최근 나온 쪽은 0을 「최신」으로 쓴다 */
+function gapItems(
+  items: StatisticsModel["hotCold"],
+  latestLabel: boolean,
+): HotColdBoardProps["coldest"] {
+  return items.map(({ number, gap }) => ({ number, gapLabel: latestLabel && gap === 0 ? "최신" : `${gap}회` }));
+}
+
+/** 내 조합이 놓인 막대를 표시한다 — 내 조합이 없으면 강조 없음 */
+function highlightBars(bars: DistBar[], highlight: number | null): PatternBar[] {
+  return bars.map((bar, i) => ({ ...bar, highlighted: i === highlight }));
+}
+
 export function useStatisticsPanelPresenter(myNumbers: number[] | null) {
   const { loading, stats, error } = useGetStatisticsAction();
   const [activeStatView, setActiveStatView] = useState<StatView>("probability");
@@ -90,22 +107,34 @@ export function useStatisticsPanelPresenter(myNumbers: number[] | null) {
 
   if (!stats) return { loading, error, tabs, views: null };
 
+  const my = myNumbers ? sumPosition(myNumbers, stats) : null;
+  const rarity = myNumbers ? oddEvenRarity(myNumbers, stats) : null;
+
   const probability: ProbabilityRealityProps = { stats };
-  const sum: SumDistributionChartProps = { stats, my: myNumbers ? sumPosition(myNumbers, stats) : null };
+  const sum: SumDistributionChartProps = {
+    chart: stats.sumChart,
+    subtitle: my
+      ? `내 조합 합계 ${my.mySum} — 과거 회차의 ${my.percentBelow}%가 이보다 작았습니다`
+      : "전 회차 6개 번호 합계의 분포",
+    marker: my ? { sum: my.mySum, x: stats.sumRatio(my.mySum) } : null,
+  };
   const heatmap: FrequencyHeatmapProps = { stats };
   const pattern: PatternDistributionProps = {
-    stats,
-    rarity: myNumbers ? oddEvenRarity(myNumbers, stats) : null,
-    oddHighlight: myNumbers ? oddCountOf(myNumbers) : null,
-    lowHighlight: myNumbers ? lowCountOf(myNumbers) : null,
+    subtitle: rarity
+      ? `내 조합(${rarity.label})과 같은 홀짝 패턴은 과거 회차의 ${rarity.percent}%였습니다`
+      : "내 조합이 과거 패턴과 얼마나 닮았는지 확인하세요",
+    oddBars: highlightBars(stats.oddBars, myNumbers ? oddCountOf(myNumbers) : null),
+    lowBars: highlightBars(stats.lowBars, myNumbers ? lowCountOf(myNumbers) : null),
+    zoneBars: highlightBars(stats.zoneBars, null),
   };
   const hotcold: HotColdBoardProps = {
-    coldest: coldest(stats, HOT_COLD_TOP),
-    hottest: hottest(stats, HOT_COLD_TOP),
+    top: HOT_COLD_TOP,
+    coldest: gapItems(coldest(stats, HOT_COLD_TOP), false),
+    hottest: gapItems(hottest(stats, HOT_COLD_TOP), true),
   };
-  const pairs: TopPairsListProps = { stats };
-  const frequency: NumberFrequencyBarsProps = { stats };
-  const recent: RecentGridProps = { stats };
+  const pairs: TopPairsListProps = { top: TOP_PAIRS, bars: stats.topPairBars };
+  const frequency: NumberFrequencyBarsProps = { bars: stats.frequencyBars };
+  const recent: RecentGridProps = { range: stats.recentRange, columns: stats.recentColumns };
 
   return { loading, error, tabs, views: { probability, sum, heatmap, pattern, hotcold, pairs, frequency, recent } };
 }

@@ -1,42 +1,32 @@
 "use client";
 import { Card } from "@/shared/ui/card";
-import type { StatisticsViewModel } from "../model/Statistics.viewmodel";
+import type { DistBar } from "../model/Statistics.viewmodel";
 
-export interface PatternDistributionProps {
-  stats: StatisticsViewModel;
-  /** 내 조합의 홀짝 패턴이 과거 회차에서 차지한 비율 — 내 조합이 없으면 null */
-  rarity: { label: string; percent: number } | null;
-  /** 내 조합의 홀수 개수 — 강조할 막대. 내 조합이 없으면 null */
-  oddHighlight: number | null;
-  /** 내 조합의 저구간 개수 — 강조할 막대. 내 조합이 없으면 null */
-  lowHighlight: number | null;
+/** 분포 막대 하나 — 내 조합이 놓인 막대면 highlighted */
+export interface PatternBar extends DistBar {
+  highlighted: boolean;
 }
 
-function DistBars({
-  dist,
-  total,
-  highlight,
-  labelOf,
-}: {
-  dist: number[];
-  total: number;
-  highlight: number | null;
-  labelOf: (i: number) => string;
-}) {
-  const max = Math.max(...dist, 1);
+export interface PatternDistributionProps {
+  /** 내 조합의 홀짝 희귀도 문구 — 내 조합이 없으면 안내 문구 */
+  subtitle: string;
+  oddBars: PatternBar[];
+  lowBars: PatternBar[];
+  zoneBars: PatternBar[];
+}
+
+function DistBars({ bars }: { bars: PatternBar[] }) {
   return (
     <div className="flex items-end gap-1.5">
-      {dist.map((count, i) => (
-        <div key={i} className="flex flex-1 flex-col items-center gap-1">
-          <span className="text-[10px] tabular-nums text-slate-500">
-            {total > 0 ? `${Math.round((count / total) * 100)}%` : "0%"}
-          </span>
+      {bars.map(({ label, percent, heightPx, highlighted }) => (
+        <div key={label} className="flex flex-1 flex-col items-center gap-1">
+          <span className="text-[10px] tabular-nums text-slate-500">{`${percent}%`}</span>
           <div
-            className={`w-full rounded-t ${i === highlight ? "bg-amber-600" : "bg-sky-600/70"}`}
-            style={{ height: `${6 + (count / max) * 56}px` }}
+            className={`w-full rounded-t ${highlighted ? "bg-amber-600" : "bg-sky-600/70"}`}
+            style={{ height: `${heightPx}px` }}
           />
-          <span className={`text-[10px] ${i === highlight ? "font-bold text-amber-600" : "text-slate-500"}`}>
-            {labelOf(i)}
+          <span className={`text-[10px] ${highlighted ? "font-bold text-amber-600" : "text-slate-500"}`}>
+            {label}
           </span>
         </div>
       ))}
@@ -44,44 +34,25 @@ function DistBars({
   );
 }
 
-export function PatternDistribution({ stats, rarity, oddHighlight, lowHighlight }: PatternDistributionProps) {
+export function PatternDistribution({ subtitle, oddBars, lowBars, zoneBars }: PatternDistributionProps) {
   return (
     <Card
       title="홀짝 · 고저 · 구간 분포"
-      subtitle={
-        rarity
-          ? `내 조합(${rarity.label})과 같은 홀짝 패턴은 과거 회차의 ${rarity.percent}%였습니다`
-          : "내 조합이 과거 패턴과 얼마나 닮았는지 확인하세요"
-      }
+      subtitle={subtitle}
       footnote="패턴의 흔함/드묾은 과거 빈도의 서술일 뿐, 당첨 가능성과 무관합니다."
     >
       <div className="space-y-5">
         <div>
           <p className="mb-2 text-xs font-medium text-slate-500">홀수 개수 (0~6)</p>
-          <DistBars
-            dist={stats.oddCountDist}
-            total={stats.totalDraws}
-            highlight={oddHighlight}
-            labelOf={(i) => `홀${i}`}
-          />
+          <DistBars bars={oddBars} />
         </div>
         <div>
           <p className="mb-2 text-xs font-medium text-slate-500">저구간(1~22) 개수 (0~6)</p>
-          <DistBars
-            dist={stats.lowCountDist}
-            total={stats.totalDraws}
-            highlight={lowHighlight}
-            labelOf={(i) => `저${i}`}
-          />
+          <DistBars bars={lowBars} />
         </div>
         <div>
           <p className="mb-2 text-xs font-medium text-slate-500">구간별 총 출현</p>
-          <DistBars
-            dist={stats.zoneCounts}
-            total={stats.zoneCounts.reduce((a, b) => a + b, 0)}
-            highlight={null}
-            labelOf={(i) => ["1-10", "11-20", "21-30", "31-40", "41-45"][i] ?? ""}
-          />
+          <DistBars bars={zoneBars} />
         </div>
       </div>
     </Card>

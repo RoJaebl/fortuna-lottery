@@ -4,13 +4,10 @@ import { Card } from "@/shared/ui/card";
 import type { StatisticsViewModel } from "../model/Statistics.viewmodel";
 
 export interface NumberFrequencyBarsProps {
-  stats: StatisticsViewModel;
+  bars: StatisticsViewModel["frequencyBars"];
 }
 
-export function NumberFrequencyBars({ stats }: NumberFrequencyBarsProps) {
-  const max = Math.max(...stats.frequency, 1);
-  const totalPicks = stats.totalDraws * 6;
-
+export function NumberFrequencyBars({ bars }: NumberFrequencyBarsProps) {
   return (
     <Card
       title="번호별 출현 확률"
@@ -18,16 +15,16 @@ export function NumberFrequencyBars({ stats }: NumberFrequencyBarsProps) {
       footnote="이론상 모든 번호의 기대 확률은 동일합니다 (6/45 ≈ 13.3%). 편차는 우연입니다."
     >
       <div className="flex h-36 items-end gap-[3px]">
-        {stats.frequency.map((count, i) => (
+        {bars.map(({ number, count, heightPercent, sharePercent }) => (
           <div
-            key={i + 1}
+            key={number}
             className="group relative flex-1 rounded-t"
             style={{
-              height: `${(count / max) * 100}%`,
-              backgroundColor: ballColor(i + 1).bg,
+              height: `${heightPercent}%`,
+              backgroundColor: ballColor(number).bg,
               opacity: 0.85,
             }}
-            title={`${i + 1}번 · ${count}회 (${totalPicks > 0 ? ((count / totalPicks) * 100).toFixed(2) : 0}%)`}
+            title={`${number}번 · ${count}회 (${sharePercent}%)`}
           />
         ))}
       </div>

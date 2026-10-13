@@ -24,6 +24,22 @@ export function modeHint(mode: GeneratorMode, selectedCount: number): string {
   return `6개 번호를 직접 선택하세요 (${selectedCount}/6)`;
 }
 
+/** 모드 버튼 항목 — 지금 모드를 active 로 표시한다 */
+export function modeItemsOf(mode: GeneratorMode): { key: GeneratorMode; label: string; active: boolean }[] {
+  return MODES.map(({ key, label }) => ({ key, label, active: key === mode }));
+}
+
+/** 번호 격자 항목 — 고른 번호를 selected 로 표시한다 */
+export function numberItemsOf(selected: readonly number[]): { n: number; selected: boolean }[] {
+  const picked = new Set(selected);
+  return ALL_NUMBERS.map((n) => ({ n, selected: picked.has(n) }));
+}
+
+/** 생성 버튼 문구 */
+export function generateButtonLabel(busy: boolean): string {
+  return busy ? "생성 중…" : "번호 생성";
+}
+
 export function useGeneratorCardPresenter(onGenerated: (numbers: number[]) => void) {
   const [mode, setMode] = useState<GeneratorMode>("auto");
   const [selected, setSelected] = useState<number[]>([]);
@@ -49,18 +65,16 @@ export function useGeneratorCardPresenter(onGenerated: (numbers: number[]) => vo
   };
 
   return {
-    modes: MODES,
-    numbers: ALL_NUMBERS,
-    mode,
-    selected,
+    modeItems: modeItemsOf(mode),
+    numberItems: numberItemsOf(selected),
     showNumberGrid: mode !== "auto",
     result: action.result?.numbers ?? null,
     error: action.error,
-    busy: action.pending,
     changeMode,
     toggleNumber,
     generate,
-    canGenerate: canGenerate(mode, selected.length),
+    generateDisabled: !canGenerate(mode, selected.length) || action.pending,
+    generateLabel: generateButtonLabel(action.pending),
     hint: modeHint(mode, selected.length),
   };
 }

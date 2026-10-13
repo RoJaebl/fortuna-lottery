@@ -43,10 +43,10 @@ export interface StatisticsPanelProps {
 }
 
 export function StatisticsPanel({ myNumbers }: StatisticsPanelProps) {
-  const { loading, error, tabs, views } = useStatisticsPanelPresenter(myNumbers);
+  const { error, tabs, views } = useStatisticsPanelPresenter(myNumbers);
 
   if (error) return <p className="text-sm text-red-600">통계를 불러오지 못했습니다: {error}</p>;
-  if (loading || !views) return <p className="text-sm text-slate-500">통계 계산 중…</p>;
+  if (!views) return <p className="text-sm text-slate-500">통계 계산 중…</p>;
 
   return (
     <div className="space-y-4">
