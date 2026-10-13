@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { fetchJson } from "@/shared/lib/fetchJson";
-import { SimulationResultViewModel } from "../../model/SimulationResult.viewmodel";
+import { SimulationResultViewModel } from "../model/SimulationResult.viewmodel";
 import { simulationBacktestRequest, simulationBacktestResponse } from "../mapper/simulationBacktest.mapper";
 
 /**

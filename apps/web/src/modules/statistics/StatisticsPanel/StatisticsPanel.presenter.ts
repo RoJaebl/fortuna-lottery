@@ -1,12 +1,12 @@
 // 모든 표현은 과거 데이터의 사실만 말한다 (정직성 원칙).
 import { useState } from "react";
+import { LOW_MAX } from "@/shared/lib/lotto-rules";
 import type { TabItem } from "@/shared/ui/tabs";
-import type { StatisticsModel } from "../model/Statistics.model";
-import type { DistBar } from "../model/Statistics.viewmodel";
+import type { StatisticsModel } from "./model/Statistics.model";
+import type { DistBar } from "./model/Statistics.viewmodel";
 import { useGetStatisticsAction } from "./action/getStatistics.action";
 import type { FrequencyHeatmapProps } from "./FrequencyHeatmap";
 import type { HotColdBoardProps } from "./HotColdBoard";
-import { lowCountOf, oddCountOf, sumOf } from "./model/Combination.model";
 import type { NumberFrequencyBarsProps } from "./NumberFrequencyBars";
 import type { PatternBar, PatternDistributionProps } from "./PatternDistribution";
 import type { ProbabilityRealityProps } from "./ProbabilityReality";
@@ -40,6 +40,21 @@ const HOT_COLD_TOP = 8;
 
 /** 서버가 내는 상위 페어 개수(GetStatistics 의 TOP_PAIRS) — 카드 제목 「TOP 15」 */
 const TOP_PAIRS = 15;
+
+/** 조합 합계 */
+function sumOf(numbers: number[]): number {
+  return numbers.reduce((a, b) => a + b, 0);
+}
+
+/** 홀수 개수 */
+function oddCountOf(numbers: number[]): number {
+  return numbers.filter((n) => n % 2 === 1).length;
+}
+
+/** 저구간(1~22) 개수 */
+function lowCountOf(numbers: number[]): number {
+  return numbers.filter((n) => n <= LOW_MAX).length;
+}
 
 /**
  * 패턴 희귀도 배지 — 내 조합의 홀짝 패턴이 과거 회차에서 차지한 비율 (사실 기반).

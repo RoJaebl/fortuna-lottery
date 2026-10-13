@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { SimulationResultModel } from "../../model/SimulationResult.model";
+import { SimulationResultModel } from "../model/SimulationResult.model";
 import { simulationBacktestRequest, simulationBacktestResponse } from "./simulationBacktest.mapper";
 
 describe("simulationBacktest 변환기", () => {

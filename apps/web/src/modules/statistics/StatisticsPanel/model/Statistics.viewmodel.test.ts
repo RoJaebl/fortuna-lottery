@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { StatisticsModel } from "./Statistics.model";
-import { glowIntensity, StatisticsViewModel } from "./Statistics.viewmodel";
+import { StatisticsViewModel } from "./Statistics.viewmodel";
 
 const stats = (over: Partial<StatisticsModel> = {}): StatisticsViewModel =>
   StatisticsViewModel.from(
@@ -22,10 +22,10 @@ const stats = (over: Partial<StatisticsModel> = {}): StatisticsViewModel =>
 
 describe("StatisticsViewModel (그 통계 하나로 정해지는 값)", () => {
   it("glowIntensity — min~max를 0~1로 정규화", () => {
-    expect(glowIntensity(10, 10, 20)).toBe(0);
-    expect(glowIntensity(20, 10, 20)).toBe(1);
-    expect(glowIntensity(15, 10, 20)).toBe(0.5);
-    expect(glowIntensity(5, 5, 5)).toBe(0.5); // 편차 없음 → 중간값
+    expect(StatisticsViewModel.glowIntensity(10, 10, 20)).toBe(0);
+    expect(StatisticsViewModel.glowIntensity(20, 10, 20)).toBe(1);
+    expect(StatisticsViewModel.glowIntensity(15, 10, 20)).toBe(0.5);
+    expect(StatisticsViewModel.glowIntensity(5, 5, 5)).toBe(0.5); // 편차 없음 → 중간값
   });
 
   it("glows — 번호별 빈도를 그 통계의 min~max 로 정규화한다", () => {

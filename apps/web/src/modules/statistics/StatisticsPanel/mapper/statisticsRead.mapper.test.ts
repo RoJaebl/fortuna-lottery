@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { StatisticsModel } from "../../model/Statistics.model";
+import { StatisticsModel } from "../model/Statistics.model";
 import { statisticsReadResponse } from "./statisticsRead.mapper";
 
 describe("statisticsRead 변환기", () => {

@@ -53,3 +53,6 @@ export function LotterietusCard({ generatorOpen, onToggleGenerator }: Lotterietu
     </section>
   );
 }
+
+export type { LotterietusModel } from "./model/Lotterietus.model";
+export type { LotterietusViewModel } from "./model/Lotterietus.viewmodel";

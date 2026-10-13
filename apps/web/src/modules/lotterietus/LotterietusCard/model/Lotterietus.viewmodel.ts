@@ -1,3 +1,4 @@
+import { formatDate } from "@/shared/lib/formatDate";
 import { LotterietusModel } from "./Lotterietus.model";
 
 /**
@@ -7,8 +8,7 @@ import { LotterietusModel } from "./Lotterietus.model";
 export class LotterietusViewModel extends LotterietusModel {
   /** 추첨일 표기 — YYYY.MM.DD (로컬 시각) */
   get drawDate(): string {
-    const drawnAt = this.drawnAt;
-    return `${drawnAt.getFullYear()}.${String(drawnAt.getMonth() + 1).padStart(2, "0")}.${String(drawnAt.getDate()).padStart(2, "0")}`;
+    return formatDate(this.drawnAt);
   }
 
   static from(m: LotterietusModel): LotterietusViewModel {

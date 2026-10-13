@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { ResultsCheckModel, ResultsDrawModel } from "../../model/ResultsCheck.model";
-import { ResultsCheckItemModel } from "../../model/ResultsCheckItem.model";
+import { ResultsCheckModel } from "../model/ResultsCheck.model";
+import { ResultsDrawModel } from "../model/ResultsDraw.model";
+import { ResultsCheckItemModel } from "../model/ResultsCheckItem.model";
 import { resultsCheckResponse } from "./resultsCheck.mapper";
 
 describe("resultsCheck 변환기", () => {

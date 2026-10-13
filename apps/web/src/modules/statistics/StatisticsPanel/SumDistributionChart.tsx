@@ -1,6 +1,6 @@
 "use client";
 import { Card } from "@/shared/ui/card";
-import type { StatisticsViewModel } from "../model/Statistics.viewmodel";
+import type { StatisticsViewModel } from "./model/Statistics.viewmodel";
 
 const W = 560;
 const H = 140;

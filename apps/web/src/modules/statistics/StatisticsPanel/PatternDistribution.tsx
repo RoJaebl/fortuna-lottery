@@ -1,6 +1,7 @@
 "use client";
+import { LOW_MAX } from "@/shared/lib/lotto-rules";
 import { Card } from "@/shared/ui/card";
-import type { DistBar } from "../model/Statistics.viewmodel";
+import type { DistBar } from "./model/Statistics.viewmodel";
 
 /** 분포 막대 하나 — 내 조합이 놓인 막대면 highlighted */
 export interface PatternBar extends DistBar {
@@ -47,7 +48,7 @@ export function PatternDistribution({ subtitle, oddBars, lowBars, zoneBars }: Pa
           <DistBars bars={oddBars} />
         </div>
         <div>
-          <p className="mb-2 text-xs font-medium text-slate-500">저구간(1~22) 개수 (0~6)</p>
+          <p className="mb-2 text-xs font-medium text-slate-500">{`저구간(1~${LOW_MAX}) 개수 (0~6)`}</p>
           <DistBars bars={lowBars} />
         </div>
         <div>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { LotterietusModel } from "../../model/Lotterietus.model";
+import { LotterietusModel } from "../model/Lotterietus.model";
 import { lotterietusReadResponse } from "./lotterietusRead.mapper";
 
 describe("lotterietusRead 변환기", () => {

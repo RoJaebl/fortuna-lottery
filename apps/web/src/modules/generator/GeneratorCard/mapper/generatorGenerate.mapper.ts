@@ -2,8 +2,8 @@ import type {
   GeneratorGenerateRequest,
   GeneratorGenerateResponse,
 } from "@fortuna-lottery/contract/generator";
-import { GeneratedCombinationModel } from "../../model/GeneratedCombination.model";
-import type { GeneratorMode } from "../../model/GeneratorMode.model";
+import { GeneratedCombinationModel } from "../model/GeneratedCombination.model";
+import type { GeneratorMode } from "../model/GeneratorMode.model";
 
 /** 자동/부분/직접 모두 같은 계약으로 수렴한다 */
 export function generatorGenerateRequest(

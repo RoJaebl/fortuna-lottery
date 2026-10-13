@@ -55,3 +55,6 @@ export function StatisticsPanel({ myNumbers }: StatisticsPanelProps) {
     </div>
   );
 }
+
+export type { StatisticsModel } from "./model/Statistics.model";
+export type { StatisticsViewModel } from "./model/Statistics.viewmodel";

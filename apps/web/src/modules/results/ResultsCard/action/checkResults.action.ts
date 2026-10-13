@@ -1,12 +1,12 @@
 import { useSyncExternalStore } from "react";
 import { fetchJson } from "@/shared/lib/fetchJson";
 import { createServerCache } from "@/shared/lib/serverCache";
-import type { ResultsDrawModel } from "../../model/ResultsCheck.model";
-import { ResultsCheckItemViewModel } from "../../model/ResultsCheckItem.viewmodel";
+import { ResultsDrawViewModel } from "../model/ResultsDraw.viewmodel";
+import { ResultsCheckItemViewModel } from "../model/ResultsCheckItem.viewmodel";
 import { resultsCheckResponse } from "../mapper/resultsCheck.mapper";
 
 interface ResultsCheckState {
-  draw: ResultsDrawModel | null;
+  draw: ResultsDrawViewModel | null;
   items: ResultsCheckItemViewModel[];
 }
 
@@ -20,7 +20,7 @@ export const checkResultsCache = createServerCache<void, ResultsCheckState>(
   () => "results",
   async () => {
     const model = resultsCheckResponse(await fetchJson("/api/results"));
-    return { draw: model.draw, items: ResultsCheckItemViewModel.fromMany(model.items) };
+    return { draw: model.draw ? ResultsDrawViewModel.from(model.draw) : null, items: ResultsCheckItemViewModel.fromMany(model.items) };
   },
 );
 

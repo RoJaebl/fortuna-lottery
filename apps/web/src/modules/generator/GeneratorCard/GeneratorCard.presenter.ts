@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { GeneratorMode } from "../model/GeneratorMode.model";
+import type { GeneratorMode } from "./model/GeneratorMode.model";
 import { useGenerateCombinationAction } from "./action/generateCombination.action";
 
 const ALL_NUMBERS = Array.from({ length: 45 }, (_, i) => i + 1);

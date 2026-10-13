@@ -1,6 +1,5 @@
+import { rankLabel } from "@/shared/lib/lotto-rules";
 import { SimulationResultModel } from "./SimulationResult.model";
-
-export const RANK_LABELS = ["낙첨", "1등", "2등", "3등", "4등", "5등"] as const;
 
 /** 표시 모델 — 백테스트 결과 하나만 보고 정해지는 요약을 갖는다(model-vocabulary 규칙 4절) */
 export class SimulationResultViewModel extends SimulationResultModel {
@@ -9,7 +8,7 @@ export class SimulationResultViewModel extends SimulationResultModel {
     return [1, 2, 3, 4, 5]
       .map((rank) => ({
         rank,
-        label: RANK_LABELS[rank] as string,
+        label: rankLabel(rank),
         count: this.rankCounts[rank] ?? 0,
         emphasized: rank <= 2,
       }))

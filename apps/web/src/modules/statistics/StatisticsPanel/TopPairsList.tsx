@@ -1,7 +1,7 @@
 "use client";
 import { Ball } from "@/shared/ui/ball";
 import { Card } from "@/shared/ui/card";
-import type { StatisticsViewModel } from "../model/Statistics.viewmodel";
+import type { StatisticsViewModel } from "./model/Statistics.viewmodel";
 
 export interface TopPairsListProps {
   /** 제목의 상위 개수 */

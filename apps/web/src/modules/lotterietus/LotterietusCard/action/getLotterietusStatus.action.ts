@@ -1,7 +1,7 @@
 import { useEffect, useSyncExternalStore } from "react";
 import { fetchJson } from "@/shared/lib/fetchJson";
 import { createServerCache } from "@/shared/lib/serverCache";
-import { LotterietusViewModel } from "../../model/Lotterietus.viewmodel";
+import { LotterietusViewModel } from "../model/Lotterietus.viewmodel";
 import { lotterietusReadResponse } from "../mapper/lotterietusRead.mapper";
 
 /** 이 유스케이스의 캐시 — 앱에 하나다. 조회 조건이 없으므로 캐시키도 하나다 */

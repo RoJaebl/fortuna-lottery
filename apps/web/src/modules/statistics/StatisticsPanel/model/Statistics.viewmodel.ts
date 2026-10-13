@@ -1,4 +1,5 @@
 // 모든 표현은 과거 데이터의 사실만 말한다 (정직성 원칙).
+import { NUMBER_ZONES } from "@/shared/lib/lotto-rules";
 import { StatisticsModel } from "./Statistics.model";
 
 /** 분포 막대 하나 — 홀짝·고저·구간 분포가 함께 쓴다 */
@@ -11,12 +12,6 @@ export interface DistBar {
   heightPx: number;
 }
 
-/** 빈도 → 글로우 강도(0~1) 정규화 — 공 색은 바꾸지 않고 주변 강조만 */
-export function glowIntensity(count: number, min: number, max: number): number {
-  if (max <= min) return 0.5;
-  return (count - min) / (max - min);
-}
-
 /**
  * 표시 모델 — 그 통계 하나만 보고 정해지는 값을 갖는다(model-vocabulary 규칙 4절).
  * 내 조합이나 상위 몇 개 같은 바깥 값이 필요한 것은 표시 조정자(StatisticsPanel.presenter)가 갖는다.
@@ -26,7 +21,7 @@ export class StatisticsViewModel extends StatisticsModel {
   get glows(): number[] {
     const min = Math.min(...this.frequency);
     const max = Math.max(...this.frequency);
-    return this.frequency.map((count) => glowIntensity(count, min, max));
+    return this.frequency.map((count) => StatisticsViewModel.glowIntensity(count, min, max));
   }
 
   /** 당첨 확률의 현실 체감 서술 — 고정 분모 기반 사실만 */
@@ -126,10 +121,8 @@ export class StatisticsViewModel extends StatisticsModel {
   /** 구간별 총 출현 막대 — 구간 합계 대비 */
   get zoneBars(): DistBar[] {
     const total = this.zoneCounts.reduce((a, b) => a + b, 0);
-    return StatisticsViewModel.distBars(this.zoneCounts, total, (i) => StatisticsViewModel.ZONE_LABELS[i] ?? "");
+    return StatisticsViewModel.distBars(this.zoneCounts, total, (i) => NUMBER_ZONES[i]?.label ?? "");
   }
-
-  static readonly ZONE_LABELS: readonly string[] = ["1-10", "11-20", "21-30", "31-40", "41-45"];
 
   private static distBars(dist: number[], total: number, labelOf: (i: number) => string): DistBar[] {
     const max = Math.max(...dist, 1);
@@ -139,6 +132,12 @@ export class StatisticsViewModel extends StatisticsModel {
       percent: total > 0 ? Math.round((count / total) * 100) : 0,
       heightPx: 6 + (count / max) * 56,
     }));
+  }
+
+  /** 빈도 → 글로우 강도(0~1) 정규화 — 공 색은 바꾸지 않고 주변 강조만 */
+  static glowIntensity(count: number, min: number, max: number): number {
+    if (max <= min) return 0.5;
+    return (count - min) / (max - min);
   }
 
   static from(m: StatisticsModel): StatisticsViewModel {

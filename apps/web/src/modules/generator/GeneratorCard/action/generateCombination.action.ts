@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { fetchJson } from "@/shared/lib/fetchJson";
-import { GeneratedCombinationViewModel } from "../../model/GeneratedCombination.viewmodel";
-import type { GeneratorMode } from "../../model/GeneratorMode.model";
+import { GeneratedCombinationViewModel } from "../model/GeneratedCombination.viewmodel";
+import type { GeneratorMode } from "../model/GeneratorMode.model";
 import { generatorGenerateRequest, generatorGenerateResponse } from "../mapper/generatorGenerate.mapper";
 
 /**

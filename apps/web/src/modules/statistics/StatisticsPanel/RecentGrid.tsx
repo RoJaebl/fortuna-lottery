@@ -1,7 +1,7 @@
 "use client";
 import { ballColor } from "@/shared/lib/lotto-colors";
 import { Card } from "@/shared/ui/card";
-import type { StatisticsViewModel } from "../model/Statistics.viewmodel";
+import type { StatisticsViewModel } from "./model/Statistics.viewmodel";
 
 export interface RecentGridProps {
   /** 회차 범위 문구 — 회차가 없으면 빈 문자열 */

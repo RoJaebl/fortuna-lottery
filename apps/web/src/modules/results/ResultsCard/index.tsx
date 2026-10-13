@@ -1,4 +1,5 @@
 "use client";
+import { Fragment } from "react";
 import { Ball } from "@/shared/ui/ball";
 import { Card } from "@/shared/ui/card";
 import { useResultsCardPresenter } from "./ResultsCard.presenter";
@@ -27,11 +28,12 @@ export function ResultsCard() {
             {card.draw ? (
               <div className="flex items-center gap-1.5 border-b border-slate-200 pb-3">
                 <span className="mr-1 text-xs text-slate-500">당첨</span>
-                {card.draw.numbers.map((n) => (
-                  <Ball key={n} n={n} size="sm" />
+                {card.draw.balls.map(({ n, bonus }) => (
+                  <Fragment key={n}>
+                    {bonus ? <span className="text-slate-500">+</span> : null}
+                    <Ball n={n} size="sm" />
+                  </Fragment>
                 ))}
-                <span className="text-slate-500">+</span>
-                <Ball n={card.draw.bonus} size="sm" />
               </div>
             ) : null}
             <ul className="space-y-2.5">
@@ -58,3 +60,9 @@ export function ResultsCard() {
     </Card>
   );
 }
+
+export type { ResultsCheckModel } from "./model/ResultsCheck.model";
+export type { ResultsDrawModel } from "./model/ResultsDraw.model";
+export type { ResultsDrawViewModel } from "./model/ResultsDraw.viewmodel";
+export type { ResultsCheckItemModel } from "./model/ResultsCheckItem.model";
+export type { ResultsCheckItemViewModel } from "./model/ResultsCheckItem.viewmodel";

@@ -50,3 +50,6 @@ export function SimulationCard({ numbers }: SimulationCardProps) {
     </Card>
   );
 }
+
+export type { SimulationResultModel } from "./model/SimulationResult.model";
+export type { SimulationResultViewModel } from "./model/SimulationResult.viewmodel";

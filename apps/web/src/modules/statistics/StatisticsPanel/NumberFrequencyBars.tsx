@@ -1,7 +1,7 @@
 "use client";
 import { ballColor } from "@/shared/lib/lotto-colors";
 import { Card } from "@/shared/ui/card";
-import type { StatisticsViewModel } from "../model/Statistics.viewmodel";
+import type { StatisticsViewModel } from "./model/Statistics.viewmodel";
 
 export interface NumberFrequencyBarsProps {
   bars: StatisticsViewModel["frequencyBars"];

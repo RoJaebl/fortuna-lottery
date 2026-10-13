@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { PickModel } from "../../model/Pick.model";
+import { PickModel } from "../model/Pick.model";
 import { picksListResponse } from "./picksList.mapper";
 
 describe("picksList 변환기", () => {

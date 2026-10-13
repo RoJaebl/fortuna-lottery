@@ -1,7 +1,7 @@
 import { renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { StatisticsModel } from "../model/Statistics.model";
-import { StatisticsViewModel } from "../model/Statistics.viewmodel";
+import { StatisticsModel } from "./model/Statistics.model";
+import { StatisticsViewModel } from "./model/Statistics.viewmodel";
 import { oddEvenRarity, sumPosition } from "./StatisticsPanel.presenter";
 import { useGetStatisticsAction } from "./action/getStatistics.action";
 import { useStatisticsPanelPresenter } from "./StatisticsPanel.presenter";
@@ -101,6 +101,13 @@ describe("useStatisticsPanelPresenter", () => {
     expect(pattern?.lowBars.map((b) => b.highlighted)).toEqual([false, false, false, false, false, false, true]);
     expect(pattern?.zoneBars.every((b) => !b.highlighted)).toBe(true);
     expect(pattern?.oddBars[4]).toMatchObject({ label: "홀4", percent: 40, heightPx: 62 });
+  });
+
+  it("pattern — 저구간 경계는 22 (22 는 저구간, 23 은 아님)", () => {
+    withStats({ lowCountDist: [0, 0, 5, 0, 0, 0, 0] });
+    const pattern = renderHook(() => useStatisticsPanelPresenter([1, 22, 23, 30, 40, 45])).result.current.views?.pattern;
+    expect(pattern?.lowBars.map((b) => b.highlighted)).toEqual([false, false, true, false, false, false, false]);
+    expect(pattern?.oddBars.map((b) => b.highlighted)).toEqual([false, false, false, true, false, false, false]);
   });
 
   it("pattern — 내 조합이 없으면 안내 문구, 강조 없음", () => {

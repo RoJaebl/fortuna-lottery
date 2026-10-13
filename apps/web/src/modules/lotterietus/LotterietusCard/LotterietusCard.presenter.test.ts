@@ -1,7 +1,7 @@
 import { renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { ctaLabel, formatRemaining } from "./LotterietusCard.presenter";
-import { LotterietusViewModel } from "../model/Lotterietus.viewmodel";
+import { LotterietusViewModel } from "./model/Lotterietus.viewmodel";
 import { useGetLotterietusStatusAction } from "./action/getLotterietusStatus.action";
 import { useLotterietusCardPresenter } from "./LotterietusCard.presenter";
 

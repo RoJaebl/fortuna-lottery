@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { GeneratedCombinationModel } from "../../model/GeneratedCombination.model";
+import { GeneratedCombinationModel } from "../model/GeneratedCombination.model";
 import { generatorGenerateRequest, generatorGenerateResponse } from "./generatorGenerate.mapper";
 
 describe("generatorGenerate 변환기", () => {

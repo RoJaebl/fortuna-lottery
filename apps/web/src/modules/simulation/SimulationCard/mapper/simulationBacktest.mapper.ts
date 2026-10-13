@@ -2,7 +2,7 @@ import type {
   SimulationBacktestRequest,
   SimulationBacktestResponse,
 } from "@fortuna-lottery/contract/simulation";
-import { SimulationResultModel } from "../../model/SimulationResult.model";
+import { SimulationResultModel } from "../model/SimulationResult.model";
 
 /** 고른 번호를 요청으로 — 원본과 배열을 공유하지 않는다 */
 export function simulationBacktestRequest(numbers: readonly number[]): SimulationBacktestRequest {

@@ -57,3 +57,6 @@ export function PicksCard({ currentNumbers }: PicksCardProps) {
     </Card>
   );
 }
+
+export type { PickModel } from "./model/Pick.model";
+export type { PickViewModel } from "./model/Pick.viewmodel";
