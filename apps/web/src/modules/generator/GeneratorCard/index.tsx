@@ -3,7 +3,7 @@ import { Ball } from "@/shared/ui/ball";
 import { Card } from "@/shared/ui/card";
 import { useGeneratorCardPresenter } from "./GeneratorCard.presenter";
 
-interface GeneratorCardProps {
+export interface GeneratorCardProps {
   onGenerated: (numbers: number[]) => void;
 }
 

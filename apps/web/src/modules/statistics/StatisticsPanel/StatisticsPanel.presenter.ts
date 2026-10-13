@@ -83,12 +83,12 @@ export function hottest(stats: StatisticsModel, n: number): StatisticsModel["hot
 }
 
 export function useStatisticsPanelPresenter(myNumbers: number[] | null) {
-  const { stats, error } = useGetStatisticsAction();
+  const { loading, stats, error } = useGetStatisticsAction();
   const [activeStatView, setActiveStatView] = useState<StatView>("probability");
 
   const tabs = { items: STAT_VIEWS, active: activeStatView, onChange: setActiveStatView };
 
-  if (!stats) return { error, tabs, views: null };
+  if (!stats) return { loading, error, tabs, views: null };
 
   const probability: ProbabilityRealityProps = { stats };
   const sum: SumDistributionChartProps = { stats, my: myNumbers ? sumPosition(myNumbers, stats) : null };
@@ -107,5 +107,5 @@ export function useStatisticsPanelPresenter(myNumbers: number[] | null) {
   const frequency: NumberFrequencyBarsProps = { stats };
   const recent: RecentGridProps = { stats };
 
-  return { error, tabs, views: { probability, sum, heatmap, pattern, hotcold, pairs, frequency, recent } };
+  return { loading, error, tabs, views: { probability, sum, heatmap, pattern, hotcold, pairs, frequency, recent } };
 }

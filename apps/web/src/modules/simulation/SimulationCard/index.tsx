@@ -2,7 +2,7 @@
 import { Card } from "@/shared/ui/card";
 import { useSimulationCardPresenter } from "./SimulationCard.presenter";
 
-interface SimulationCardProps {
+export interface SimulationCardProps {
   numbers: number[] | null;
 }
 

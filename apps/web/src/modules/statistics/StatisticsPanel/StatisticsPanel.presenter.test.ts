@@ -1,6 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { renderHook } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import { StatisticsModel } from "../model/Statistics.model";
 import { oddEvenRarity, sumPosition } from "./StatisticsPanel.presenter";
+import { useGetStatisticsAction } from "./action/getStatistics.action";
+import { useStatisticsPanelPresenter } from "./StatisticsPanel.presenter";
+
+vi.mock("./action/getStatistics.action", () => ({ useGetStatisticsAction: vi.fn() }));
 
 const stats = (over: Partial<StatisticsModel> = {}): StatisticsModel =>
   Object.assign(new StatisticsModel(), {
@@ -34,5 +39,14 @@ describe("statistics presenters (순수 함수)", () => {
       ],
     });
     expect(sumPosition([20, 30, 10, 25, 15, 20], s)).toEqual({ mySum: 120, percentBelow: 30 });
+  });
+});
+
+describe("useStatisticsPanelPresenter", () => {
+  it("불러오는 중이면 loading 이 참", () => {
+    vi.mocked(useGetStatisticsAction).mockReturnValue({ loading: true, error: null, stats: null, retry: vi.fn() });
+    const { result } = renderHook(() => useStatisticsPanelPresenter(null));
+    expect(result.current.loading).toBe(true);
+    expect(result.current.views).toBeNull();
   });
 });

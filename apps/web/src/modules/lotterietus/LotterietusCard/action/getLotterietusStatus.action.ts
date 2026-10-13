@@ -19,7 +19,9 @@ export function useGetLotterietusStatusAction() {
   useEffect(() => lotterietusStatusCache.ensure(), []);
 
   return {
+    loading: entry === undefined || entry.status === "loading",
     error: entry?.error ?? null,
     status: entry?.value ?? null,
+    retry: () => lotterietusStatusCache.invalidate(),
   };
 }

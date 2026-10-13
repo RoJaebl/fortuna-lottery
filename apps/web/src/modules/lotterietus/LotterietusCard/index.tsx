@@ -2,7 +2,7 @@
 import { Ball } from "@/shared/ui/ball";
 import { useLotterietusCardPresenter } from "./LotterietusCard.presenter";
 
-interface LotterietusCardProps {
+export interface LotterietusCardProps {
   /** 생성기 패널이 펼쳐져 있는지 — CTA 라벨과 aria-expanded에 사용 */
   generatorOpen: boolean;
   onToggleGenerator: () => void;
@@ -10,7 +10,7 @@ interface LotterietusCardProps {
 
 /** 홈 최상단 Hero — 최근 회차와 다음 추첨 카운트다운을 동등한 비중으로 보여주고 생성기 CTA를 제공 */
 export function LotterietusCard({ generatorOpen, onToggleGenerator }: LotterietusCardProps) {
-  const { status, error, remaining } = useLotterietusCardPresenter();
+  const { loading, status, error, remaining } = useLotterietusCardPresenter();
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
@@ -38,7 +38,7 @@ export function LotterietusCard({ generatorOpen, onToggleGenerator }: Lotterietu
             <p className="mt-3 text-4xl font-bold tabular-nums text-sky-600">{remaining ?? "…"}</p>
           </div>
         </div>
-      ) : !error ? (
+      ) : loading ? (
         <p className="text-sm text-slate-500">불러오는 중…</p>
       ) : null}
 

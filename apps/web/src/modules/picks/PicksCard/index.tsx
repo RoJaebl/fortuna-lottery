@@ -3,7 +3,7 @@ import { Ball } from "@/shared/ui/ball";
 import { Card } from "@/shared/ui/card";
 import { usePicksCardPresenter } from "./PicksCard.presenter";
 
-interface PicksCardProps {
+export interface PicksCardProps {
   /** 현재 생성된 조합 (없으면 저장 버튼 비활성) */
   currentNumbers: number[] | null;
 }

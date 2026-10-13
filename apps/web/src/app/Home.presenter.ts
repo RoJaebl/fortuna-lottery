@@ -1,10 +1,10 @@
-import { useState, type ComponentProps } from "react";
-import type { GeneratorCard } from "@/modules/generator";
-import type { LotterietusCard } from "@/modules/lotterietus";
-import type { PicksCard } from "@/modules/picks";
-import type { SimulationCard } from "@/modules/simulation";
-import type { StatisticsPanel } from "@/modules/statistics";
-import type { TabItem, Tabs } from "@/shared/ui/tabs";
+import { useState } from "react";
+import type { GeneratorCardProps } from "@/modules/generator";
+import type { LotterietusCardProps } from "@/modules/lotterietus";
+import type { PicksCardProps } from "@/modules/picks";
+import type { SimulationCardProps } from "@/modules/simulation";
+import type { StatisticsPanelProps } from "@/modules/statistics";
+import type { TabItem, TabsProps } from "@/shared/ui/tabs";
 
 export type HomeTabKey = "statistics" | "simulation" | "picks" | "results";
 
@@ -22,20 +22,20 @@ export function useHomePresenter() {
   const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<HomeTabKey>("statistics");
 
-  const lotterietus: ComponentProps<typeof LotterietusCard> = {
+  const lotterietus: LotterietusCardProps = {
     generatorOpen: isGeneratorOpen,
     onToggleGenerator: () => setIsGeneratorOpen((open) => !open),
   };
-  const generator: ComponentProps<typeof GeneratorCard> = { onGenerated: setCurrentNumbers };
-  const tabs: ComponentProps<typeof Tabs<HomeTabKey>> = {
+  const generator: GeneratorCardProps = { onGenerated: setCurrentNumbers };
+  const tabs: TabsProps<HomeTabKey> = {
     items: TABS,
     active: activeTab,
     onChange: setActiveTab,
     label: "주요 화면",
   };
-  const statistics: ComponentProps<typeof StatisticsPanel> = { myNumbers: currentNumbers };
-  const simulation: ComponentProps<typeof SimulationCard> = { numbers: currentNumbers };
-  const picks: ComponentProps<typeof PicksCard> = { currentNumbers };
+  const statistics: StatisticsPanelProps = { myNumbers: currentNumbers };
+  const simulation: SimulationCardProps = { numbers: currentNumbers };
+  const picks: PicksCardProps = { currentNumbers };
 
   return { isGeneratorOpen, lotterietus, generator, tabs, statistics, simulation, picks };
 }

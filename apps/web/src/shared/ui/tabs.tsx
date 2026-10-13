@@ -5,7 +5,7 @@ export interface TabItem<K extends string> {
   label: string;
 }
 
-interface TabsProps<K extends string> {
+export interface TabsProps<K extends string> {
   items: readonly TabItem<K>[];
   active: K;
   onChange: (key: K) => void;

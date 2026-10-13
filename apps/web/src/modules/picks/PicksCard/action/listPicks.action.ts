@@ -22,5 +22,6 @@ export function useListPicksAction() {
     loading: entry === undefined || entry.status === "loading",
     error: entry?.error ?? null,
     picks: entry?.value ?? [],
+    retry: () => listPicksCache.invalidate(),
   };
 }

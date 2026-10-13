@@ -19,7 +19,9 @@ export function useGetStatisticsAction() {
   useEffect(() => statisticsCache.ensure(), []);
 
   return {
+    loading: entry === undefined || entry.status === "loading",
     error: entry?.error ?? null,
     stats: entry?.value ?? null,
+    retry: () => statisticsCache.invalidate(),
   };
 }

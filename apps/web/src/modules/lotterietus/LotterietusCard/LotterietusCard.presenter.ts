@@ -13,7 +13,7 @@ export function formatRemaining(ms: number): string {
 }
 
 export function useLotterietusCardPresenter() {
-  const { status, error } = useGetLotterietusStatusAction();
+  const { loading, status, error } = useGetLotterietusStatusAction();
   const [now, setNow] = useState(() => Date.now());
 
   // 카운트다운의 1초 틱 — 상호작용 상태이므로 조정자가 갖는다
@@ -23,6 +23,7 @@ export function useLotterietusCardPresenter() {
   }, []);
 
   return {
+    loading,
     status,
     error,
     remaining: status ? formatRemaining(status.nextDrawAt.getTime() - now) : null,

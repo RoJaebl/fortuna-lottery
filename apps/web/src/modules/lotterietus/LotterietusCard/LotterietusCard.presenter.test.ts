@@ -1,5 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { renderHook } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import { formatRemaining } from "./LotterietusCard.presenter";
+import { useGetLotterietusStatusAction } from "./action/getLotterietusStatus.action";
+import { useLotterietusCardPresenter } from "./LotterietusCard.presenter";
+
+vi.mock("./action/getLotterietusStatus.action", () => ({ useGetLotterietusStatusAction: vi.fn() }));
 
 describe("formatRemaining (카운트다운 presenter)", () => {
   it("일 단위가 있으면 D-표기", () => {
@@ -14,5 +19,14 @@ describe("formatRemaining (카운트다운 presenter)", () => {
   it("0 이하이면 추첨 시간", () => {
     expect(formatRemaining(0)).toBe("추첨 시간!");
     expect(formatRemaining(-100)).toBe("추첨 시간!");
+  });
+});
+
+describe("useLotterietusCardPresenter", () => {
+  it("불러오는 중이면 loading 이 참", () => {
+    vi.mocked(useGetLotterietusStatusAction).mockReturnValue({ loading: true, error: null, status: null, retry: vi.fn() });
+    const { result } = renderHook(() => useLotterietusCardPresenter());
+    expect(result.current.loading).toBe(true);
+    expect(result.current.remaining).toBeNull();
   });
 });
