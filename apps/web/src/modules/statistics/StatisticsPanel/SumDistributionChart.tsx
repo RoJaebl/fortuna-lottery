@@ -26,22 +26,22 @@ export function SumDistributionChart({ chart, subtitle, marker }: SumDistributio
             y={H - y * (H - 10)}
             width={2.4}
             height={y * (H - 10)}
-            fill="#38bdf8"
+            fill="var(--ui-info)"
             opacity={0.75}
           />
         ))}
         {marker ? (
           <g>
-            <line x1={marker.x * W} y1={0} x2={marker.x * W} y2={H} stroke="#f59e0b" strokeWidth={2} />
-            <text x={marker.x * W} y={H + 14} textAnchor="middle" fontSize={11} fill="#f59e0b">
+            <line x1={marker.x * W} y1={0} x2={marker.x * W} y2={H} stroke="var(--ui-warn)" strokeWidth={2} />
+            <text x={marker.x * W} y={H + 14} textAnchor="middle" fontSize={11} fill="var(--ui-warn)">
               내 합계 {marker.sum}
             </text>
           </g>
         ) : null}
-        <text x={0} y={H + 14} fontSize={10} fill="#64748b">
+        <text x={0} y={H + 14} fontSize={10} fill="var(--ui-muted)">
           {chart.minSum}
         </text>
-        <text x={W} y={H + 14} textAnchor="end" fontSize={10} fill="#64748b">
+        <text x={W} y={H + 14} textAnchor="end" fontSize={10} fill="var(--ui-muted)">
           {chart.maxSum}
         </text>
       </svg>

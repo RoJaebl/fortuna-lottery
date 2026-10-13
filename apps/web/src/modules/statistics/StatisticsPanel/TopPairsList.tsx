@@ -12,15 +12,15 @@ export interface TopPairsListProps {
 export function TopPairsList({ top, bars }: TopPairsListProps) {
   return (
     <Card title={`동시 출현 페어 TOP ${top}`} subtitle="함께 자주 나온 번호쌍">
-      <ul className="space-y-1.5">
+      <ul className="space-y-2">
         {bars.map(({ pair: [a, b], count, widthPercent }) => (
           <li key={`${a}-${b}`} className="flex items-center gap-2">
             <Ball n={a} size="sm" />
             <Ball n={b} size="sm" />
-            <div className="h-2 flex-1 overflow-hidden rounded bg-slate-100">
-              <div className="h-full rounded bg-sky-600" style={{ width: `${widthPercent}%` }} />
+            <div className="h-2 flex-1 overflow-hidden rounded bg-said">
+              <div className="h-full rounded bg-info" style={{ width: `${widthPercent}%` }} />
             </div>
-            <span className="w-10 text-right text-xs tabular-nums text-slate-500">{count}회</span>
+            <span className="w-10 text-right text-micro tabular-nums text-muted">{count}회</span>
           </li>
         ))}
       </ul>

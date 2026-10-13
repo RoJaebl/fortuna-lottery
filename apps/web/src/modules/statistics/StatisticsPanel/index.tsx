@@ -45,8 +45,8 @@ export interface StatisticsPanelProps {
 export function StatisticsPanel({ myNumbers }: StatisticsPanelProps) {
   const { error, tabs, views } = useStatisticsPanelPresenter(myNumbers);
 
-  if (error) return <p className="text-sm text-red-600">통계를 불러오지 못했습니다: {error}</p>;
-  if (!views) return <p className="text-sm text-slate-500">통계 계산 중…</p>;
+  if (error) return <p className="text-small text-danger">통계를 불러오지 못했습니다: {error}</p>;
+  if (!views) return <p className="text-small text-muted">통계 계산 중…</p>;
 
   return (
     <div className="space-y-4">

@@ -28,7 +28,7 @@ export function NumberFrequencyBars({ bars }: NumberFrequencyBarsProps) {
           />
         ))}
       </div>
-      <div className="mt-1 flex justify-between text-[10px] text-slate-500">
+      <div className="mt-1 flex justify-between text-nano text-muted">
         <span>1</span>
         <span>10</span>
         <span>20</span>

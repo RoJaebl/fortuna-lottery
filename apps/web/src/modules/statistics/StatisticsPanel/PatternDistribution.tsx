@@ -18,15 +18,15 @@ export interface PatternDistributionProps {
 
 function DistBars({ bars }: { bars: PatternBar[] }) {
   return (
-    <div className="flex items-end gap-1.5">
+    <div className="flex items-end gap-2">
       {bars.map(({ label, percent, heightPx, highlighted }) => (
         <div key={label} className="flex flex-1 flex-col items-center gap-1">
-          <span className="text-[10px] tabular-nums text-slate-500">{`${percent}%`}</span>
+          <span className="text-nano tabular-nums text-muted">{`${percent}%`}</span>
           <div
-            className={`w-full rounded-t ${highlighted ? "bg-amber-600" : "bg-sky-600/70"}`}
+            className={`w-full rounded-t ${highlighted ? "bg-warn" : "bg-info/70"}`}
             style={{ height: `${heightPx}px` }}
           />
-          <span className={`text-[10px] ${highlighted ? "font-bold text-amber-600" : "text-slate-500"}`}>
+          <span className={`text-nano ${highlighted ? "font-bold text-warn" : "text-muted"}`}>
             {label}
           </span>
         </div>
@@ -44,15 +44,15 @@ export function PatternDistribution({ subtitle, oddBars, lowBars, zoneBars }: Pa
     >
       <div className="space-y-5">
         <div>
-          <p className="mb-2 text-xs font-medium text-slate-500">홀수 개수 (0~6)</p>
+          <p className="mb-2 text-micro font-medium text-muted">홀수 개수 (0~6)</p>
           <DistBars bars={oddBars} />
         </div>
         <div>
-          <p className="mb-2 text-xs font-medium text-slate-500">{`저구간(1~${LOW_MAX}) 개수 (0~6)`}</p>
+          <p className="mb-2 text-micro font-medium text-muted">{`저구간(1~${LOW_MAX}) 개수 (0~6)`}</p>
           <DistBars bars={lowBars} />
         </div>
         <div>
-          <p className="mb-2 text-xs font-medium text-slate-500">구간별 총 출현</p>
+          <p className="mb-2 text-micro font-medium text-muted">구간별 총 출현</p>
           <DistBars bars={zoneBars} />
         </div>
       </div>

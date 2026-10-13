@@ -13,7 +13,7 @@ export interface RecentGridProps {
 export function RecentGrid({ range, columns }: RecentGridProps) {
   return (
     <Card title="회차별 잔디밭" subtitle={range}>
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto [scrollbar-gutter:stable]">
         <div
           className="grid gap-px"
           style={{
@@ -29,7 +29,7 @@ export function RecentGrid({ range, columns }: RecentGridProps) {
                 title={title}
                 className="rounded-[1px]"
                 style={{
-                  backgroundColor: present ? ballColor(n).bg : "#e2e8f0",
+                  backgroundColor: present ? ballColor(n).bg : "var(--ui-line)",
                 }}
               />
             )),

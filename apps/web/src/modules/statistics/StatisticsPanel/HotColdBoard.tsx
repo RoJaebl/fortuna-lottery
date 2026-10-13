@@ -20,23 +20,23 @@ export function HotColdBoard({ top, coldest, hottest }: HotColdBoardProps) {
     >
       <div className="space-y-4">
         <div>
-          <p className="mb-2 text-xs font-medium text-slate-500">{`오래 안 나온 번호 TOP ${top}`}</p>
+          <p className="mb-2 text-micro font-medium text-muted">{`오래 안 나온 번호 TOP ${top}`}</p>
           <div className="flex flex-wrap gap-2">
             {coldest.map(({ number, gapLabel }) => (
-              <div key={number} className="flex flex-col items-center gap-0.5">
+              <div key={number} className="flex flex-col items-center gap-1">
                 <Ball n={number} size="sm" dimmed />
-                <span className="text-[10px] tabular-nums text-slate-500">{gapLabel}</span>
+                <span className="text-nano tabular-nums text-muted">{gapLabel}</span>
               </div>
             ))}
           </div>
         </div>
         <div>
-          <p className="mb-2 text-xs font-medium text-slate-500">{`최근 나온 번호 TOP ${top}`}</p>
+          <p className="mb-2 text-micro font-medium text-muted">{`최근 나온 번호 TOP ${top}`}</p>
           <div className="flex flex-wrap gap-2">
             {hottest.map(({ number, gapLabel }) => (
-              <div key={number} className="flex flex-col items-center gap-0.5">
+              <div key={number} className="flex flex-col items-center gap-1">
                 <Ball n={number} size="sm" glow={0.7} />
-                <span className="text-[10px] tabular-nums text-slate-500">{gapLabel}</span>
+                <span className="text-nano tabular-nums text-muted">{gapLabel}</span>
               </div>
             ))}
           </div>

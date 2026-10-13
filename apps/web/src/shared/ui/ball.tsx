@@ -11,7 +11,7 @@ interface BallProps {
   ring?: boolean;
 }
 
-const SIZES = { sm: "h-7 w-7 text-xs", md: "h-9 w-9 text-sm", lg: "h-11 w-11 text-base" };
+const SIZES = { sm: "h-7 w-7 text-micro", md: "h-9 w-9 text-small", lg: "h-11 w-11 text-body" };
 
 /** 로또 공 — 색상 규칙 고정, 강조는 글로우/링/명도로만 */
 export function Ball({ n, size = "md", glow = 0, dimmed = false, ring = false }: BallProps) {
@@ -22,7 +22,7 @@ export function Ball({ n, size = "md", glow = 0, dimmed = false, ring = false }:
       : undefined;
   return (
     <span
-      className={`inline-flex items-center justify-center rounded-full font-bold tabular-nums select-none ${SIZES[size]} ${dimmed ? "opacity-30" : ""} ${ring ? "ring-2 ring-slate-900" : ""}`}
+      className={`inline-flex items-center justify-center rounded-full font-bold tabular-nums select-none ${SIZES[size]} ${dimmed ? "opacity-30" : ""} ${ring ? "ring-2 ring-text" : ""}`}
       style={{ backgroundColor: color.bg, color: color.text, boxShadow: shadow }}
       title={`${n}번`}
     >
