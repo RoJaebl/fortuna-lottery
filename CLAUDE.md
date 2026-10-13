@@ -146,9 +146,9 @@ tools/checks/        이관 상태 스크립트와 규칙마다 하나씩 둔 �
   꽂는다.** 예를 들어 `picks` 와 `results` 는 각자 `CurrentUserPort` 를 갖고, 둘 다 `IdentityFacade` 를 받는다.
   모듈 등록도 `CompositionModule` 이 하고, `app.module` 은 그것만 import 한다.
 - **`context/` 는 입력을 모으는 일이 무거운 모듈에만 둔다.** 지금은 `results` 만 갖는다(`ResultsCheckContext`).
-- **수집 스케줄러는 `lotterietus/interface/api/LotterietusIngestScheduler.ts` 다.** 옛 워커처럼 「다음 추첨 +
+- **수집 스케줄러는 `lotterietus/interface/schedule/LotterietusIngestScheduler.ts` 다.** 옛 워커처럼 「다음 추첨 +
   10분, 실패하면 5분 뒤」로 `setTimeout` 을 걸고, 종료 때 타이머를 지운다. 고정 cron 으로는 이 동작을
-  옮길 수 없어 `@nestjs/schedule` 을 쓰지 않는다. 켜고 끄는 값은 모듈 공급자로 주입한 boolean 이다.
+  옮길 수 없어 `@nestjs/schedule` 을 쓰지 않는다. 설정(`CONFIG`)의 `schedulerEnabled` 로 켠다.
 - **모듈 시험은 모듈 뿌리에 둔다.** `modules/<도메인>/<도메인>Module.test.ts` 가 그 모듈 하나를 띄우고
   `configureApp` 으로 실제 접두를 건 뒤 HTTP 로 부른다. 유스케이스 시험은 `business/` 의 파일 옆에 둔다.
 - **셸의 조정자는 `apps/web/src/app/Home.presenter.ts` 다.** 모듈 사이에 오가는 상태 셋(현재 조합,

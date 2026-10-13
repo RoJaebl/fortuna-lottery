@@ -23,16 +23,13 @@ describe("getLotterietusStatus (로또 현황)", () => {
 
     expect(getAllDraws).toHaveBeenCalledTimes(1);
     expect(result).toEqual({
-      round: 11,
-      numbers: [10, 20, 30, 40, 41, 42],
-      bonus: 43,
-      drawnAt: "2026-07-04T11:35:00.000Z",
+      latest: draws[1],
       nextRound: 12,
-      nextDrawAt: "2026-07-04T11:35:00.000Z",
+      nextDrawAt: new Date("2026-07-04T11:35:00.000Z"),
     });
   });
 
-  it("회차 데이터가 없으면 회차 0/빈 번호로, 다음 회차는 1로 반환한다", async () => {
+  it("회차 데이터가 없으면 최근 회차는 없고(null), 다음 회차는 1로 반환한다", async () => {
     const getStatus = new GetLotterietusStatus(
       fakeDrawPort([]),
       () => new Date("2026-07-01T00:00:00.000Z"),
@@ -41,12 +38,9 @@ describe("getLotterietusStatus (로또 현황)", () => {
     const result = await getStatus.execute();
 
     expect(result).toEqual({
-      round: 0,
-      numbers: [],
-      bonus: 0,
-      drawnAt: "",
+      latest: null,
       nextRound: 1,
-      nextDrawAt: "2026-07-04T11:35:00.000Z",
+      nextDrawAt: new Date("2026-07-04T11:35:00.000Z"),
     });
   });
 });

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
-import type { LotterietusStatusResponse } from "@fortuna-lottery/contract/lotterietus";
+import type { LotterietusStatus } from "../domain/model/LotterietusStatus.model.js";
 import { nextDrawAt } from "../domain/model/schedule.js";
 import { CLOCK, type ClockPort } from "../domain/port/ClockPort.js";
 import { DRAW_DATA, type DrawDataPort } from "../domain/port/DrawDataPort.js";
@@ -12,16 +12,13 @@ export class GetLotterietusStatus {
     @Inject(CLOCK) private readonly clock: ClockPort,
   ) {}
 
-  async execute(): Promise<LotterietusStatusResponse> {
+  async execute(): Promise<LotterietusStatus> {
     const draws = await this.drawData.getAllDraws();
-    const latest = draws[draws.length - 1];
+    const latest = draws[draws.length - 1] ?? null;
     return {
-      round: latest?.round ?? 0,
-      numbers: latest ? [...latest.numbers] : [],
-      bonus: latest?.bonus ?? 0,
-      drawnAt: latest?.drawnAt ?? "",
+      latest,
       nextRound: (latest?.round ?? 0) + 1,
-      nextDrawAt: nextDrawAt(this.clock()).toISOString(),
+      nextDrawAt: nextDrawAt(this.clock()),
     };
   }
 }

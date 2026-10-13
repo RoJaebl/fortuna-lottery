@@ -1,9 +1,10 @@
 import { Logger } from "@nestjs/common";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import type { ApiConfig } from "../../config.js";
 import type { LotterietusFacade } from "./interface/facade/LotterietusFacade.js";
-import { LotterietusIngestScheduler } from "./interface/api/LotterietusIngestScheduler.js";
+import { LotterietusIngestScheduler } from "./interface/schedule/LotterietusIngestScheduler.js";
 
-// 스케줄러는 interface/api 에 살지만, 그 안에서는 같은 폴더 파일도 import 할 수 없어(api-imports-no-module) 모듈 루트에 둔다.
+// 스케줄러는 interface/schedule 에 살지만, 그 안에서는 같은 폴더 파일도 import 할 수 없어(api-imports-no-module) 모듈 루트에 둔다.
 // 가짜 시계로 「성공하면 다음 추첨 + 10분, 실패하면 5분 뒤」와 「종료하면 대기 타이머가 남지 않는다」를 묶는다(Review Focus 5)
 
 const MINUTE = 60 * 1000;
@@ -11,10 +12,11 @@ const MINUTE = 60 * 1000;
 const NOW = new Date("2026-07-01T00:00:00.000Z");
 const UNTIL_NEXT_DRAW_PLUS_BUFFER = new Date("2026-07-04T11:45:00.000Z").getTime() - NOW.getTime();
 
-const result = { startRound: 1, latestRound: 1, ingestedCount: 0, requestCount: 1 };
+const result = { latestRound: 1, ingestedCount: 0 };
 function setup(ingest: () => Promise<typeof result>, enabled = true) {
-  const facade = { ingest: vi.fn(ingest), nextDrawAt: () => new Date("2026-07-04T11:35:00.000Z") };
-  const scheduler = new LotterietusIngestScheduler(facade as unknown as LotterietusFacade, enabled);
+  const facade = { ingest: vi.fn(ingest), nextDrawAt: () => "2026-07-04T11:35:00.000Z" };
+  const config = { port: 0, schedulerEnabled: enabled } satisfies ApiConfig;
+  const scheduler = new LotterietusIngestScheduler(facade as unknown as LotterietusFacade, config);
   return { facade, scheduler };
 }
 
