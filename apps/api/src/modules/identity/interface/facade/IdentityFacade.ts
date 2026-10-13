@@ -7,7 +7,9 @@ import { IDENTITY_PORT, type IdentityPort } from "../../domain/port/IdentityPort
 export class IdentityFacade {
   constructor(@Inject(IDENTITY_PORT) private readonly identity: IdentityPort) {}
 
-  currentUser(): Promise<User> {
-    return this.identity.currentUser();
+  /** 어댑터의 객체를 그대로 내보내지 않고 새 객체로 옮긴다 */
+  async currentUser(): Promise<User> {
+    const { id, isGuest } = await this.identity.currentUser();
+    return { id, isGuest };
   }
 }

@@ -1,6 +1,6 @@
-import { Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import type { PicksItem, PicksListResponse, PicksSaveRequest } from "@fortuna-lottery/contract/picks";
-import { RequestRejected } from "../../../../infrastructure/http/RequestRejected.js";
+import { RequestRejected, ResourceNotFound } from "../../../../infrastructure/http/RequestRejected.js";
 import { DeletePick } from "../../business/DeletePick.js";
 import { ListPicks } from "../../business/ListPicks.js";
 import { SavePick } from "../../business/SavePick.js";
@@ -43,8 +43,7 @@ export class PicksFacade {
   async delete(pickId: string): Promise<{ deleted: true }> {
     const { id } = await this.user.currentUser();
     const result = await this.deletePick.execute(id, pickId);
-    // 옛 처리기가 404 { error } 를 냈다 — 객체를 넘기면 그 모양 그대로 본문이 된다
-    if (!result.ok) throw new NotFoundException({ error: result.error });
+    if (!result.ok) throw new ResourceNotFound(result.error);
     return result.value;
   }
 }
