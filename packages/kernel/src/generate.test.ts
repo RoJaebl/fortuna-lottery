@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mulberry32 } from "@fortuna-lottery/kernel";
+import { mulberry32 } from "./rng.js";
 import { generate } from "./generate.js";
 
 describe("generate (조합 생성)", () => {
