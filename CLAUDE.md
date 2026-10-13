@@ -62,8 +62,8 @@ pnpm build                   # turbo build
 `SCHEDULER_ENABLED` 를 적지 않으면 회차 수집 스케줄러는 `dev` 스크립트(watch 로 자주 재시작한다)에서
 꺼지고 `start` 에서 켜져 동행복권 원격을 부른다. 적으면 그 값이 이긴다 — `dev` 에서 수집하려면 `true`,
 `start` 에서 끄려면 `false`.
-`apps/web` 은 `API_ORIGIN`(기본값 `http://localhost:4000`)으로 `apps/api` 의 주소를 받는다. 이 값은
-`next build` 때 굳는다 — `rewrites` 가 빌드 때 평가되므로, 바꾸려면 그 값으로 다시 빌드한다.
+`apps/web` 은 `API_ORIGIN`(기본값 `http://127.0.0.1:4000`)으로 `apps/api` 의 주소를 받는다. 이 값은
+요청마다 실행 때 읽으므로 빌드 때 굳지 않는다 — 바꾸려면 프로세스를 다시 띄우면 된다.
 
 특정 패키지만 빠르게 돌릴 때는 turbo 를 거치지 않는다.
 
@@ -130,9 +130,10 @@ tools/checks/        이관 상태 스크립트와 규칙마다 하나씩 둔 �
 
 아래는 골조 문서가 규정하지 않아 이 저장소가 정한 것이다. 바꾸려면 여기와 코드를 함께 고친다.
 
-- **브라우저는 여전히 `apps/web` 의 `/api/*` 를 부른다.** `apps/web/next.config.ts` 의 `rewrites()` 가
-  `fallback` 단계에서 `/api/:path*` 를 `${API_ORIGIN}/api/:path*` 로 넘긴다. Next 경로 처리기는 남아 있지
-  않다. 플랫폼 기능 한 줄로 끝나고 CORS 를 열 필요가 없다.
+- **브라우저는 여전히 `apps/web` 의 `/api/*` 를 부른다.** `apps/web/src/app/api/[...path]/route.ts` 의 Next
+  경로 처리기가 `shared/lib/apiProxy.ts` 의 `proxyToApi` 로 요청(메서드·헤더·본문·쿼리)을 `${API_ORIGIN}/api/...`
+  로 그대로 넘긴다. 주소는 요청마다 읽는다(기본값 `http://127.0.0.1:4000`). 응용 서버에 닿지 않으면 503
+  `{ "error": "서버에 닿지 않습니다" }` 를 돌려주고 로그는 5 초에 한 줄만 남긴다. CORS 를 열 필요가 없다.
 - **로또 순수 커널은 `packages/kernel` 에 둔다.** 여러 서버 모듈이 함께 쓰므로 모듈 하나에 두면
   `no-cross-module-import` 에 걸린다. `apps/web` 은 커널을 참조하지 않는다(`web-must-not-reach-kernel`).
 - **서버의 `domain/model/` 은 의존이 없다.** 커널은 `business/`(필요하면 어댑터)에서만 런타임으로 쓴다.

@@ -1,15 +1,6 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
-  // /api/** 는 모두 응용 서버(apps/api)가 받는다 — Next 경로 처리기는 남아 있지 않다
-  rewrites: async () => ({
-    fallback: [
-      {
-        source: "/api/:path*",
-        destination: `${process.env.API_ORIGIN ?? "http://localhost:4000"}/api/:path*`,
-      },
-    ],
-  }),
-};
+// /api/** 는 app/api/[...path]/route.ts 의 프록시가 실행 시점에 응용 서버(apps/api)로 넘긴다
+const nextConfig: NextConfig = {};
 
 export default nextConfig;

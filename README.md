@@ -18,7 +18,7 @@ packages/contract/   zod 와이어 계약 — 두 앱이 참조한다
 packages/kernel/     로또 순수 커널 — apps/api 만 참조한다
 ```
 
-- 브라우저는 `apps/web` 의 `/api/*` 를 부르고, Next `rewrites` 가 그것을 `apps/api` 로 넘긴다.
+- 브라우저는 `apps/web` 의 `/api/*` 를 부르고, Next 경로 처리기(`app/api/[...path]/route.ts`)가 그것을 `apps/api` 로 넘긴다.
 - 의존 방향과 층 경계는 dependency-cruiser 가, 화면 코드의 모양은 ESLint 가 강제한다.
 - 픽은 아직 서버 메모리에 저장되고, 인증은 없다(게스트 모드).
 
@@ -37,4 +37,4 @@ pnpm build             # 프로덕션 빌드
 
 - `apps/api` 는 기동할 때 `apps/api/.env` 를 스스로 싣는다(이미 있는 환경 변수가 이긴다).
 - 회차 수집 스케줄러는 `SCHEDULER_ENABLED` 를 적지 않으면 `dev` 에서 꺼지고 `start` 에서 켜진다. 적으면 그 값이 이긴다.
-- `apps/web` 이 `apps/api` 로 넘기는 주소 `API_ORIGIN`(기본값 `http://localhost:4000`)은 `next build` 때 굳는다 — `rewrites` 가 빌드 때 평가되기 때문이다. 바꾸려면 그 값으로 다시 빌드한다.
+- `apps/web` 이 `apps/api` 로 넘기는 주소 `API_ORIGIN`(기본값 `http://127.0.0.1:4000`)은 요청마다 실행 때 읽는다 — 바꾸려면 프로세스를 다시 띄우면 된다. 응용 서버에 닿지 않으면 `/api/*` 는 503 을 돌려준다.
