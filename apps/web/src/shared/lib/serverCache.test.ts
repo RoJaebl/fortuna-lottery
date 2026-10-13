@@ -35,6 +35,29 @@ describe("createServerCache", () => {
     expect(load).toHaveBeenCalledTimes(2);
   });
 
+  it("조건이 없는(void) 캐시도 invalidate 하면 보고 있는 값을 다시 받고 알린다", async () => {
+    let n = 0;
+    let resolveSecond!: (v: number) => void;
+    const load = vi.fn<() => Promise<number>>().mockImplementationOnce(async () => ++n).mockImplementationOnce(
+      () => new Promise((r) => (resolveSecond = r)),
+    );
+    const cache = createServerCache<void, number>(() => "k", load);
+    const fn = vi.fn();
+    cache.subscribe(undefined, fn);
+    cache.ensure();
+    await flush();
+    fn.mockClear();
+
+    cache.invalidate();
+
+    expect(load).toHaveBeenCalledTimes(2);
+    expect(fn).toHaveBeenCalled();
+    expect(cache.read()).toEqual({ status: "loading", value: 1, error: null });
+    resolveSecond(2);
+    await flush();
+    expect(cache.read()).toEqual({ status: "ready", value: 2, error: null });
+  });
+
   it("넘어간 요청의 응답은 버린다", async () => {
     let resolveFirst!: (v: string) => void;
     const load = vi

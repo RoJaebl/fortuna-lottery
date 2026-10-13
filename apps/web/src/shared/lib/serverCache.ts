@@ -46,8 +46,8 @@ export function createServerCache<Q, V>(keyOf: (query: Q) => string, load: (quer
      */
     invalidate() {
       for (const key of [...entries.keys()]) {
-        const query = queries.get(key);
-        if (watchers.has(key) && query !== undefined) void fetchInto(key, query);
+        // Q 가 void 면 조건 값이 undefined 이므로 값이 아니라 키의 유무로 가린다
+        if (watchers.has(key) && queries.has(key)) void fetchInto(key, queries.get(key) as Q);
         else entries.delete(key);
       }
     },
