@@ -30,5 +30,8 @@ export function useEvaluateAssumptionAction() {
     }
   }, []);
 
-  return { run, result, pending, error };
+  /** 가정이 바뀌면 앞선 결과는 다른 가정을 말하므로 비운다 */
+  const clear = useCallback(() => setResult(null), []);
+
+  return { run, result, pending, error, clear };
 }

@@ -11,15 +11,18 @@ export function useCheckPopularityAction(numbers: number[] | null) {
   const [result, setResult] = useState<PopularityViewModel | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // 배열의 정체가 아니라 내용이 바뀔 때만 다시 묻는다 — 렌더마다 새 배열을 넘겨도 요청이 되풀이되지 않는다
+  const key = numbers ? numbers.join(",") : null;
+
   useEffect(() => {
     setResult(null);
     setError(null);
-    if (!numbers) return;
+    if (key === null) return;
     let stale = false;
     fetchJson<Parameters<typeof hypothesisPopularityResponse>[0]>("/api/hypothesis/popularity", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(hypothesisPopularityRequest(numbers)),
+      body: JSON.stringify(hypothesisPopularityRequest(key.split(",").map(Number))),
     })
       .then((res) => {
         if (!stale) setResult(hypothesisPopularityResponse(res));
@@ -30,7 +33,7 @@ export function useCheckPopularityAction(numbers: number[] | null) {
     return () => {
       stale = true;
     };
-  }, [numbers]);
+  }, [key]);
 
   return { result, error };
 }

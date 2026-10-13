@@ -26,11 +26,20 @@ export function useHypothesisLabPresenter(numbers: number[] | null, onGenerated:
 
   return {
     excludePastWinners,
-    toggleExcludePastWinners: () => setExcludePastWinners((v) => !v),
+    toggleExcludePastWinners: () => {
+      setExcludePastWinners((v) => !v);
+      evaluation.clear();
+    },
     topKEnabled,
-    toggleTopK: () => setTopKEnabled((v) => !v),
+    toggleTopK: () => {
+      setTopKEnabled((v) => !v);
+      evaluation.clear();
+    },
     topK,
-    changeTopK: (value: string) => setTopK(Number(value)),
+    changeTopK: (value: string) => {
+      setTopK(Number(value));
+      evaluation.clear();
+    },
     evaluate: () => void evaluation.run(assumption),
     evaluateLabel: evaluation.pending ? "평가 중…" : "가정 평가",
     evaluateDisabled: evaluation.pending,
