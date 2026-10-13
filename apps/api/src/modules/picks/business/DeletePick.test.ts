@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { InMemoryPickRepository } from "../domain/adapter/InMemoryPickRepository.js";
+import { FakePickRepository } from "./fakePickRepository.test-helper.js";
 import { DeletePick } from "./DeletePick.js";
 import { ListPicks } from "./ListPicks.js";
 import { SavePick } from "./SavePick.js";
 
 const setup = () => {
-  const repository = new InMemoryPickRepository();
+  const repository = new FakePickRepository();
   let seq = 0;
   let tick = 0;
   const savePick = new SavePick(

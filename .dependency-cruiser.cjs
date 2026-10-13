@@ -77,8 +77,7 @@ module.exports = {
       name: 'business-must-not-reach-adapter',
       comment: '유스케이스는 포트로만 받는다 — backend §7. vault §3 전문에 없는 저장소 규칙',
       severity: 'error',
-      // 시험은 제품 코드가 아니다 — 유스케이스 시험이 메모리 어댑터를 대역으로 꽂는 것은 허용한다(domain-model-has-zero-dependencies 와 같은 취급)
-      from: { path: '/(business|context)/', pathNot: '\\.test\\.ts$' },
+      from: { path: '/(business|context)/' },
       to:   { path: '/domain/adapter/' },
     },
     {
