@@ -1,5 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
-import type { LotterietusDraw, LotterietusStatusResponse } from "@fortuna-lottery/contract/lotterietus";
+import type { LotterietusDraw, LotterietusReadResponse } from "@fortuna-lottery/contract/lotterietus";
 import { GetLotterietusStatus } from "../../business/GetLotterietusStatus.js";
 import { GetNextDrawAt } from "../../business/GetNextDrawAt.js";
 import { IngestDraws } from "../../business/IngestDraws.js";
@@ -28,7 +28,7 @@ export class LotterietusFacade {
     @Inject(GetNextDrawAt) private readonly getNextDrawAt: GetNextDrawAt,
   ) {}
 
-  async status(): Promise<LotterietusStatusResponse> {
+  async status(): Promise<LotterietusReadResponse> {
     const { latest, nextRound, nextDrawAt } = await this.getStatus.execute();
     // 회차가 하나도 없으면 옛 응답 모양 그대로 회차 0·빈 번호로 낸다
     return {

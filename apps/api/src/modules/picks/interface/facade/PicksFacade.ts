@@ -1,5 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
-import type { PicksItem, PicksListResponse, PicksSaveRequest } from "@fortuna-lottery/contract/picks";
+import type { PicksCreateRequest, PicksCreateResponse, PicksDeleteResponse, PicksItem, PicksListResponse } from "@fortuna-lottery/contract/picks";
 import { RequestRejected, ResourceNotFound } from "../../../../infrastructure/http/RequestRejected.js";
 import { DeletePick } from "../../business/DeletePick.js";
 import { ListPicks } from "../../business/ListPicks.js";
@@ -33,14 +33,14 @@ export class PicksFacade {
     return (await this.listPicks.execute(userId)).map(toItem);
   }
 
-  async save(request: PicksSaveRequest): Promise<PicksItem> {
+  async save(request: PicksCreateRequest): Promise<PicksCreateResponse> {
     const { id } = await this.user.currentUser();
     const result = await this.savePick.execute(id, request);
     if (!result.ok) throw new RequestRejected(result.error);
     return toItem(result.value);
   }
 
-  async delete(pickId: string): Promise<{ deleted: true }> {
+  async delete(pickId: string): Promise<PicksDeleteResponse> {
     const { id } = await this.user.currentUser();
     const result = await this.deletePick.execute(id, pickId);
     if (!result.ok) throw new ResourceNotFound(result.error);
