@@ -28,7 +28,7 @@
 
 - 문서·절: boundary-enforcement §3.
 - 지금 문구: 어댑터를 `business`·`context` 가 가져오면 안 된다는 규칙이 없다.
-- 문제: 이 저장소는 `business-must-not-reach-adapter` 를 더했다. 시험 파일도 예외로 두지 않았고, `picks` 의 `business/` 시험 셋은 시험 안의 가짜 저장소로 다시 썼다.
+- 문제: 이 저장소는 `business-must-not-reach-adapter` 를 더했다. 시험 파일도 예외로 두지 않았고, `picks` 의 `business/` 시험 셋은 공용 `business/fakePickRepository.test-helper.ts`(포트를 구현하고 어댑터는 가져오지 않는다)를 쓰게 다시 썼다.
 - 제안: 같은 규칙을 §3 에 싣고 시험 파일을 예외로 두지 않는다고 적는다.
 
 ## 5. 뷰 폴더 공개 표면 규칙의 설정 전문이 없다

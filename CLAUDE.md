@@ -65,7 +65,7 @@ pnpm test:tools              # 런처 시험(node --test)
 `pnpm start` 에서 켜져 동행복권 원격을 부른다. 적으면 그 값이 이긴다 — `dev` 에서 수집하려면 `true`,
 `start` 에서 끄려면 `false`. 이 기본값은 런처가 서버에 넘기는 `FORTUNA_MODE`(`dev`/`start`)가 정하고, 런처 없이
 띄우면 `npm_lifecycle_event` 로 가린다. `FORTUNA_STRICT_PORT=1` 이면 `apps/api` 는 받은 `PORT` 를 옮기지 않고,
-쥐여 있으면 5 초 기다린 뒤 `EADDRINUSE` 로 죽는다.
+쥐여 있으면 5 번 시도(약 4 초)한 뒤 `EADDRINUSE` 로 죽는다.
 포트를 고르는 자리는 런처 하나다 — 사람 셸의 `PORT`·`HOST` 는 자식에 넘기지 않는다. `pnpm start` 는 운영자가 적은
 `FORTUNA_WEB_PORT`·`FORTUNA_API_PORT` 에 고정으로 서고 쥐여 있으면 실패한다(vault 규약에서 의도해 벗어난 자리다).
 환경 이름 표와 근거는 `.claude/context/launcher-ports.md` 가 갖는다.
@@ -157,15 +157,14 @@ tools/launch/        런처 — pnpm dev·pnpm start 가 부르고 포트를 고
 - **`context/` 는 입력을 모으는 일이 무거운 모듈에만 둔다.** 지금은 `results` 만 갖는다(`ResultsCheckContext`).
 - **수집 스케줄러는 `lotterietus/interface/schedule/LotterietusIngestScheduler.ts` 다.** 옛 워커처럼 「다음 추첨 +
   10분, 실패하면 5분 뒤」로 `setTimeout` 을 걸고, 종료 때 타이머를 지운다. 고정 cron 으로는 이 동작을
-  옮길 수 없어 `@nestjs/schedule` 을 쓰지 않는다. 설정(`CONFIG`)의 `schedulerEnabled` 로 켠다.
+  옮길 수 없어 `@nestjs/schedule` 을 쓰지 않는다. `interface/schedule/` 은 골조에 HTTP 가 아닌 들어오는 자리의
+  폴더가 없어 정했고, 의존 규칙은 `interface/api` 와 같다(`api-imports-no-module`). 설정(`CONFIG`)의
+  `schedulerEnabled` 를 직접 읽어 켠다 — 골조는 설정을 `interface/facade/` 만 보게 하지만 스케줄러도 본다.
 - **컨트롤러는 `apps/api/src/infrastructure/http/parseRequest` 를 쓴다.** 계약 스키마로 요청 모양을 검사하는
   공용 도구다. backend-module-layout §2 표는 `interface/api` 가 `infrastructure/` 를 보게 하지 않지만 이 저장소는
   보게 한다(의도한 이탈).
-- **스케줄러는 `interface/schedule/` 에 두고 `CONFIG` 를 직접 읽는다.** 골조에 HTTP 가 아닌 들어오는 자리의 폴더가
-  없어 정했다. 의존 규칙은 `interface/api` 와 같다(`api-imports-no-module`). 골조는 설정을 `interface/facade/` 만
-  보게 하지만 스케줄러도 본다.
 - **`business-must-not-reach-adapter` 는 이 저장소가 더한 규칙이다.** `business/`·`context/` 는 `domain/adapter` 를
-  가져오지 못한다. 시험 파일도 예외가 아니다 — `picks` 의 `business/` 시험은 시험 안의 가짜 저장소를 쓴다.
+  가져오지 못한다. 시험 파일도 예외가 아니다 — `picks` 의 `business/` 시험은 공용 `business/fakePickRepository.test-helper.ts`(포트를 구현하고 어댑터는 가져오지 않는다)를 쓴다.
 - **`pnpm start` 의 운영자 포트는 고정이다.** `FORTUNA_WEB_PORT`·`FORTUNA_API_PORT` 가 쥐여 있으면 실패한다
   (launcher-ports 의 「피해 간다」에서 의도해 벗어난 자리).
 - **vault 골조 문서에 올릴 어긋남은 [보고 문서](<docs/superpowers/reports/2026-10-13-vault-feedback.md>)에 모았다.**

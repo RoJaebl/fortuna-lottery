@@ -19,7 +19,7 @@
   --ui-text: #182230;
   --ui-muted: #5c6b7a;
 
-  /* 액션 — 주 단추는 유채색이 아니다 */
+  /* 액션 — 이 저장소는 브랜드 초록을 strong 자리에 둔다(.claude/context/design-system.md) */
   --ui-strong: #047857;
   --ui-on-strong: #ffffff;
   --ui-accent: #065f46;

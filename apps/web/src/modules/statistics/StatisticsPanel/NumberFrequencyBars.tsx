@@ -14,7 +14,7 @@ export function NumberFrequencyBars({ bars }: NumberFrequencyBarsProps) {
       subtitle="전 회차에서 각 번호가 뽑힌 비율"
       footnote="이론상 모든 번호의 기대 확률은 동일합니다 (6/45 ≈ 13.3%). 편차는 우연입니다."
     >
-      <div className="flex h-36 items-end gap-[3px]">
+      <div className="flex h-36 items-end gap-1">
         {bars.map(({ number, count, heightPercent, sharePercent }) => (
           <div
             key={number}

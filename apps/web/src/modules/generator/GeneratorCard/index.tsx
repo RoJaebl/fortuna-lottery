@@ -20,7 +20,7 @@ export function GeneratorCard({ onGenerated }: GeneratorCardProps) {
             onClick={() => card.changeMode(key)}
             className={`rounded-box px-3 py-2 text-small font-medium transition-colors ${
               active
-                ? "bg-strong text-on-strong"
+                ? "bg-accent text-on-strong"
                 : "bg-said text-text hover:bg-inset"
             }`}
           >
@@ -38,7 +38,7 @@ export function GeneratorCard({ onGenerated }: GeneratorCardProps) {
               onClick={() => card.toggleNumber(n)}
               className={`rounded-button py-1 text-micro font-semibold tabular-nums transition-colors ${
                 selected
-                  ? "bg-strong text-on-strong"
+                  ? "bg-accent text-on-strong"
                   : "bg-said text-muted hover:bg-inset"
               }`}
             >

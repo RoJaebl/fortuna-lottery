@@ -26,7 +26,7 @@ export function SumDistributionChart({ chart, subtitle, marker }: SumDistributio
             y={H - y * (H - 10)}
             width={2.4}
             height={y * (H - 10)}
-            fill="var(--ui-info)"
+            fill="var(--ui-accent)"
             opacity={0.75}
           />
         ))}

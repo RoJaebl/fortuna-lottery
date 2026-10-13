@@ -50,6 +50,15 @@ describe("proxyToApi", () => {
     expect(await response.json()).toEqual({ message: "없음" });
   });
 
+  it("경로 마디의 슬래시와 물음표는 인코딩해 넘긴다", async () => {
+    const fetchImpl = vi.fn(async (..._args: unknown[]) => new Response("{}", { status: 200 }));
+    await proxyToApi(new Request("http://web.test/api/x"), ["a/b?c", "d"], {
+      origin: "http://api.test",
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+    expect(fetchImpl.mock.calls[0]?.[0]).toBe("http://api.test/api/a%2Fb%3Fc/d");
+  });
+
   it("연결이 거절되면 503 과 오류 본문을 돌려준다", async () => {
     const response = await proxyToApi(new Request("http://web.test/api/x"), ["x"], {
       origin: "http://api.test",

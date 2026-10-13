@@ -35,7 +35,7 @@ export function LotterietusCard({ generatorOpen, onToggleGenerator }: Lotterietu
             <p className="text-micro text-muted">
               다음 추첨까지 · 제{status.nextRound}회 · 매주 토요일 20:35
             </p>
-            <p className="mt-3 text-display font-bold tabular-nums text-info">{remaining ?? "…"}</p>
+            <p className="mt-3 text-display font-bold tabular-nums text-text">{remaining ?? "…"}</p>
           </div>
         </div>
       ) : loading ? (

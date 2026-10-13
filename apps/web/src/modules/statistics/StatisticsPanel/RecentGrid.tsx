@@ -27,7 +27,7 @@ export function RecentGrid({ range, columns }: RecentGridProps) {
               <div
                 key={`${round}-${n}`}
                 title={title}
-                className="rounded-[1px]"
+                className="rounded-none"
                 style={{
                   backgroundColor: present ? ballColor(n).bg : "var(--ui-line)",
                 }}

@@ -279,9 +279,15 @@ async function dev() {
     restarting = true;
     if (api) {
       api.replaced = true;
-      await stop(api);
+      await Promise.race([stop(api), new Promise((resolve) => setTimeout(resolve, FORCE_AFTER_MS).unref())]);
       await waitGroupGone(api.pid, FORCE_AFTER_MS);
-      if (groupAlive(api.pid)) process.kill(-api.pid, "SIGKILL");
+      if (groupAlive(api.pid)) {
+        try {
+          process.kill(-api.pid, "SIGKILL");
+        } catch {
+          // 묶음이 그사이 사라졌다(ESRCH) — 할 일이 없다
+        }
+      }
     }
     if (!shuttingDown) api = startApi();
     restarting = false;

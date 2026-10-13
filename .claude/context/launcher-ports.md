@@ -31,7 +31,7 @@
 |---|---|---|---|
 | `PORT` | 런처 | 화면 · 서버 | 설 포트. 서버는 혼자 뜨면 기본 4000, 화면은 `next dev/start -p <PORT>` 로 받는다. 사람의 셸에 있는 값은 런처가 지운다 |
 | `API_ORIGIN` | 런처 | 화면의 `/api/*` 경로 처리기 | 서버 주소 `http://127.0.0.1:<서버 포트>`. 요청마다 읽는다. 없으면 `http://127.0.0.1:4000` |
-| `FORTUNA_STRICT_PORT` | 런처 | 서버 | `1` 이면 `PORT` 를 옮기지 않고, 쥐여 있으면 5 초(1 초 × 5 번) 기다린 뒤 `EADDRINUSE` 로 죽는다 |
+| `FORTUNA_STRICT_PORT` | 런처 | 서버 | `1` 이면 `PORT` 를 옮기지 않고, 쥐여 있으면 5 번 시도(약 4 초)한 뒤 `EADDRINUSE` 로 죽는다 |
 | `FORTUNA_MODE` | 런처 | 서버 | `dev`·`start`. 스케줄러 기본값을 정한다. `SCHEDULER_ENABLED` 를 적으면 그 값이 이긴다 |
 | `FORTUNA_WEB_PORT` | 운영자 | 런처(`start`) | 화면이 설 고정 포트 |
 | `FORTUNA_API_PORT` | 운영자 | 런처(`start`) | 서버가 설 고정 포트 |

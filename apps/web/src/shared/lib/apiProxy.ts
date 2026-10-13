@@ -34,7 +34,7 @@ export async function proxyToApi(
   const now = deps.now ?? Date.now;
 
   const search = new URL(request.url).search;
-  const target = `${origin}/api/${path.join("/")}${search}`;
+  const target = `${origin}/api/${path.map(encodeURIComponent).join("/")}${search}`;
 
   const headers = new Headers(request.headers);
   for (const name of DROPPED_REQUEST_HEADERS) headers.delete(name);

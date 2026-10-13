@@ -18,7 +18,7 @@ export function TopPairsList({ top, bars }: TopPairsListProps) {
             <Ball n={a} size="sm" />
             <Ball n={b} size="sm" />
             <div className="h-2 flex-1 overflow-hidden rounded bg-said">
-              <div className="h-full rounded bg-info" style={{ width: `${widthPercent}%` }} />
+              <div className="h-full rounded bg-accent" style={{ width: `${widthPercent}%` }} />
             </div>
             <span className="w-10 text-right text-micro tabular-nums text-muted">{count}회</span>
           </li>

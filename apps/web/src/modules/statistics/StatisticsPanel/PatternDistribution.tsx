@@ -23,7 +23,7 @@ function DistBars({ bars }: { bars: PatternBar[] }) {
         <div key={label} className="flex flex-1 flex-col items-center gap-1">
           <span className="text-nano tabular-nums text-muted">{`${percent}%`}</span>
           <div
-            className={`w-full rounded-t ${highlighted ? "bg-warn" : "bg-info/70"}`}
+            className={`w-full rounded-t ${highlighted ? "bg-warn" : "bg-accent/70"}`}
             style={{ height: `${heightPx}px` }}
           />
           <span className={`text-nano ${highlighted ? "font-bold text-warn" : "text-muted"}`}>
