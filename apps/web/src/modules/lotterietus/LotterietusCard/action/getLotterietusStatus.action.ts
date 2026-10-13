@@ -1,13 +1,13 @@
 import { useEffect, useSyncExternalStore } from "react";
 import { fetchJson } from "@/shared/lib/fetchJson";
 import { createServerCache } from "@/shared/lib/serverCache";
-import { LotterietusViewModel } from "../../model/Lotterietus.viewmodel";
-import { getLotterietusStatusResponse } from "../mapper/getLotterietusStatus.mapper";
+import { LotterietusViewModel } from "../model/Lotterietus.viewmodel";
+import { lotterietusReadResponse } from "../mapper/lotterietusRead.mapper";
 
 /** 이 유스케이스의 캐시 — 앱에 하나다. 조회 조건이 없으므로 캐시키도 하나다 */
 export const lotterietusStatusCache = createServerCache<void, LotterietusViewModel>(
   () => "lotterietus",
-  async () => LotterietusViewModel.from(getLotterietusStatusResponse(await fetchJson("/api/lotterietus"))),
+  async () => LotterietusViewModel.from(lotterietusReadResponse(await fetchJson("/api/lotterietus"))),
 );
 
 const subscribe = (fn: () => void) => lotterietusStatusCache.subscribe(undefined, fn);
@@ -19,7 +19,9 @@ export function useGetLotterietusStatusAction() {
   useEffect(() => lotterietusStatusCache.ensure(), []);
 
   return {
+    loading: entry === undefined || entry.status === "loading",
     error: entry?.error ?? null,
     status: entry?.value ?? null,
+    retry: () => lotterietusStatusCache.invalidate(),
   };
 }

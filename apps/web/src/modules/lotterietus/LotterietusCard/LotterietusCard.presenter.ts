@@ -12,8 +12,13 @@ export function formatRemaining(ms: number): string {
   return days > 0 ? `D-${days} ${h}:${m}:${s}` : `${h}:${m}:${s}`;
 }
 
-export function useLotterietusCardPresenter() {
-  const { status, error } = useGetLotterietusStatusAction();
+/** 생성기 CTA 문구 — 생성기가 펼쳐져 있는지라는 바깥 값을 보므로 조정자에 둔다 */
+export function ctaLabel(generatorOpen: boolean): string {
+  return generatorOpen ? "생성기 닫기" : "번호 생성하기";
+}
+
+export function useLotterietusCardPresenter(generatorOpen: boolean) {
+  const { loading, status, error } = useGetLotterietusStatusAction();
   const [now, setNow] = useState(() => Date.now());
 
   // 카운트다운의 1초 틱 — 상호작용 상태이므로 조정자가 갖는다
@@ -23,8 +28,11 @@ export function useLotterietusCardPresenter() {
   }, []);
 
   return {
+    /** 보여 줄 회차가 아직 없이 받는 중 — 앞선 회차가 있으면 그것을 계속 보인다 */
+    loading: loading && !status,
     status,
     error,
     remaining: status ? formatRemaining(status.nextDrawAt.getTime() - now) : null,
+    ctaLabel: ctaLabel(generatorOpen),
   };
 }

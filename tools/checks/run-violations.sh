@@ -49,14 +49,28 @@ declare -A EXPECT=(
   [view-folder-public-surface]='뷰 폴더 밖에서는 그 폴더의 index 만'
 )
 for dir in "$ROOT"/tools/checks/eslint-violations/*/; do
-  rule="$(basename "$dir")"
+  name="$(basename "$dir")"
+  rule="${name%%--*}"
   out="$(cd "$dir/apps/web" && node "$ESLINT" -c "$ROOT/tools/checks/eslint-violations.config.mjs" src 2>&1)"
   if [[ -n "${EXPECT[$rule]:-}" ]] && grep -q "${EXPECT[$rule]}" <<<"$out"; then
-    echo "OK   $rule (eslint)"
+    echo "OK   $name (eslint)"
     grep "error" <<<"$out" | sed 's/^/       /'
   else
-    echo "FAIL $rule (eslint) — 표본이 이 규칙에 걸리지 않았다"
+    echo "FAIL $name (eslint) — 표본이 이 규칙에 걸리지 않았다"
     bad=1
+  fi
+done
+
+# ESLint 허용 표본 — 합법 코드를 규칙이 잘못 막지 않는지 확인한다. 오류가 0 건이어야 한다.
+for dir in "$ROOT"/tools/checks/eslint-allowed/*/; do
+  name="$(basename "$dir")"
+  out="$(cd "$dir/apps/web" && node "$ESLINT" -c "$ROOT/tools/checks/eslint-violations.config.mjs" src 2>&1)"
+  if grep -q "error" <<<"$out"; then
+    echo "FAIL $name (eslint) — 허용 표본이 규칙에 걸렸다"
+    grep "error" <<<"$out" | sed 's/^/       /'
+    bad=1
+  else
+    echo "OK   $name (eslint, allowed)"
   fi
 done
 

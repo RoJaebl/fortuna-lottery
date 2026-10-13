@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { fetchJson } from "@/shared/lib/fetchJson";
-import { SimulationResultViewModel } from "../../model/SimulationResult.viewmodel";
-import { backtestCombinationRequest, backtestCombinationResponse } from "../mapper/backtestCombination.mapper";
+import { SimulationResultViewModel } from "../model/SimulationResult.viewmodel";
+import { simulationBacktestRequest, simulationBacktestResponse } from "../mapper/simulationBacktest.mapper";
 
 /**
  * 백테스트 — 누를 때마다 그 조합으로 새로 계산하는 요청이라 캐시하지 않는다(frontend-module-layout 규칙 3.3 의 모양).
@@ -16,12 +16,12 @@ export function useBacktestCombinationAction() {
     setPending(true);
     setError(null);
     try {
-      const res = await fetchJson("/api/simulation", {
+      const res = await fetchJson<Parameters<typeof simulationBacktestResponse>[0]>("/api/simulation", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(backtestCombinationRequest(numbers)),
+        body: JSON.stringify(simulationBacktestRequest(numbers)),
       });
-      setResult(SimulationResultViewModel.from(backtestCombinationResponse(res)));
+      setResult(SimulationResultViewModel.from(simulationBacktestResponse(res)));
     } catch (e) {
       setError(e instanceof Error ? e.message : "시뮬레이션에 실패했습니다");
     } finally {

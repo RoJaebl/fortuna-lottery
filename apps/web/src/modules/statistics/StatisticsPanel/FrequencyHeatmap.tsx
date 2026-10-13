@@ -1,7 +1,7 @@
 "use client";
 import { Ball } from "@/shared/ui/ball";
 import { Card } from "@/shared/ui/card";
-import type { StatisticsViewModel } from "../model/Statistics.viewmodel";
+import type { StatisticsViewModel } from "./model/Statistics.viewmodel";
 
 export interface FrequencyHeatmapProps {
   stats: StatisticsViewModel;
@@ -16,11 +16,11 @@ export function FrequencyHeatmap({ stats }: FrequencyHeatmapProps) {
       subtitle={`전 ${stats.totalDraws.toLocaleString()}회차 · 글로우가 강할수록 많이 나온 번호`}
       footnote="과거 출현 빈도입니다. 각 번호가 다음 회차에 나올 확률은 모두 동일합니다."
     >
-      <div className="grid grid-cols-9 justify-items-center gap-2.5">
+      <div className="grid grid-cols-9 justify-items-center gap-3">
         {stats.frequency.map((count, i) => (
-          <div key={i + 1} className="flex flex-col items-center gap-0.5">
+          <div key={i + 1} className="flex flex-col items-center gap-1">
             <Ball n={i + 1} size="sm" glow={glows[i]} />
-            <span className="text-[10px] tabular-nums text-slate-500">{count}</span>
+            <span className="text-nano tabular-nums text-muted">{count}</span>
           </div>
         ))}
       </div>

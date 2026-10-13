@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { StatisticsGetResponseSchema } from "./schema.js";
+import { StatisticsReadResponseSchema } from "./schema.js";
 
 const parse = (numbers: number[]) =>
-  StatisticsGetResponseSchema.safeParse({
+  StatisticsReadResponseSchema.safeParse({
     totalDraws: 1,
     latestRound: 1,
     frequency: [1],
@@ -16,7 +16,7 @@ const parse = (numbers: number[]) =>
     totalCombinations: 8145060,
   }).success;
 
-describe("StatisticsGetResponseSchema", () => {
+describe("StatisticsReadResponseSchema", () => {
   it("유효한 조합을 통과시킨다", () => {
     expect(parse([1, 2, 3, 4, 5, 6])).toBe(true);
   });

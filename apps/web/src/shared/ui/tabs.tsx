@@ -5,7 +5,7 @@ export interface TabItem<K extends string> {
   label: string;
 }
 
-interface TabsProps<K extends string> {
+export interface TabsProps<K extends string> {
   items: readonly TabItem<K>[];
   active: K;
   onChange: (key: K) => void;
@@ -17,18 +17,18 @@ interface TabsProps<K extends string> {
 
 /** 최상단 내비게이션 — 밑줄로 "지금 보고 있는 화면"을 표시 (CTA의 채움 버튼과 구분) */
 const UNDERLINE = {
-  list: "flex gap-1 border-b border-slate-200",
-  item: "-mb-px border-b-2 px-3 py-2 text-sm font-medium transition-colors",
-  active: "border-slate-900 text-slate-900",
-  inactive: "border-transparent text-slate-500 hover:text-slate-700",
+  list: "flex gap-1 border-b border-line",
+  item: "-mb-px border-b-2 px-3 py-2 text-small font-medium transition-colors",
+  active: "border-text text-text",
+  inactive: "border-transparent text-muted hover:text-text",
 };
 
 /** 패널 내부 서브탭 — 칩 형태로 최상단 탭과 위계를 구분. 모바일은 한 줄 가로 스크롤 */
 const CHIP = {
-  list: "flex gap-2 overflow-x-auto whitespace-nowrap pb-1 md:flex-wrap md:overflow-x-visible",
-  item: "shrink-0 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors",
-  active: "bg-slate-900 text-white",
-  inactive: "bg-slate-100 text-slate-500 hover:bg-slate-200",
+  list: "flex gap-2 overflow-x-auto whitespace-nowrap pb-1 [scrollbar-gutter:stable] md:flex-wrap md:overflow-x-visible",
+  item: "shrink-0 rounded-box px-3 py-2 text-micro font-semibold transition-colors",
+  active: "bg-text text-bg",
+  inactive: "bg-said text-muted hover:bg-inset",
 };
 
 export function Tabs<K extends string>({

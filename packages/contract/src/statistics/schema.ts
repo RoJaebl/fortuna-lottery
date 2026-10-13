@@ -2,7 +2,7 @@ import { z } from "zod";
 import { combinationSchema } from "../shared/combination.js";
 
 /** 통계 응답 — 파생 통계 + 고정 확률 분모 (정직성 장치) */
-export const StatisticsGetResponseSchema = z.object({
+export const StatisticsReadResponseSchema = z.object({
   totalDraws: z.number(),
   latestRound: z.number(),
   /** index 0 = 번호 1 */
@@ -21,4 +21,3 @@ export const StatisticsGetResponseSchema = z.object({
   /** 6/45 전체 조합 수 = 8,145,060 (고정) */
   totalCombinations: z.number(),
 });
-export type StatisticsGetResponse = z.infer<typeof StatisticsGetResponseSchema>;

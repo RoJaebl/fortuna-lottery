@@ -3,13 +3,15 @@
   "private": true,
   "packageManager": "pnpm@11.18.0",
   "scripts": {
-    "dev": "turbo dev",
+    "dev": "node tools/launch/launch.mjs dev",
+    "start": "node tools/launch/launch.mjs start",
     "build": "turbo run build",
     "test": "turbo run test",
+    "test:tools": "node --test \"tools/launch/*.test.mjs\"",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
     "lint:deps": "depcruise apps packages --config .dependency-cruiser.cjs",
-    "check": "pnpm typecheck && pnpm lint && pnpm lint:deps && pnpm test",
+    "check": "pnpm typecheck && pnpm lint && pnpm lint:deps && pnpm test && pnpm test:tools",
     "check:migration": "bash tools/checks/migration-status.sh"
   },
   "devDependencies": {

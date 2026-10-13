@@ -1,48 +1,39 @@
 "use client";
 import { ballColor } from "@/shared/lib/lotto-colors";
 import { Card } from "@/shared/ui/card";
-import type { StatisticsViewModel } from "../model/Statistics.viewmodel";
+import type { StatisticsViewModel } from "./model/Statistics.viewmodel";
 
 export interface RecentGridProps {
-  stats: StatisticsViewModel;
+  /** 회차 범위 문구 — 회차가 없으면 빈 문자열 */
+  range: string;
+  columns: StatisticsViewModel["recentColumns"];
 }
 
 /** 잔디밭 — 가로 회차 / 세로 1~45, 출현 번호 칸을 공 색으로 칠한다 */
-export function RecentGrid({ stats }: RecentGridProps) {
-  const rounds = stats.recentGrid;
-  const first = rounds[0]?.round;
-  const last = rounds[rounds.length - 1]?.round;
-
+export function RecentGrid({ range, columns }: RecentGridProps) {
   return (
-    <Card
-      title="회차별 잔디밭"
-      subtitle={first && last ? `제${first}회 ~ 제${last}회 (최근 ${rounds.length}회차)` : undefined}
-    >
-      <div className="overflow-x-auto">
+    <Card title="회차별 잔디밭" subtitle={range}>
+      <div className="overflow-x-auto [scrollbar-gutter:stable]">
         <div
           className="grid gap-px"
           style={{
-            gridTemplateColumns: `repeat(${rounds.length}, 9px)`,
+            gridTemplateColumns: `repeat(${columns.length}, 9px)`,
             gridTemplateRows: "repeat(45, 9px)",
             gridAutoFlow: "column",
           }}
         >
-          {rounds.map((r) => {
-            const present = new Set(r.numbers);
-            return Array.from({ length: 45 }, (_, i) => {
-              const n = i + 1;
-              return (
-                <div
-                  key={`${r.round}-${n}`}
-                  title={`제${r.round}회 · ${n}번${present.has(n) ? " 출현" : ""}`}
-                  className="rounded-[1px]"
-                  style={{
-                    backgroundColor: present.has(n) ? ballColor(n).bg : "#e2e8f0",
-                  }}
-                />
-              );
-            });
-          })}
+          {columns.map(({ round, cells }) =>
+            cells.map(({ n, present, title }) => (
+              <div
+                key={`${round}-${n}`}
+                title={title}
+                className="rounded-none"
+                style={{
+                  backgroundColor: present ? ballColor(n).bg : "var(--ui-line)",
+                }}
+              />
+            )),
+          )}
         </div>
       </div>
     </Card>

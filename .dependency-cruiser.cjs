@@ -41,7 +41,7 @@ module.exports = {
       name: 'domain-model-has-zero-dependencies',
       comment: '도메인 원형은 같은 폴더와 계약 패키지 밖의 어떤 것도 참조하지 않는다',
       severity: 'error',
-      // 이 저장소만의 완화: 원형 옆의 시험 파일은 시험 러너(vitest)를 가져와야 한다 — 시험은 제품 코드가 아니다
+      // boundary-enforcement §3 그대로: 원형 옆의 시험 파일은 시험 러너(vitest)를 가져와야 한다 — 시험은 제품 코드가 아니다
       from: { path: '/domain/model/', pathNot: '\\.test\\.ts$' },
       to:   { pathNot: '(/domain/model/|^packages/contract/)' },
     },
@@ -67,11 +67,18 @@ module.exports = {
     },
     {
       name: 'api-imports-no-module',
-      comment: '컨트롤러는 자기 모듈의 facade 와 포트만 본다',
+      comment: '컨트롤러와 스케줄러는 자기 모듈의 facade 와 포트만 본다',
       severity: 'error',
-      from: { path: '^apps/([^/]+)/src/modules/([^/]+)/interface/api/' },
+      from: { path: '^apps/([^/]+)/src/modules/([^/]+)/interface/(?:api|schedule)/' },
       to:   { path: '^apps/[^/]+/src/modules/',
               pathNot: '(^apps/$1/src/modules/$2/(interface/facade|domain/port)/)' },
+    },
+    {
+      name: 'business-must-not-reach-adapter',
+      comment: '유스케이스는 포트로만 받는다 — backend §7. vault §3 전문에 없는 저장소 규칙',
+      severity: 'error',
+      from: { path: '/(business|context)/' },
+      to:   { path: '/domain/adapter/' },
     },
     {
       name: 'no-cross-module-import',

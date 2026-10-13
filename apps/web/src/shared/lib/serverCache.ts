@@ -1,6 +1,4 @@
 // 서버 상태 캐시 도구 — frontend-module-layout 규칙 3.1절의 전문이다. 도메인을 모른다.
-// 한 곳만 다르다: invalidate 가 보고 있는 조건의 값을 지우지 않고 다시 받는다 — 다시 받는 동안과 실패했을 때
-// 앞선 값을 보이던 옛 화면의 동작을 지키기 위해서다(vault 문서에 되돌려 줄 것).
 // action 이 모듈 수준에 하나씩 만들고, 수명 규칙 셋(같은 조건이면 다시 받지 않기 · 넘어간 요청의 응답 버리기 ·
 // 보는 화면이 없어지면 놓기)이 이 안에서 지켜진다. action 에는 무엇을 언제 무효화하는가만 남는다.
 export type CacheEntry<V> =
@@ -48,8 +46,8 @@ export function createServerCache<Q, V>(keyOf: (query: Q) => string, load: (quer
      */
     invalidate() {
       for (const key of [...entries.keys()]) {
-        const query = queries.get(key);
-        if (watchers.has(key) && query !== undefined) void fetchInto(key, query);
+        // Q 가 void 면 조건 값이 undefined 이므로 값이 아니라 키의 유무로 가린다
+        if (watchers.has(key) && queries.has(key)) void fetchInto(key, queries.get(key) as Q);
         else entries.delete(key);
       }
     },

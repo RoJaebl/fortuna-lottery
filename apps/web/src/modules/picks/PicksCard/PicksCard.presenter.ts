@@ -25,6 +25,7 @@ export function usePicksCardPresenter(currentNumbers: number[] | null) {
   };
 
   return {
+    loading: list.loading,
     picks: list.picks,
     // 처음 받는 동안에는 「없다」고 말하지 않는다
     empty: !list.loading && list.picks.length === 0,

@@ -1,13 +1,13 @@
 import { useEffect, useSyncExternalStore } from "react";
 import { fetchJson } from "@/shared/lib/fetchJson";
 import { createServerCache } from "@/shared/lib/serverCache";
-import { PickViewModel } from "../../model/Pick.viewmodel";
-import { listPicksResponse } from "../mapper/listPicks.mapper";
+import { PickViewModel } from "../model/Pick.viewmodel";
+import { picksListResponse } from "../mapper/picksList.mapper";
 
 /** 이 유스케이스의 캐시 — 앱에 하나다. 조회 조건이 없으므로(현재 사용자의 픽 전부) 캐시키도 하나다 */
 export const listPicksCache = createServerCache<void, PickViewModel[]>(
   () => "picks",
-  async () => PickViewModel.fromMany(listPicksResponse(await fetchJson("/api/picks"))),
+  async () => PickViewModel.fromMany(picksListResponse(await fetchJson("/api/picks"))),
 );
 
 const subscribe = (fn: () => void) => listPicksCache.subscribe(undefined, fn);
@@ -22,5 +22,6 @@ export function useListPicksAction() {
     loading: entry === undefined || entry.status === "loading",
     error: entry?.error ?? null,
     picks: entry?.value ?? [],
+    retry: () => listPicksCache.invalidate(),
   };
 }

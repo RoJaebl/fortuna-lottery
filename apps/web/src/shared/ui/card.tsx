@@ -11,14 +11,14 @@ interface CardProps {
 
 export function Card({ title, subtitle, footnote, children, className = "" }: CardProps) {
   return (
-    <section className={`rounded-xl border border-slate-200 bg-white p-5 shadow-sm ${className}`}>
+    <section className={`rounded-card border border-line bg-panel p-5 ${className}`}>
       <header className="mb-4">
-        <h2 className="text-base font-semibold text-slate-900">{title}</h2>
-        {subtitle ? <p className="mt-0.5 text-xs text-slate-500">{subtitle}</p> : null}
+        <h2 className="text-body font-semibold text-text">{title}</h2>
+        {subtitle ? <p className="mt-1 text-micro text-muted">{subtitle}</p> : null}
       </header>
       {children}
       {footnote ? (
-        <p className="mt-4 border-t border-slate-200 pt-2 text-[11px] leading-relaxed text-amber-600/90">
+        <p className="mt-4 border-t border-line pt-2 text-micro leading-relaxed text-warn">
           ⚠ {footnote}
         </p>
       ) : null}
