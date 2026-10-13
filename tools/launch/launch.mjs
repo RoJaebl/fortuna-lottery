@@ -42,6 +42,12 @@ function binOf(appDir, pkg, name) {
 
 const children = new Set();
 
+/**
+ * 아직 비지 않은 프로세스 묶음(윈도우 밖, 묶음 번호 = 자식 pid). 자식이 끝나도 그 일꾼(next-server 따위)이 묶음에 남을 수
+ * 있으므로 묶음이 빌 때까지 지닌다. 쓰이는 묶음 번호는 리눅스·macOS 가 새 pid 로 다시 주지 않는다
+ */
+const groups = new Set();
+
 /** 화면을 지우는 제어열(ESC[2J · ESC[3J · ESC[H) — 감시자가 파이프로도 내보내 알린 주소 줄을 지우므로 걷어 낸다 */
 const CLEAR_SCREEN = /\x1b\[(?:[23]J|H)/g;
 
@@ -68,6 +74,7 @@ function run(tag, script, args, { cwd, env }) {
     });
   });
   children.add(child);
+  if (!IS_WINDOWS && child.pid) groups.add(child.pid);
   return child;
 }
 
@@ -85,17 +92,75 @@ function stop(child) {
 
 const exitCodeOf = ({ code, signal }) => (code ?? (signal ? 1 : 0));
 
+/** 끄기를 시작하고 이만큼 지나도 남은 자식은 강제로 끈다 */
+const FORCE_AFTER_MS = 5000;
+
+/** 그 묶음에 아직 프로세스가 있는가 — 비었으면 장부에서 지운다 */
+function groupAlive(pgid) {
+  try {
+    process.kill(-pgid, 0);
+    return true;
+  } catch {
+    groups.delete(pgid);
+    return false;
+  }
+}
+
+/** 묶음이 빌 때까지 기다린다(최대 timeoutMs) */
+async function waitGroupGone(pgid, timeoutMs) {
+  const deadline = Date.now() + timeoutMs;
+  while (groupAlive(pgid) && Date.now() < deadline) await new Promise((r) => setTimeout(r, 50));
+}
+
+/** 남은 프로세스 묶음을 모두 SIGKILL 로 끈다 — 동기여서 `exit` 처리기에서도 쓴다. 윈도우는 taskkill 이 이미 /f 다 */
+function killAll() {
+  for (const pgid of groups) {
+    try {
+      process.kill(-pgid, "SIGKILL");
+    } catch {
+      // 이미 빈 묶음
+    }
+    groups.delete(pgid);
+  }
+}
+
+// 런처가 어떤 길로 끝나든(처리기를 거치지 않은 예외 포함) 자식을 남기지 않는다. 런처 자신의 SIGKILL 만은 잡을 수 없다
+process.on("exit", killAll);
+
 let shuttingDown = false;
 
-/** 모든 자식을 내리고 그 코드로 나간다 */
+/** 모든 자식을 내리고 그 코드로 나간다. 다섯 초 안에 끝나지 않으면 강제로 끈다 */
 async function shutdown(code) {
   if (shuttingDown) return;
   shuttingDown = true;
+  setTimeout(() => {
+    complain("자식이 끝나지 않아 강제로 끈다");
+    killAll();
+    process.exit(code);
+  }, FORCE_AFTER_MS).unref();
   await Promise.all([...children].map(stop));
+  // 자식이 끝나도 그 일꾼이 묶음에 남아 있을 수 있다 — 빌 때까지 기다리고, 시한이 지나면 위의 타이머가 강제로 끈다
+  await Promise.all([...groups].map((pgid) => waitGroupGone(pgid, FORCE_AFTER_MS)));
   process.exit(code);
 }
 
-for (const signal of ["SIGINT", "SIGTERM"]) process.on(signal, () => void shutdown(0));
+// 터미널·편집기 탭을 닫으면 SIGHUP 이 온다. 끄는 중에 신호가 또 오면 기다리지 않고 강제로 끈다
+for (const signal of ["SIGINT", "SIGTERM", "SIGHUP"]) {
+  process.on(signal, () => {
+    if (!shuttingDown) return void shutdown(0);
+    killAll();
+    process.exit(1);
+  });
+}
+
+/** 런처 자신의 오류 — 까닭을 적고 자식을 내린 뒤 1 로 나간다 */
+function fail(error) {
+  complain(error instanceof Error ? error.message : String(error));
+  void shutdown(1);
+}
+
+process.on("uncaughtException", fail);
+process.on("unhandledRejection", fail);
 
 /** 이 자식이 뜻밖에 끝나면 나머지도 내리고 그 코드로 나간다 */
 function fatalOnExit(child) {
@@ -215,6 +280,8 @@ async function dev() {
     if (api) {
       api.replaced = true;
       await stop(api);
+      await waitGroupGone(api.pid, FORCE_AFTER_MS);
+      if (groupAlive(api.pid)) process.kill(-api.pid, "SIGKILL");
     }
     if (!shuttingDown) api = startApi();
     restarting = false;
@@ -278,8 +345,8 @@ async function start() {
 }
 
 const mode = process.argv[2];
-if (mode === "dev") await dev();
-else if (mode === "start") await start();
+if (mode === "dev") await dev().catch(fail);
+else if (mode === "start") await start().catch(fail);
 else {
   complain("쓰는 법: node tools/launch/launch.mjs <dev|start>");
   process.exit(2);
