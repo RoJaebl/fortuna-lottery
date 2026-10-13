@@ -2,6 +2,7 @@
 // 셸 = 조립과 입력 묶음 전개만. 모듈 간 공유 상태는 Home.presenter 가 쥔다.
 import type { ReactNode } from "react";
 import { GeneratorCard } from "@/modules/generator";
+import { HypothesisLab } from "@/modules/hypothesis";
 import { IdentityBadge } from "@/modules/identity";
 import { LotterietusCard } from "@/modules/lotterietus";
 import { PicksCard } from "@/modules/picks";
@@ -12,7 +13,7 @@ import { Tabs } from "@/shared/ui/tabs";
 import { useHomePresenter, type HomeTabKey } from "./Home.presenter";
 
 export default function HomePage() {
-  const { isGeneratorOpen, lotterietus, generator, tabs, statistics, simulation, picks } =
+  const { isGeneratorOpen, lotterietus, generator, tabs, statistics, simulation, picks, hypothesis } =
     useHomePresenter();
 
   const panels: Record<HomeTabKey, ReactNode> = {
@@ -20,6 +21,7 @@ export default function HomePage() {
     simulation: <SimulationCard {...simulation} />,
     picks: <PicksCard {...picks} />,
     results: <ResultsCard />,
+    hypothesis: <HypothesisLab {...hypothesis} />,
   };
 
   return (
