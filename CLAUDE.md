@@ -33,7 +33,7 @@ PARA/MOC 규칙과는 무관하다.
 - 실제 코드/설정 상태와 문서 내용이 어긋난 것을 발견하면, 작업을 계속하기 전에 문서를 최신 상태로
   갱신한다.
 
-현재 문서: `design-system.md` (컬러 토큰).
+현재 문서: `design-system.md` (컬러 토큰), `launcher-ports.md` (런처 · 포트 · 환경 이름).
 
 ## superpowers 스킬 워크플로 — 계획/스펙 문서 선(先) 커밋
 
@@ -50,20 +50,25 @@ PARA/MOC 규칙과는 무관하다.
 pnpm install                 # apps/api 의 postinstall 이 prisma generate 를 돈다
 docker compose up -d         # 로컬 Postgres (docker-compose.yml)
 pnpm --filter @fortuna-lottery/api db:migrate   # prisma migrate dev — draws 테이블을 만든다
-pnpm dev                     # turbo dev — apps/web(next dev, :3000)과 apps/api(nest --watch, :4000)를 함께 띄운다
-pnpm check                   # typecheck → lint → lint:deps → test. 과업 끝의 검증 명령이다
+pnpm dev                     # 런처(tools/launch/launch.mjs) — apps/web(next dev, 3000~)과 apps/api(nest build --watch 의 dist, 4000~)를 함께 띄운다
+pnpm check                   # typecheck → lint → lint:deps → test → test:tools. 과업 끝의 검증 명령이다
 pnpm lint:deps               # dependency-cruiser 로 의존 방향·층 경계를 검사한다
 pnpm check:migration         # 골조 이관 상태를 낸다. 지금은 「옛 구역 파일: 0」
 pnpm build                   # turbo build
+pnpm start                   # 런처 — 빌드 결과로 두 서버를 OS 포트(또는 FORTUNA_WEB_PORT·FORTUNA_API_PORT 고정)에 띄운다
+pnpm test:tools              # 런처 시험(node --test)
 ```
 
 `apps/api` 는 기동할 때 `apps/api/.env` 를 스스로 싣고(`main.ts` 의 `loadEnvFile`, 이미 있는 환경 변수가
 이긴다) 거기서 `DATABASE_URL` 과 `SCHEDULER_ENABLED` 를 읽는다. 값의 모양은 루트의 `.env.example` 에 있다.
-`SCHEDULER_ENABLED` 를 적지 않으면 회차 수집 스케줄러는 `dev` 스크립트(watch 로 자주 재시작한다)에서
-꺼지고 `start` 에서 켜져 동행복권 원격을 부른다. 적으면 그 값이 이긴다 — `dev` 에서 수집하려면 `true`,
-`start` 에서 끄려면 `false`. 런처가 `FORTUNA_MODE`(`dev`/`start`)를 넘기면 스크립트 이름보다 그 값이 기본값을
-정한다. `FORTUNA_STRICT_PORT=1` 이면 `apps/api` 는 받은 `PORT` 를 옮기지 않고, 쥐여 있으면 5 초 기다린 뒤
-`EADDRINUSE` 로 죽는다.
+`SCHEDULER_ENABLED` 를 적지 않으면 회차 수집 스케줄러는 `pnpm dev`(서버를 자주 다시 띄운다)에서 꺼지고
+`pnpm start` 에서 켜져 동행복권 원격을 부른다. 적으면 그 값이 이긴다 — `dev` 에서 수집하려면 `true`,
+`start` 에서 끄려면 `false`. 이 기본값은 런처가 서버에 넘기는 `FORTUNA_MODE`(`dev`/`start`)가 정하고, 런처 없이
+띄우면 `npm_lifecycle_event` 로 가린다. `FORTUNA_STRICT_PORT=1` 이면 `apps/api` 는 받은 `PORT` 를 옮기지 않고,
+쥐여 있으면 5 초 기다린 뒤 `EADDRINUSE` 로 죽는다.
+포트를 고르는 자리는 런처 하나다 — 사람 셸의 `PORT`·`HOST` 는 자식에 넘기지 않는다. `pnpm start` 는 운영자가 적은
+`FORTUNA_WEB_PORT`·`FORTUNA_API_PORT` 에 고정으로 서고 쥐여 있으면 실패한다(vault 규약에서 의도해 벗어난 자리다).
+환경 이름 표와 근거는 `.claude/context/launcher-ports.md` 가 갖는다.
 `apps/web` 은 `API_ORIGIN`(기본값 `http://127.0.0.1:4000`)으로 `apps/api` 의 주소를 받는다. 이 값은
 요청마다 실행 때 읽으므로 빌드 때 굳지 않는다 — 바꾸려면 프로세스를 다시 띄우면 된다.
 
@@ -82,8 +87,8 @@ pnpm --filter @fortuna-lottery/web exec vitest run <path>   # 파일 하나
 
 이 저장소는 vault 개발 골조를 따르고, 배치는 **두 서버**다
 ([architecture-baseline §1 배치를 먼저 고른다](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/architecture-baseline.md#1-배치를-먼저-고른다>)).
-화면 앱 `apps/web`(Next.js, 포트 3000)과 응용 서버 `apps/api`(NestJS, 포트 4000, 전역 접두 `/api`)가 각자
-프로세스를 갖는다.
+화면 앱 `apps/web`(Next.js, `pnpm dev` 에서 포트 3000~)과 응용 서버 `apps/api`(NestJS, 4000~, 전역 접두 `/api`)가 각자
+프로세스를 갖는다. 포트는 런처가 골라 넘긴다.
 
 이렇게 고른 까닭은 둘이다. 화면과 서버의 경계가 프로세스 단위로 물리적으로 잘려 경계 검사기에 덜
 기대게 되고, vault 골조가 화면 모듈과 서버 모듈을 따로 정의하므로 번역 없이 그대로 맞는다. 수집
@@ -122,6 +127,7 @@ packages/kernel/     @fortuna-lottery/kernel — 로또 순수 커널(combinatio
 apps/api/            NestJS 응용 서버 — src/modules/<도메인>/, src/composition/CompositionModule.ts, prisma/
 apps/web/            Next.js 화면 앱 — src/app/(셸), src/modules/<도메인>/, src/shared/{ui,lib}/
 tools/checks/        이관 상태 스크립트와 규칙마다 하나씩 둔 위반 표본
+tools/launch/        런처 — pnpm dev·pnpm start 가 부르고 포트를 고르는 유일한 자리(Node 내장 모듈만 쓴다)
 ```
 
 의존 방향과 층 경계는 루트의 `.dependency-cruiser.cjs` 가, 코드 모양(화면에 상태 없음, 표시 모델 얕은
