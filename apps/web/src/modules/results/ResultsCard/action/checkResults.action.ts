@@ -3,7 +3,7 @@ import { fetchJson } from "@/shared/lib/fetchJson";
 import { createServerCache } from "@/shared/lib/serverCache";
 import type { ResultsDrawModel } from "../../model/ResultsCheck.model";
 import { ResultsCheckItemViewModel } from "../../model/ResultsCheckItem.viewmodel";
-import { checkResultsResponse } from "../mapper/checkResults.mapper";
+import { resultsCheckResponse } from "../mapper/resultsCheck.mapper";
 
 interface ResultsCheckState {
   draw: ResultsDrawModel | null;
@@ -19,7 +19,7 @@ interface ResultsCheckState {
 export const checkResultsCache = createServerCache<void, ResultsCheckState>(
   () => "results",
   async () => {
-    const model = checkResultsResponse(await fetchJson("/api/results"));
+    const model = resultsCheckResponse(await fetchJson("/api/results"));
     return { draw: model.draw, items: ResultsCheckItemViewModel.fromMany(model.items) };
   },
 );

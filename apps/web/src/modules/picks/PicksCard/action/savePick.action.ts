@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { fetchJson } from "@/shared/lib/fetchJson";
-import { savePickRequest } from "../mapper/savePick.mapper";
+import { picksCreateRequest } from "../mapper/picksCreate.mapper";
 import { listPicksCache } from "./listPicks.action";
 
 /** 픽 저장 — 성공하면 이 바꿈이 낡게 만든 목록 캐시를 여기서 버린다(조정자가 「저장 후 재조회」를 잇지 않는다) */
@@ -15,7 +15,7 @@ export function useSavePickAction() {
       await fetchJson("/api/picks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(savePickRequest(numbers)),
+        body: JSON.stringify(picksCreateRequest(numbers)),
       });
       listPicksCache.invalidate();
       return true;

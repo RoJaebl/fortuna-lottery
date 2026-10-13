@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { fetchJson } from "@/shared/lib/fetchJson";
 import { GeneratedCombinationViewModel } from "../../model/GeneratedCombination.viewmodel";
 import type { GeneratorMode } from "../../model/GeneratorMode.model";
-import { generateCombinationRequest, generateCombinationResponse } from "../mapper/generateCombination.mapper";
+import { generatorGenerateRequest, generatorGenerateResponse } from "../mapper/generatorGenerate.mapper";
 
 /**
  * 조합 생성 — 누를 때마다 새 조합을 받는 요청이라 캐시하지 않는다(frontend-module-layout 규칙 3.3 의 모양).
@@ -18,12 +18,12 @@ export function useGenerateCombinationAction() {
       setPending(true);
       setError(null);
       try {
-        const res = await fetchJson("/api/generator", {
+        const res = await fetchJson<Parameters<typeof generatorGenerateResponse>[0]>("/api/generator", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(generateCombinationRequest(mode, selected)),
+          body: JSON.stringify(generatorGenerateRequest(mode, selected)),
         });
-        const combination = GeneratedCombinationViewModel.from(generateCombinationResponse(res));
+        const combination = GeneratedCombinationViewModel.from(generatorGenerateResponse(res));
         setResult(combination);
         return combination;
       } catch (e) {

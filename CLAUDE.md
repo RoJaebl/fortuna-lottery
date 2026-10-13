@@ -141,7 +141,7 @@ tools/checks/        이관 상태 스크립트와 규칙마다 하나씩 둔 �
 - **계약 스키마는 모양 검사만 담는다.** 배열 길이 6, 정수, 1~45 범위까지다. 중복 없음은 도메인 규칙이라
   커널의 `createCombination` 이 지키고, `business/` 가 그 실패를 400 으로 바꾼다. 그래서 모양이 틀린
   요청은 「잘못된 요청 형식입니다」, 중복 번호는 도메인 메시지로 400 을 받는다. 화면의 변환기는
-  `unknown` 을 계약 타입으로 좁히기만 하고 zod 로 다시 검증하지 않는다(서버가 검증하고 화면은 번역한다).
+  계약 타입을 받아 번역만 한다 — 검증은 서버가 한다(zod 로 다시 검증하지 않는다).
 - **모듈 사이의 포트는 모듈마다 따로 선언하고, `CompositionModule` 이 `useExisting` 으로 상대 facade 를
   꽂는다.** 예를 들어 `picks` 와 `results` 는 각자 `CurrentUserPort` 를 갖고, 둘 다 `IdentityFacade` 를 받는다.
   모듈 등록도 `CompositionModule` 이 하고, `app.module` 은 그것만 import 한다.
@@ -156,9 +156,6 @@ tools/checks/        이관 상태 스크립트와 규칙마다 하나씩 둔 �
   `app/` 의 `.tsx` 에도 걸린다.
 - **서버 상태 캐시는 [frontend-module-layout §3.1 캐시 도구 — 전역 공용부에 하나](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend-module-layout.md#31-캐시-도구--전역-공용부에-하나>)
   그대로다.** `apps/web/src/shared/lib/serverCache.ts` 가 그것이다.
-- **변환기 파일 이름은 `<유스케이스>.mapper.ts` 다.** 예: `generateCombination.mapper.ts`.
-  [frontend-module-layout §10 파일 이름 — 역할을 점 접미로 적는다](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend-module-layout.md#10-파일-이름--역할을-점-접미로-적는다>)를
-  따른다.
 - **`no-deep-module-import` 는 다른 모듈의 배럴(`modules/<다른>/index.ts(x)`)을 허용한다.**
   [frontend-module-layout §8 공개 표면 — 배럴이 내보내는 것](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend-module-layout.md>)이
   모듈 간 소통을 배럴로만 하라고 하므로 배럴 import 는 합법이다. boundary-enforcement §3 의 설정 문구가
@@ -192,6 +189,7 @@ DB 아님)에 저장된다. `apps/api` 를 다시 띄우면 사라진다. 나중
 
 도메인 계산과 유스케이스는 테스트 우선(Red → Green → Refactor)으로 작성한다. 커널과 `business/` 의 계산을
 순수 함수로 유지하는 이유가 바로 이것이다. 구현 전에 대상 파일 옆에 `*.test.ts` 를 먼저 쓴다.
+계약 스키마를 고쳤는데 화면 변환기 시험이 하나도 깨지지 않았다면 변환기가 스키마를 반영하지 않는다는 회귀 신호다 — 자동 검사가 아니라 사람이 지키는 방어선이다(wire-contract §6).
 커널은 `packages/kernel/src/*.test.ts`, 서버 유스케이스는 `apps/api/src/modules/<도메인>/business/*.test.ts`,
 계약은 `packages/contract/src/<도메인>/schema.test.ts`, 화면의 표시 조정자·표시 모델은
 `apps/web/src/modules/**/*.presenter.test.ts` 와 `*.viewmodel.test.ts` 가 본보기다.

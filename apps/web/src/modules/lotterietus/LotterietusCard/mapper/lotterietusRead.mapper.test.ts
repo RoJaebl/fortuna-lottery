@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { LotterietusModel } from "../../model/Lotterietus.model";
-import { getLotterietusStatusResponse } from "./getLotterietusStatus.mapper";
+import { lotterietusReadResponse } from "./lotterietusRead.mapper";
 
-describe("getLotterietusStatus 변환기", () => {
+describe("lotterietusRead 변환기", () => {
   it("응답을 도메인 원형으로 옮긴다 (두 시각을 Date 로)", () => {
-    const model = getLotterietusStatusResponse({
+    const model = lotterietusReadResponse({
       round: 1243,
       numbers: [9, 18, 24, 38, 43, 44],
       bonus: 35,
@@ -20,7 +20,7 @@ describe("getLotterietusStatus 변환기", () => {
   });
 
   it("회차가 없을 때의 빈 응답도 옛 번역처럼 그대로 옮긴다 (빈 번호, 풀지 못한 추첨일)", () => {
-    const model = getLotterietusStatusResponse({
+    const model = lotterietusReadResponse({
       round: 0,
       numbers: [],
       bonus: 0,

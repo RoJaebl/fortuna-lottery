@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { StatisticsModel } from "../../model/Statistics.model";
-import { getStatisticsResponse } from "./getStatistics.mapper";
+import { statisticsReadResponse } from "./statisticsRead.mapper";
 
-describe("getStatistics 변환기", () => {
+describe("statisticsRead 변환기", () => {
   it("응답을 도메인 원형으로 옮긴다 — 배열은 응답과 공유하지 않는다", () => {
     const res = {
       totalDraws: 2,
@@ -17,7 +17,7 @@ describe("getStatistics 변환기", () => {
       recentGrid: [{ round: 2, numbers: [1, 2, 13, 24, 35, 44] }],
       totalCombinations: 8_145_060,
     };
-    const model = getStatisticsResponse(res);
+    const model = statisticsReadResponse(res);
 
     expect(model).toBeInstanceOf(StatisticsModel);
     expect({ ...model }).toEqual(res);

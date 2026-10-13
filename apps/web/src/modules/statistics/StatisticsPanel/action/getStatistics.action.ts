@@ -2,12 +2,12 @@ import { useEffect, useSyncExternalStore } from "react";
 import { fetchJson } from "@/shared/lib/fetchJson";
 import { createServerCache } from "@/shared/lib/serverCache";
 import { StatisticsViewModel } from "../../model/Statistics.viewmodel";
-import { getStatisticsResponse } from "../mapper/getStatistics.mapper";
+import { statisticsReadResponse } from "../mapper/statisticsRead.mapper";
 
 /** 이 유스케이스의 캐시 — 앱에 하나다. 조회 조건이 없으므로 캐시키도 하나다 */
 export const statisticsCache = createServerCache<void, StatisticsViewModel>(
   () => "statistics",
-  async () => StatisticsViewModel.from(getStatisticsResponse(await fetchJson("/api/statistics"))),
+  async () => StatisticsViewModel.from(statisticsReadResponse(await fetchJson("/api/statistics"))),
 );
 
 const subscribe = (fn: () => void) => statisticsCache.subscribe(undefined, fn);
