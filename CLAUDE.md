@@ -137,7 +137,7 @@ tools/checks/        이관 상태 스크립트와 규칙마다 하나씩 둔 �
   `no-cross-module-import` 에 걸린다. `apps/web` 은 커널을 참조하지 않는다(`web-must-not-reach-kernel`).
 - **서버의 `domain/model/` 은 의존이 없다.** 커널은 `business/`(필요하면 어댑터)에서만 런타임으로 쓴다.
   커널 타입이 필요한 순수 계산은 `business/` 에 둔다. `domain/port/` 는 커널 타입을 `import type` 으로만
-  가져올 수 있다. `domain-model-has-zero-dependencies` 는 `*.test.ts` 를 세지 않는다.
+  가져올 수 있다. `domain-model-has-zero-dependencies` 는 `*.test.ts` 를 세지 않는다 — boundary-enforcement §3 의 표준이다.
 - **계약 스키마는 모양 검사만 담는다.** 배열 길이 6, 정수, 1~45 범위까지다. 중복 없음은 도메인 규칙이라
   커널의 `createCombination` 이 지키고, `business/` 가 그 실패를 400 으로 바꾼다. 그래서 모양이 틀린
   요청은 「잘못된 요청 형식입니다」, 중복 번호는 도메인 메시지로 400 을 받는다. 화면의 변환기는
@@ -154,17 +154,18 @@ tools/checks/        이관 상태 스크립트와 규칙마다 하나씩 둔 �
 - **셸의 조정자는 `apps/web/src/app/Home.presenter.ts` 다.** 모듈 사이에 오가는 상태 셋(현재 조합,
   생성기 열림, 활성 탭)만 갖고, `page.tsx` 는 조립과 입력 묶음 전개만 한다. 화면 상태 금지 ESLint 규칙이
   `app/` 의 `.tsx` 에도 걸린다.
-- **서버 상태 캐시는 다시 받는 동안과 실패했을 때 앞선 값을 지킨다.** `apps/web/src/shared/lib/serverCache.ts`
-  는 [frontend-module-layout §3.1 캐시 도구 — 전역 공용부에 하나](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend-module-layout.md#31-캐시-도구--전역-공용부에-하나>)의
-  모양을 따르되, 무효화한 뒤 새 값이 올 때까지 앞선 값을 비우지 않는다. 옛 화면이 저장·삭제·재확인 때
-  목록을 비우지 않았으므로 그 동작을 지킨 것이다.
+- **서버 상태 캐시는 [frontend-module-layout §3.1 캐시 도구 — 전역 공용부에 하나](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend-module-layout.md#31-캐시-도구--전역-공용부에-하나>)
+  그대로다.** `apps/web/src/shared/lib/serverCache.ts` 가 그것이다.
 - **변환기 파일 이름은 `<유스케이스>.mapper.ts` 다.** 예: `generateCombination.mapper.ts`.
   [frontend-module-layout §10 파일 이름 — 역할을 점 접미로 적는다](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend-module-layout.md#10-파일-이름--역할을-점-접미로-적는다>)를
   따른다.
 - **`no-deep-module-import` 는 다른 모듈의 배럴(`modules/<다른>/index.ts(x)`)을 허용한다.**
   [frontend-module-layout §8 공개 표면 — 배럴이 내보내는 것](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend-module-layout.md>)이
-  모듈 간 소통을 배럴로만 하라고 하므로 배럴 import 는 합법이다. boundary-enforcement §3 의 설정 문구는
-  `.+` 가 배럴까지 잡아 이와 어긋난다 — vault 에 보고할 것. `tools/checks/allowed/` 표본이 이를 지킨다.
+  모듈 간 소통을 배럴로만 하라고 하므로 배럴 import 는 합법이다. boundary-enforcement §3 의 설정 문구가
+  배럴 예외(pathNot)를 이미 담고 있어 이 저장소의 규칙과 같다. `tools/checks/allowed/` 표본이 이를 지킨다.
+- **`picks` 의 저장·삭제는 `results` 캐시를 무효화하지 않는다.** 결과 확인은 사람이 「확인」을 눌러 받는 값이고,
+  누르기 전까지는 앞선 결과를 그대로 보인다(`checkResults.action.ts` 주석).
+- **`turbo.json` 의 `lint` 는 `^build` 에 기댄다.** baseline §3 의 `{}` 보다 엄격한 의도된 이탈이다.
 - **`Entity` 부류는 없다.** 픽은 `picks/domain/model/Pick.model.ts` 의 도메인 원형이다.
 - **도구 판본.** `packageManager` 는 `pnpm@11.18.0` 이고, 설치 때 빌드 스크립트를 허용할 패키지(prisma,
   엔진, esbuild, sharp)를 `pnpm-workspace.yaml` 의 `allowBuilds` 에 둔다. NestJS 는 12 이고, `apps/api` 는
