@@ -67,11 +67,19 @@ module.exports = {
     },
     {
       name: 'api-imports-no-module',
-      comment: '컨트롤러는 자기 모듈의 facade 와 포트만 본다',
+      comment: '컨트롤러와 스케줄러는 자기 모듈의 facade 와 포트만 본다',
       severity: 'error',
-      from: { path: '^apps/([^/]+)/src/modules/([^/]+)/interface/api/' },
+      from: { path: '^apps/([^/]+)/src/modules/([^/]+)/interface/(?:api|schedule)/' },
       to:   { path: '^apps/[^/]+/src/modules/',
               pathNot: '(^apps/$1/src/modules/$2/(interface/facade|domain/port)/)' },
+    },
+    {
+      name: 'business-must-not-reach-adapter',
+      comment: '유스케이스는 포트로만 받는다 — backend §7. vault §3 전문에 없는 저장소 규칙',
+      severity: 'error',
+      // 시험은 제품 코드가 아니다 — 유스케이스 시험이 메모리 어댑터를 대역으로 꽂는 것은 허용한다(domain-model-has-zero-dependencies 와 같은 취급)
+      from: { path: '/(business|context)/', pathNot: '\\.test\\.ts$' },
+      to:   { path: '/domain/adapter/' },
     },
     {
       name: 'no-cross-module-import',
