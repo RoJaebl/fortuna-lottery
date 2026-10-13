@@ -81,3 +81,26 @@ describe("useHypothesisLabPresenter — 스위치를 바꾸면 평가 결과를 
     expect(result.current.evaluation).toBeNull();
   });
 });
+
+describe("useHypothesisLabPresenter — 늦게 온 평가 응답", () => {
+  it("스위치를 바꾼 뒤 도착한 응답은 버린다", async () => {
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        await gate;
+        return new Response(JSON.stringify(EVALUATION), { status: 200 });
+      }),
+    );
+    const { result } = renderHook(() => useHypothesisLabPresenter(null, () => {}));
+    act(() => result.current.evaluate());
+    act(() => result.current.toggleTopK());
+    await act(async () => {
+      release();
+      await gate;
+    });
+    expect(result.current.evaluation).toBeNull();
+    expect(result.current.evaluateDisabled).toBe(false);
+  });
+});

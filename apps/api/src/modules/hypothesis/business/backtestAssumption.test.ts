@@ -16,6 +16,11 @@ describe("backtestAssumption", () => {
     expect(sum(r.random.rankCounts)).toBe(100);
     expect(r.assumed.rankCounts).toHaveLength(6);
   });
+  it("무작위 쪽은 가정이 달라도 같다", () => {
+    const a = backtestAssumption({ excludePastWinners: true, topK: 20 }, draws);
+    const b = backtestAssumption({ excludePastWinners: false, topK: 30 }, draws);
+    expect(a.random).toEqual(b.random);
+  });
   it("같은 입력은 같은 결과", () => {
     const a = { excludePastWinners: false, topK: 20 };
     expect(backtestAssumption(a, draws)).toEqual(backtestAssumption(a, draws));

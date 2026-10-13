@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { fetchJson } from "@/shared/lib/fetchJson";
 import type { AssumptionModel } from "../model/Evaluation.model";
 import { EvaluationViewModel } from "../model/Evaluation.viewmodel";
@@ -13,7 +13,11 @@ export function useEvaluateAssumptionAction() {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // 요청 세대 — clear() 와 새 run 이 올리고, 늦게 온 응답은 세대가 다르면 버린다
+  const generation = useRef(0);
+
   const run = useCallback(async (assumption: AssumptionModel) => {
+    const mine = ++generation.current;
     setPending(true);
     setError(null);
     try {
@@ -22,16 +26,23 @@ export function useEvaluateAssumptionAction() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(hypothesisEvaluateRequest(assumption)),
       });
+      if (mine !== generation.current) return;
       setResult(EvaluationViewModel.from(hypothesisEvaluateResponse(res)));
     } catch (e) {
+      if (mine !== generation.current) return;
       setError(e instanceof Error ? e.message : "가정 평가에 실패했습니다");
     } finally {
-      setPending(false);
+      if (mine === generation.current) setPending(false);
     }
   }, []);
 
   /** 가정이 바뀌면 앞선 결과는 다른 가정을 말하므로 비운다 */
-  const clear = useCallback(() => setResult(null), []);
+  const clear = useCallback(() => {
+    generation.current++;
+    setResult(null);
+    setError(null);
+    setPending(false);
+  }, []);
 
   return { run, result, pending, error, clear };
 }

@@ -22,9 +22,17 @@ export class EvaluationViewModel extends EvaluationModel {
     return `무작위라면 ${(this.hitRate.expectedRate * 100).toFixed(1)}%`;
   }
 
-  /** 등수 1~5 마다 가정 쪽과 무작위 쪽 당첨 장수 */
+  /** 백테스트 표 제목 — tickets 는 회차 합계이므로 총 장수로 말한다 */
+  get backtestCaption(): string {
+    const { assumed, random } = this.backtest;
+    return `백테스트 — 총 가정 ${assumed.tickets.toLocaleString()}장 · 무작위 ${random.tickets.toLocaleString()}장 (회차마다 20장)`;
+  }
+
+  readonly firstPrizeNote = "1등은 이 장수로는 사실상 나오지 않습니다. 위의 세 확률을 보세요.";
+
+  /** 등수 2~5 마다 가정 쪽과 무작위 쪽 당첨 장수 — 1등은 표에 두지 않는다 */
   get backtestRows(): { label: string; assumed: number; random: number }[] {
-    return [1, 2, 3, 4, 5].map((rank) => ({
+    return [2, 3, 4, 5].map((rank) => ({
       label: rankLabel(rank),
       assumed: this.backtest.assumed.rankCounts[rank] ?? 0,
       random: this.backtest.random.rankCounts[rank] ?? 0,

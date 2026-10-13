@@ -80,8 +80,7 @@ export function HypothesisLab({ numbers, onGenerated }: HypothesisLabProps) {
 
           <table className="w-full text-small tabular-nums text-text">
             <caption className="mb-2 text-left text-micro text-muted">
-              백테스트 — 회차마다 가정 {result.backtest.assumed.tickets.toLocaleString()}장, 무작위{" "}
-              {result.backtest.random.tickets.toLocaleString()}장
+              {result.backtestCaption}
             </caption>
             <thead>
               <tr className="text-micro text-muted">
@@ -100,6 +99,7 @@ export function HypothesisLab({ numbers, onGenerated }: HypothesisLabProps) {
               ))}
             </tbody>
           </table>
+          <p className="text-micro text-muted">{result.firstPrizeNote}</p>
         </div>
       ) : null}
 

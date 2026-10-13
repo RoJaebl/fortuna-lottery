@@ -18,19 +18,21 @@ export function backtestAssumption(
   assumption: Assumption,
   draws: readonly Draw[],
 ): { assumed: RankTally; random: RankTally } {
-  const rng = mulberry32(BACKTEST_SEED);
+  // 무작위 쪽은 따로 시드를 둬서 가정이 바뀌어도 기준선 숫자가 바뀌지 않는다
+  const assumedRng = mulberry32(BACKTEST_SEED);
+  const randomRng = mulberry32(BACKTEST_SEED + 1);
   const assumed = emptyTally();
   const random = emptyTally();
   walkRounds(assumption, draws, (draw, before) => {
     for (let i = 0; i < TICKETS_PER_ROUND; i++) {
-      const a = drawAssumed(rng, assumption, before.pool, before.pastKeys, before.count);
+      const a = drawAssumed(assumedRng, assumption, before.pool, before.pastKeys, before.count);
       if (a.ok) {
         assumed.tickets++;
         assumed.rankCounts[scoreAgainstDraw(a.value, draw.numbers, draw.bonus).rank]!++;
       }
     }
     for (let i = 0; i < TICKETS_PER_ROUND; i++) {
-      const r = generate(rng);
+      const r = generate(randomRng);
       if (r.ok) {
         random.tickets++;
         random.rankCounts[scoreAgainstDraw(r.value, draw.numbers, draw.bonus).rank]!++;
