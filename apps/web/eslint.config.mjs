@@ -9,6 +9,12 @@ const VIEW_STATE = {
   message: "화면은 상태를 갖지 않는다. 상호작용 상태는 표시 조정자로, 서버 상태는 action 으로.",
 };
 
+// React.useState 처럼 멤버 호출로 부르는 꼴도 같은 상태 호출이다.
+const VIEW_STATE_MEMBER = {
+  selector: "CallExpression[callee.type='MemberExpression'][callee.property.name=/^use(State|Reducer|Effect)$/]",
+  message: VIEW_STATE.message,
+};
+
 // 이름에 기댄 근사다 — 변수 이름이 ViewModel 로 끝나거나 vm 인 것만 잡는다(boundary-enforcement §4).
 const VIEWMODEL_SPREAD = {
   selector: "ObjectExpression > SpreadElement[argument.name=/ViewModel$|^vm$/]",
@@ -40,17 +46,23 @@ export default tseslint.config(
               caseSensitive: true,
               message: "뷰 폴더 밖에서는 그 폴더의 index 만 가져온다 (fractal-view-promotion §6).",
             },
+            {
+              // 별칭(@/) 경로로 같은 안쪽을 짚는 꼴 — 위 상대 경로 패턴과 같은 메시지다.
+              regex: "^@/modules/[^/]+/(?:[^/]+/)*[A-Z][A-Za-z0-9]*/",
+              caseSensitive: true,
+              message: "뷰 폴더 밖에서는 그 폴더의 index 만 가져온다 (fractal-view-promotion §6).",
+            },
           ],
         },
       ],
     },
   },
   {
-    // 규칙 이름이 같으면 뒤의 설정이 앞의 것을 통째로 덮는다 — 화면 파일에는 두 선택자를 함께 건다
+    // 규칙 이름이 같으면 뒤의 설정이 앞의 것을 통째로 덮는다 — 화면 파일에는 선택자들을 함께 건다
     files: ["src/modules/**/*.tsx", "src/app/**/*.tsx"], // app/ 의 셸도 화면이다 — 상태는 Home.presenter 가 쥔다
     ignores: ["src/**/*.presenter.tsx"], // JSX 를 담은 조정자는 화면이 아니다
     rules: {
-      "no-restricted-syntax": ["error", VIEW_STATE, VIEWMODEL_SPREAD],
+      "no-restricted-syntax": ["error", VIEW_STATE, VIEW_STATE_MEMBER, VIEWMODEL_SPREAD],
     },
   },
 );
