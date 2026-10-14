@@ -40,7 +40,7 @@ describe("drawnAtFromDate (DB date 컬럼 → ISO)", () => {
 
   it("원격 → DB → 앱 왕복에서 값이 변하지 않는다", () => {
     const fromRemote = drawnAtFromYmd("20260801");
-    // Prisma의 @db.Date는 날짜만 저장하므로 읽을 때 자정 UTC로 돌아온다
+    // 예전 Postgres 의 date 컬럼은 자정 UTC 로 돌아왔다 — 그 값에서도 같은 시각을 복원한다
     const fromDb = new Date("2026-08-01T00:00:00.000Z");
     expect(drawnAtFromDate(fromDb)).toBe(fromRemote);
   });

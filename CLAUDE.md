@@ -48,26 +48,30 @@ PARA/MOC 규칙과는 무관하다.
 
 ```bash
 pnpm install                 # apps/api 의 postinstall 이 prisma generate 를 돈다
-docker compose up -d         # 로컬 Postgres (docker-compose.yml)
-pnpm --filter @fortuna-lottery/api db:migrate   # prisma migrate dev — draws 테이블을 만든다
 pnpm dev                     # 런처(tools/launch/launch.mjs) — apps/web(next dev, 3000~)과 apps/api(nest build --watch 의 dist, 4000~)를 함께 띄운다
 pnpm check                   # typecheck → lint → lint:deps → test → test:tools. 과업 끝의 검증 명령이다
 pnpm lint:deps               # dependency-cruiser 로 의존 방향·층 경계를 검사한다
 pnpm check:migration         # 골조 이관 상태를 낸다. 지금은 「옛 구역 파일: 0」
 pnpm build                   # turbo build
-pnpm start                   # 런처 — 빌드 결과로 두 서버를 OS 포트(또는 FORTUNA_WEB_PORT·FORTUNA_API_PORT 고정)에 띄운다
+pnpm start                   # 런처 — 빌드 결과로 두 서버를 OS 포트(또는 FORTUNA_WEB_PORT·FORTUNA_API_PORT 부터 빈 포트)에 띄운다
+pnpm --filter @fortuna-lottery/api db:migrate   # prisma migrate dev — 스키마를 고쳤을 때 마이그레이션을 새로 만든다
 pnpm test:tools              # 런처 시험(node --test)
 ```
 
 `apps/api` 는 기동할 때 `apps/api/.env` 를 스스로 싣고(`main.ts` 의 `loadEnvFile`, 이미 있는 환경 변수가
 이긴다) 거기서 `DATABASE_URL` 과 `SCHEDULER_ENABLED` 를 읽는다. 값의 모양은 루트의 `.env.example` 에 있다.
+DB 는 SQLite 파일이고 Docker 는 쓰지 않는다. `DATABASE_URL` 이 없으면 `file:./fortuna.db`(schema.prisma 기준이라
+`apps/api/prisma/fortuna.db`, 저장소에서 추적하지 않는다)를 쓴다. 런처는 `pnpm dev`·`pnpm start` 모두에서 서버를 띄우기 전에
+`prisma migrate deploy` 와 `prisma db execute --file prisma/seed.sql` 을 돈다. 시드는 회차 1~1245 의 `INSERT OR IGNORE`
+라 몇 번 넣어도 같고, 그 뒤 회차는 `pnpm start` 의 스케줄러가 채운다.
 `SCHEDULER_ENABLED` 를 적지 않으면 회차 수집 스케줄러는 `pnpm dev`(서버를 자주 다시 띄운다)에서 꺼지고
 `pnpm start` 에서 켜져 동행복권 원격을 부른다. 적으면 그 값이 이긴다 — `dev` 에서 수집하려면 `true`,
 `start` 에서 끄려면 `false`. 이 기본값은 런처가 서버에 넘기는 `FORTUNA_MODE`(`dev`/`start`)가 정하고, 런처 없이
 띄우면 `npm_lifecycle_event` 로 가린다. `FORTUNA_STRICT_PORT=1` 이면 `apps/api` 는 받은 `PORT` 를 옮기지 않고,
 쥐여 있으면 5 번 시도(약 4 초)한 뒤 `EADDRINUSE` 로 죽는다.
-포트를 고르는 자리는 런처 하나다 — 사람 셸의 `PORT`·`HOST` 는 자식에 넘기지 않는다. `pnpm start` 는 운영자가 적은
-`FORTUNA_WEB_PORT`·`FORTUNA_API_PORT` 에 고정으로 서고 쥐여 있으면 실패한다(vault 규약에서 의도해 벗어난 자리다).
+포트를 고르는 자리는 런처 하나다 — 사람 셸의 `PORT`·`HOST` 는 자식에 넘기지 않는다. `pnpm dev` 는 `DEV_WEB_PORT`·
+`DEV_API_PORT` 를 적으면 그 번호에 그대로 서고, `pnpm start` 는 `FORTUNA_WEB_PORT`·`FORTUNA_API_PORT` 를 적으면 그 번호부터
+피해 간다(`../editor` 의 dev-ports 와 같은 방식).
 환경 이름 표와 근거는 `.claude/context/launcher-ports.md` 가 갖는다.
 `apps/web` 은 `API_ORIGIN`(기본값 `http://127.0.0.1:4000`)으로 `apps/api` 의 주소를 받는다. 이 값은
 요청마다 실행 때 읽으므로 빌드 때 굳지 않는다 — 바꾸려면 프로세스를 다시 띄우면 된다.
@@ -166,8 +170,6 @@ tools/launch/        런처 — pnpm dev·pnpm start 가 부르고 포트를 고
   보게 한다(의도한 이탈).
 - **`business-must-not-reach-adapter` 는 이 저장소가 더한 규칙이다.** `business/`·`context/` 는 `domain/adapter` 를
   가져오지 못한다. 시험 파일도 예외가 아니다 — `picks` 의 `business/` 시험은 공용 `business/fakePickRepository.test-helper.ts`(포트를 구현하고 어댑터는 가져오지 않는다)를 쓴다.
-- **`pnpm start` 의 운영자 포트는 고정이다.** `FORTUNA_WEB_PORT`·`FORTUNA_API_PORT` 가 쥐여 있으면 실패한다
-  (launcher-ports 의 「피해 간다」에서 의도해 벗어난 자리).
 - **vault 골조 문서에 올릴 어긋남은 [보고 문서](<docs/superpowers/reports/2026-10-13-vault-feedback.md>)에 모았다.**
 - **모듈 시험은 모듈 뿌리에 둔다.** `modules/<도메인>/<도메인>Module.test.ts` 가 그 모듈 하나를 띄우고
   `configureApp` 으로 실제 접두를 건 뒤 HTTP 로 부른다. 유스케이스 시험은 `business/` 의 파일 옆에 둔다.
@@ -197,9 +199,9 @@ tools/launch/        런처 — pnpm dev·pnpm start 가 부르고 포트를 고
 
 ## MVP 현황
 
-`apps/api` 가 수집과 조회를 모두 한다. 회차 데이터는 `lotterietus` 모듈의 `PrismaDrawDataAdapter` 가 PostgreSQL 에서
+`apps/api` 가 수집과 조회를 모두 한다. 회차 데이터는 `lotterietus` 모듈의 `PrismaDrawDataAdapter` 가 SQLite 에서
 읽고, 같은 모듈의 `LotterietusIngestScheduler` 가 동행복권 비공식 엔드포인트를 매주 추첨 이후 수집해
-채운다. DB 에는 실제 당첨 데이터가 회차 1부터 빈틈없이 들어 있다.
+채운다. 새 DB 는 시드(`apps/api/prisma/seed.sql`)로 회차 1~1245 를 받고, 그 뒤 회차는 스케줄러가 잇는다.
 
 픽은 `picks` 모듈의 `PickRepositoryPort` 뒤에 있는 `InMemoryPickRepository`(서버 프로세스 메모리, 실제
 DB 아님)에 저장된다. `apps/api` 를 다시 띄우면 사라진다. 나중에 Supabase 로 바꿔도 어댑터만 바뀐다.

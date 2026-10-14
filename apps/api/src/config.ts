@@ -13,6 +13,7 @@ export const CONFIG = Symbol("ApiConfig");
 /**
  * apps/api/.env 를 프로세스 환경에 싣는다 — main.ts 가 앱을 만들기 전에 부른다.
  * 이미 있는 환경 변수는 덮지 않고, 파일이 없으면 아무것도 하지 않는다. 경로는 작업 디렉터리가 아니라 이 파일 기준이다(src/·dist/ 한 칸 위).
+ * DATABASE_URL 이 끝내 없으면 DEFAULT_DATABASE_URL 을 쓴다.
  */
 export function loadEnvFile(): void {
   try {
@@ -20,7 +21,11 @@ export function loadEnvFile(): void {
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
   }
+  process.env.DATABASE_URL ??= DEFAULT_DATABASE_URL;
 }
+
+/** SQLite 파일 — 상대 경로는 schema.prisma 기준이라 apps/api/prisma/fortuna.db 다. 런처도 같은 값을 쓴다 */
+export const DEFAULT_DATABASE_URL = "file:./fortuna.db";
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): ApiConfig {
   // 스케줄러 기본값: FORTUNA_MODE(띄우는 프로그램이 넘긴다)가 "dev" 이면 꺼짐, "start" 이면 켜짐.
