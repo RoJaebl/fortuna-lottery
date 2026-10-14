@@ -9,7 +9,7 @@
 않는다는 원칙을 명시적으로 지킨다: 로또 추첨은 매 회차 독립 사건이며 과거 통계는 미래 당첨 확률을
 높이지 못한다 — 핫/콜드·확률 관련 화면은 모두 이 사실을 명시해야 한다. 몰입감 있는 UX(다음 추첨
 카운트다운, 희귀도 배지, "타임머신" 백테스트)는 이 정직한 통계 위에 얹히는 것이며, 이 정직함이
-곧 후속 구독 전환의 신뢰 기반이다.
+곧 후속 구독 전환의 신뢰 기반이다. 가정 기반 기능은 가정 확률을 보여 줄 수 있다. 그때는 언제나 실제 확률 1/8,145,060 과 그 가정의 과거 적중률을 함께 적는다.
 
 설계 문서는 둘이다.
 
@@ -123,7 +123,7 @@ pnpm --filter @fortuna-lottery/web exec vitest run <path>   # 파일 하나
 
 ```
 packages/contract/   @fortuna-lottery/contract — 도메인별 zod 스키마(와이어 모델의 SSOT). 두 앱이 참조한다
-packages/kernel/     @fortuna-lottery/kernel — 로또 순수 커널(combination · scoring · rng · result). apps/api 만 참조한다
+packages/kernel/     @fortuna-lottery/kernel — 로또 순수 커널(combination · scoring · rng · result · generate). apps/api 만 참조한다
 apps/api/            NestJS 응용 서버 — src/modules/<도메인>/, src/composition/CompositionModule.ts, prisma/
 apps/web/            Next.js 화면 앱 — src/app/(셸), src/modules/<도메인>/, src/shared/{ui,lib}/
 tools/checks/        이관 상태 스크립트와 규칙마다 하나씩 둔 위반 표본
@@ -144,6 +144,7 @@ tools/launch/        런처 — pnpm dev·pnpm start 가 부르고 포트를 고
   `{ "error": "서버에 닿지 않습니다" }` 를 돌려주고 로그는 5 초에 한 줄만 남긴다. CORS 를 열 필요가 없다.
 - **로또 순수 커널은 `packages/kernel` 에 둔다.** 여러 서버 모듈이 함께 쓰므로 모듈 하나에 두면
   `no-cross-module-import` 에 걸린다. `apps/web` 은 커널을 참조하지 않는다(`web-must-not-reach-kernel`).
+- **조합 뽑기 `generate` 는 `packages/kernel` 에 둔다.** generator 와 hypothesis 가 함께 쓰므로 모듈 하나에 두면 `no-cross-module-import` 에 걸린다.
 - **서버의 `domain/model/` 은 의존이 없다.** 커널은 `business/`(필요하면 어댑터)에서만 런타임으로 쓴다.
   커널 타입이 필요한 순수 계산은 `business/` 에 둔다. `domain/port/` 는 커널 타입을 `import type` 으로만
   가져올 수 있다. `domain-model-has-zero-dependencies` 는 `*.test.ts` 를 세지 않는다 — boundary-enforcement §3 의 표준이다.
@@ -203,6 +204,8 @@ tools/launch/        런처 — pnpm dev·pnpm start 가 부르고 포트를 고
 픽은 `picks` 모듈의 `PickRepositoryPort` 뒤에 있는 `InMemoryPickRepository`(서버 프로세스 메모리, 실제
 DB 아님)에 저장된다. `apps/api` 를 다시 띄우면 사라진다. 나중에 Supabase 로 바꿔도 어댑터만 바뀐다.
 인증은 아직 없다(게스트 전용). Supabase Auth 와 로그인 게이팅은 v1 문서 기준 후속 단계다.
+
+`hypothesis` 모듈(가정 실험실)은 `POST /api/hypothesis/{evaluate,generate,popularity}` 를 낸다. 과거 회차로 가정 적중률·백테스트를 계산하고, 화면의 「가정 실험실」 탭이 이를 보인다.
 
 ## TDD
 

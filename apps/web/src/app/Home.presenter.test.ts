@@ -15,6 +15,22 @@ describe("useHomePresenter (셸 — 모듈 간 공유 상태)", () => {
     expect(result.current.picks.currentNumbers).toBe(numbers);
   });
 
+  it("가정 실험실이 번호를 같이 받고, 뽑은 번호를 셸에 올린다", () => {
+    const { result } = renderHook(() => useHomePresenter());
+    const numbers = [1, 2, 3, 4, 5, 6];
+    act(() => result.current.generator.onGenerated(numbers));
+    expect(result.current.hypothesis.numbers).toBe(numbers);
+
+    const drawn = [7, 8, 9, 10, 11, 12];
+    act(() => result.current.hypothesis.onGenerated(drawn));
+    expect(result.current.statistics.myNumbers).toBe(drawn);
+  });
+
+  it("탭 목록 끝이 가정 실험실이다", () => {
+    const { result } = renderHook(() => useHomePresenter());
+    expect(result.current.tabs.items.at(-1)).toEqual({ key: "hypothesis", label: "가정 실험실" });
+  });
+
   it("onToggleGenerator 가 생성기 열림을 뒤집는다", () => {
     const { result } = renderHook(() => useHomePresenter());
     expect(result.current.lotterietus.generatorOpen).toBe(false);

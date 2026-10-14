@@ -4,9 +4,9 @@ import {
   LOTTO_MIN,
   LOTTO_PICK_COUNT,
   type Combination,
-} from "@fortuna-lottery/kernel";
-import { err, type Result } from "@fortuna-lottery/kernel";
-import type { RandomPort } from "@fortuna-lottery/kernel";
+} from "./combination.js";
+import { err, type Result } from "./result.js";
+import type { RandomPort } from "./rng.js";
 
 /**
  * 조합 생성 — 자동(fixed 없음) / 부분 선택(fixed 1~5개) / 직접 입력(fixed 6개).

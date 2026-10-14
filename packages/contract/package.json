@@ -8,6 +8,10 @@
       "types": "./dist/generator/index.d.ts",
       "import": "./dist/generator/index.js"
     },
+    "./hypothesis": {
+      "types": "./dist/hypothesis/index.d.ts",
+      "import": "./dist/hypothesis/index.js"
+    },
     "./lotterietus": {
       "types": "./dist/lotterietus/index.d.ts",
       "import": "./dist/lotterietus/index.js"
