@@ -23,7 +23,7 @@
 
 | 명령 | 화면 포트 | 서버 포트 | 서버의 `FORTUNA_MODE` | 다시 띄우기 |
 |---|---|---|---|---|
-| `pnpm dev` | 3000 부터 빈 포트, `DEV_WEB_PORT` 를 적으면 그 번호 고정 | 4000 부터 빈 포트, `DEV_API_PORT` 를 적으면 그 번호 고정 | `dev`(스케줄러 꺼짐) | 런처가 `apps/api/dist` 를 지켜보다 300 ms 조용해지면 |
+| `pnpm dev` | 3000 부터 빈 포트, `FORTUNA_DEV_WEB_PORT` 를 적으면 그 번호 고정 | 4000 부터 빈 포트, `FORTUNA_DEV_API_PORT` 를 적으면 그 번호 고정 | `dev`(스케줄러 꺼짐) | 런처가 `apps/api/dist` 를 지켜보다 300 ms 조용해지면 |
 | `pnpm start` | OS 포트, `FORTUNA_WEB_PORT` 를 적으면 그 번호부터 빈 포트 | OS 포트, `FORTUNA_API_PORT` 를 적으면 그 번호부터 빈 포트 | `start`(스케줄러 켜짐) | 없음 |
 
 ## 환경 이름
@@ -34,8 +34,8 @@
 | `API_ORIGIN` | 런처 | 화면의 `/api/*` 경로 처리기 | 서버 주소 `http://127.0.0.1:<서버 포트>`. 요청마다 읽는다. 없으면 `http://127.0.0.1:4000` |
 | `FORTUNA_STRICT_PORT` | 런처 | 서버 | `1` 이면 `PORT` 를 옮기지 않고, 쥐여 있으면 5 번 시도(약 4 초)한 뒤 `EADDRINUSE` 로 죽는다 |
 | `FORTUNA_MODE` | 런처 | 서버 | `dev`·`start`. 스케줄러 기본값을 정한다. `SCHEDULER_ENABLED` 를 적으면 그 값이 이긴다 |
-| `DEV_WEB_PORT` | 사람 | 런처(`dev`) | 화면이 설 포트. 쥐여 있으면 실패한다 |
-| `DEV_API_PORT` | 사람 | 런처(`dev`) | 서버가 설 포트. 쥐여 있으면 실패한다 |
+| `FORTUNA_DEV_WEB_PORT` | 사람 | 런처(`dev`) | 화면이 설 포트. 쥐여 있으면 실패한다 |
+| `FORTUNA_DEV_API_PORT` | 사람 | 런처(`dev`) | 서버가 설 포트. 쥐여 있으면 실패한다. `editor` 의 `DEV_WEB_PORT`·`DEV_API_PORT` 와 겹치지 않게 접두를 붙였다 — `editor` 의 `pnpm dev` 는 그 값을 자식 환경에 넣으므로 거기서 연 터미널이 물려받는다 |
 | `FORTUNA_WEB_PORT` | 운영자 | 런처(`start`) | 화면이 찾기 시작할 포트 |
 | `FORTUNA_API_PORT` | 운영자 | 런처(`start`) | 서버가 찾기 시작할 포트 |
 | `DATABASE_URL` | 사람(적지 않아도 된다) | 런처의 DB 준비 · 서버 | SQLite 주소. 없으면 `file:./fortuna.db` |

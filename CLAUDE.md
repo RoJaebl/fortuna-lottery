@@ -69,8 +69,8 @@ DB 는 SQLite 파일이고 Docker 는 쓰지 않는다. `DATABASE_URL` 이 없�
 `start` 에서 끄려면 `false`. 이 기본값은 런처가 서버에 넘기는 `FORTUNA_MODE`(`dev`/`start`)가 정하고, 런처 없이
 띄우면 `npm_lifecycle_event` 로 가린다. `FORTUNA_STRICT_PORT=1` 이면 `apps/api` 는 받은 `PORT` 를 옮기지 않고,
 쥐여 있으면 5 번 시도(약 4 초)한 뒤 `EADDRINUSE` 로 죽는다.
-포트를 고르는 자리는 런처 하나다 — 사람 셸의 `PORT`·`HOST` 는 자식에 넘기지 않는다. `pnpm dev` 는 `DEV_WEB_PORT`·
-`DEV_API_PORT` 를 적으면 그 번호에 그대로 서고, `pnpm start` 는 `FORTUNA_WEB_PORT`·`FORTUNA_API_PORT` 를 적으면 그 번호부터
+포트를 고르는 자리는 런처 하나다 — 사람 셸의 `PORT`·`HOST` 는 자식에 넘기지 않는다. `pnpm dev` 는 `FORTUNA_DEV_WEB_PORT`·
+`FORTUNA_DEV_API_PORT` 를 적으면 그 번호에 그대로 서고, `pnpm start` 는 `FORTUNA_WEB_PORT`·`FORTUNA_API_PORT` 를 적으면 그 번호부터
 피해 간다(`../editor` 의 dev-ports 와 같은 방식).
 환경 이름 표와 근거는 `.claude/context/launcher-ports.md` 가 갖는다.
 `apps/web` 은 `API_ORIGIN`(기본값 `http://127.0.0.1:4000`)으로 `apps/api` 의 주소를 받는다. 이 값은

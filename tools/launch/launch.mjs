@@ -2,7 +2,7 @@
 // 화면(apps/web)과 응용 서버(apps/api)를 함께 띄우는 프로그램 — `pnpm dev`·`pnpm start` 가 부른다 (launcher-ports)
 //
 // - 포트를 고르는 자리는 여기 하나다. 고른 값을 환경으로 넘기고, 받는 쪽은 옮기지 않는다.
-// - dev   : 화면 3000·서버 4000 에서 시작해 쥐여 있으면 하나씩 올린다. DEV_WEB_PORT·DEV_API_PORT 를 적으면 그 번호에 그대로
+// - dev   : 화면 3000·서버 4000 에서 시작해 쥐여 있으면 하나씩 올린다. FORTUNA_DEV_WEB_PORT·FORTUNA_DEV_API_PORT 를 적으면 그 번호에 그대로
 //           서고 쥐여 있으면 실패한다. 서버는 `nest build --watch` 가 낸 dist 를 지켜보다 조용해지면 이 프로그램이 다시
 //           띄운다(런타임의 감시 모드를 쓰지 않는다).
 // - start : OS 가 준 빈 포트. FORTUNA_WEB_PORT·FORTUNA_API_PORT 를 적으면 그 번호부터 쥔 포트를 피해 간다.
@@ -284,8 +284,8 @@ async function dev() {
     complain("공용 패키지 빌드에 실패했다");
     process.exit(1);
   }
-  const webPort = await devPort("DEV_WEB_PORT", 3000);
-  const apiPort = await devPort("DEV_API_PORT", 4000);
+  const webPort = await devPort("FORTUNA_DEV_WEB_PORT", 3000);
+  const apiPort = await devPort("FORTUNA_DEV_API_PORT", 4000);
   await prepareDb();
 
   // 감시자가 첫 바퀴를 마친 뒤에 서버를 띄우려고 지난 dist 를 먼저 지운다
