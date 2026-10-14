@@ -68,11 +68,13 @@
 
 ## DB 준비 — Docker 없이 SQLite
 
-`pnpm dev`·`pnpm start` 는 서버를 띄우기 전에 `apps/api` 에서 Prisma CLI 를 두 번 돈다. 출력에는 `[db]` 이름표가 붙고, 어느
+`pnpm dev`·`pnpm start` 는 서버를 띄우기 전에 `apps/api` 에서 Prisma CLI 를 세 번 돈다. 출력에는 `[db]` 이름표가 붙고, 어느
 쪽이든 실패하면 「DB 준비(prisma …)에 실패했다」를 적고 1 로 나간다.
 
-1. `prisma migrate deploy` — 마이그레이션을 적용한다. 파일이 없으면 만든다.
-2. `prisma db execute --file prisma/seed.sql` — 회차 1~1245 를 `INSERT OR IGNORE` 로 넣는다. 이미 있는 회차는 건너뛰므로
+1. `prisma generate` — 클라이언트를 지금 스키마로 다시 짓는다. `pnpm install` 때만 돌던 단계라, 스키마를 바꾼 커밋을 받은
+   체크아웃이 옛 클라이언트로 남아 「the URL must start with the protocol `postgresql://`」 같은 500 을 냈다.
+2. `prisma migrate deploy` — 마이그레이션을 적용한다. 파일이 없으면 만든다.
+3. `prisma db execute --file prisma/seed.sql` — 회차 1~1245 를 `INSERT OR IGNORE` 로 넣는다. 이미 있는 회차는 건너뛰므로
    매번 돌려도 같다.
 
 `DATABASE_URL` 이 없으면 런처와 서버(`apps/api/src/config.ts` 의 `DEFAULT_DATABASE_URL`)가 같은 값 `file:./fortuna.db` 를

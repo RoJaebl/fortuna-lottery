@@ -218,11 +218,15 @@ async function announce(webPort, apiPort) {
 /** apps/api 의 config.ts DEFAULT_DATABASE_URL 과 같은 값 — 상대 경로는 schema.prisma 기준이다 */
 const DEFAULT_DATABASE_URL = "file:./fortuna.db";
 
-/** 마이그레이션을 적용하고 시드를 넣는다. 시드는 INSERT OR IGNORE 라 몇 번 넣어도 같다 */
+/**
+ * 클라이언트를 스키마에 맞춰 다시 짓고, 마이그레이션을 적용하고, 시드를 넣는다. 시드는 INSERT OR IGNORE 라 몇 번 넣어도 같다.
+ * generate 는 pnpm install 때만 돌므로, 스키마를 바꾼 커밋을 받은 체크아웃은 옛 클라이언트(예: postgresql)로 남는다
+ */
 async function prepareDb() {
   const prisma = binOf(API_DIR, "prisma", "prisma");
   const env = { ...process.env, DATABASE_URL: process.env.DATABASE_URL || DEFAULT_DATABASE_URL };
   const steps = [
+    ["generate", "--no-hints"],
     ["migrate", "deploy"],
     ["db", "execute", "--file", "prisma/seed.sql", "--schema", "prisma/schema.prisma"],
   ];
