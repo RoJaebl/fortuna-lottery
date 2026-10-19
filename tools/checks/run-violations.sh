@@ -9,7 +9,7 @@ BIN="$ROOT/node_modules/dependency-cruiser/bin/dependency-cruiser.mjs"
 bad=0
 
 # 폴더 이름의 `--` 뒤는 같은 규칙의 다른 표본(예: 패키지 이름 꼴 import)이다.
-# 표본 폴더에 tsconfig.json 이 있으면 그 paths 로 패키지 이름·@/ 별칭을 표본 안의 경로로 푼다.
+# 표본 폴더에 tsconfig.json 이 있으면 그 paths 로 패키지 이름·여섯 층 별칭(@app/ 등)을 표본 안의 경로로 푼다.
 for dir in "$ROOT"/tools/checks/violations/*/; do
   name="$(basename "$dir")"
   rule="${name%%--*}"
