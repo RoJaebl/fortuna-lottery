@@ -63,7 +63,7 @@
 ## 9. 캐시 도구의 `invalidate` 가 `Q = void` 일 때 새로 받지 않는다
 
 - 문서·절: frontend-module-layout §3.1 (전문 199 행 근방의 캐시 도구 목록).
-- 지금 문구: `invalidate` 가 `query !== undefined` 로 갈라 다시 받는다.
+- 지금 문구: 규격 코드가 `if (watchers.has(key) && query !== undefined) void fetchInto(key, query)` 로 갈라 다시 받는다(frontend-module-layout 226 행 근방). 조건이 `void` 인 캐시는 값이 늘 `undefined` 라 이 줄이 다시 받지 못한다.
 - 문제: 입력이 없는 캐시(`Q = void`)는 `query` 가 늘 `undefined` 라서 지우기만 하고 다시 받지도 알리지도 않는다.
 - 제안: 조건을 `queries.has(key)` 로 바꾼다. 이 저장소는 `serverCache.ts` 에서 고쳤고 회귀 시험을 더했다.
 
@@ -76,19 +76,12 @@
 
 ## 11. 규격 `FetchHttpClient` 는 서버 본문의 오류 문구를 버린다
 
-- 문서·절: frontend-app-layers (HTTP 클라이언트 규격 코드).
-- 지금 문구: 응답이 실패하면 상태 코드만으로 예외를 던진다.
+- 문서·절: [frontend-app-layers §4.2 `infrastructure/` — 앱이 쓸 구현](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/frontend-app-layers.md#42-infrastructure--앱이-쓸-구현>) (HTTP 클라이언트 규격 코드).
+- 지금 문구: 응답이 실패하면 ``if (!res.ok) throw new Error(`${res.status} ${path}`)`` 로 상태 코드와 경로만 담아 예외를 던진다.
 - 문제: 계약이 「도메인 실패는 메시지를 실은 400」을 정한 저장소에서는 서버가 준 문구가 사라져 화면에 보일 문구가 없다.
 - 제안: 실패 응답의 본문에서 오류 문구를 꺼내 예외 메시지로 쓰도록 규격 코드에 싣는다. 이 저장소는 `infrastructure/http` 에서 그렇게 했다.
 
-## 12. 규격 `serverCache.invalidate` 의 `query !== undefined` 판별은 조건이 `void` 인 캐시를 다시 받지 못한다
-
-- 문서·절: frontend-module-layout §3.1 (캐시 도구의 `invalidate`).
-- 지금 문구: 보고 있는 조건인지 `query !== undefined` 로 가려 다시 받는다.
-- 문제: 9번과 같은 어긋남을 규격 코드 쪽에서 다시 적는다. 조건이 `void` 인 캐시는 값이 늘 `undefined` 라 다시 받지 못한다.
-- 제안: 판별을 `queries.has(key)` 로 바꾼다. 9번의 제안과 같다.
-
-## 13. 규격 §3.2 예의 `useSyncExternalStore` 에 `getServerSnapshot` 이 없다
+## 12. 규격 §3.2 예의 `useSyncExternalStore` 에 `getServerSnapshot` 이 없다
 
 - 문서·절: frontend-module-layout §3.2 (조회 action 의 훅 예).
 - 지금 문구: `useSyncExternalStore` 에 구독 함수와 읽기 함수 둘만 넘긴다.

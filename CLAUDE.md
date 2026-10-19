@@ -106,7 +106,7 @@ pnpm --filter @fortuna-lottery/web exec vitest run <path>   # 파일 하나
 
 ## 아키텍처 — vault 골조를 가리킨다
 
-구조의 규칙은 이 파일이 아니라 vault 의 골조 문서 열 장이 소유한다(위 일곱 장과 `frontend/` 폴더의 세 장). 이 기기에서는
+구조의 규칙은 이 파일이 아니라 vault 의 골조 문서 열 장이 소유한다(`architecture/` 폴더의 일곱 장과 `frontend/` 폴더의 세 장). 이 기기에서는
 `C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/` 에서 읽는다(그 사본은
 고치지 않는다). 먼저 [architecture-baseline](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/architecture-baseline.md>)을
 열면 어느 작업에 어느 장을 읽는지 알려 준다.
@@ -137,7 +137,9 @@ tools/launch/        런처 — pnpm dev·pnpm start 가 부르고 포트를 고
 ```
 
 의존 방향과 층 경계는 루트의 `.dependency-cruiser.cjs` 가, 코드 모양(화면에 상태 없음, 표시 모델 얕은
-전개 금지, 뷰 폴더의 공개 표면)은 `apps/web/eslint.config.mjs` 가 강제한다. 둘 다 `pnpm check` 에 들어
+전개 금지, 뷰 폴더의 공개 표면, 훅이 자기 유스케이스 토큰 하나만 꺼내기 `hook-resolves-own-token-only`,
+`href`·`push`·`replace` 에 경로 리터럴 금지 `no-path-literal`, `@/` 뿌리 별칭 금지 `no-root-alias`)은
+`apps/web/eslint.config.mjs` 가 강제한다. 둘 다 `pnpm check` 에 들어
 있으므로 위반은 곧 검증 실패다.
 
 ## 이 저장소가 정한 것 — vault 골조가 답하지 않는 자리
@@ -186,7 +188,7 @@ tools/launch/        런처 — pnpm dev·pnpm start 가 부르고 포트를 고
   - `FetchHttpClient`(`infrastructure/http`)는 서버 본문의 `{ error }` 문구를 꺼내 예외 메시지로 쓴다. 계약이 도메인 실패를 메시지를 실은 400 으로 정하므로 버리면 화면 문구가 사라진다.
   - `serverCache` 의 `invalidate` 는 조건이 `void` 인 캐시도 다시 받도록 `query !== undefined` 대신 `queries.has(key)` 로 가린다.
   - 조회 훅은 `useSyncExternalStore` 의 셋째 인자로 `readOnServer`(서버 렌더 때는 값 없음)를 넘긴다. 없으면 Next 서버 렌더가 실패한다.
-- **`picks` 의 저장·삭제는 `results` 캐시를 무효화하지 않는다.** 결과 확인은 사람이 「확인」을 눌러 받는 값이고,
+- **`picks` 의 저장·삭제는 `results` 캐시를 무효화하지 않는다.** 결과 확인은 사람이 「당첨 대조」를 눌러 받는 값이고,
   누르기 전까지는 앞선 결과를 그대로 보인다(`apps/web/src/composition/propagation.ts` 주석).
 - **`turbo.json` 의 `lint` 는 `^build` 에 기댄다.** baseline §3 의 `{}` 보다 엄격한 의도된 이탈이다.
 - **`Entity` 부류는 없다.** 픽은 `picks/domain/model/Pick.model.ts` 의 도메인 원형이다.
