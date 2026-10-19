@@ -1,6 +1,6 @@
 import { useEffect, useSyncExternalStore } from "react";
 import { fetchJson } from "@/shared/lib/fetchJson";
-import { createServerCache } from "@/shared/lib/serverCache";
+import { createServerCache } from "@infrastructure/serverCache";
 import { LotterietusViewModel } from "../model/Lotterietus.viewmodel";
 import { lotterietusReadResponse } from "../mapper/lotterietusRead.mapper";
 

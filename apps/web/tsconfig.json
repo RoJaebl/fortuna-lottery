@@ -10,7 +10,13 @@
     "moduleResolution": "Bundler",
     "plugins": [{ "name": "next" }],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@app/*": ["./src/app/*"],
+      "@widgets/*": ["./src/widgets/*"],
+      "@composition/*": ["./src/composition/*"],
+      "@infrastructure/*": ["./src/infrastructure/*"],
+      "@lib/*": ["./src/shared/lib/*"],
+      "@ui/*": ["./src/shared/ui/*"]
     },
     "types": ["node"]
   },

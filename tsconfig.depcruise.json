@@ -3,6 +3,14 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "paths": { "@/*": ["apps/web/src/*"] }
+    "paths": {
+      "@/*": ["apps/web/src/*"],
+      "@app/*": ["apps/web/src/app/*"],
+      "@widgets/*": ["apps/web/src/widgets/*"],
+      "@composition/*": ["apps/web/src/composition/*"],
+      "@infrastructure/*": ["apps/web/src/infrastructure/*"],
+      "@lib/*": ["apps/web/src/shared/lib/*"],
+      "@ui/*": ["apps/web/src/shared/ui/*"]
+    }
   }
 }

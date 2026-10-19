@@ -1,5 +1,5 @@
 // 서버 상태 캐시 도구 — frontend-module-layout 규칙 3.1절의 전문이다. 도메인을 모른다.
-// action 이 모듈 수준에 하나씩 만들고, 수명 규칙 셋(같은 조건이면 다시 받지 않기 · 넘어간 요청의 응답 버리기 ·
+// 조립 루트가 컨테이너에 한 번 짓고, 수명 규칙 셋(같은 조건이면 다시 받지 않기 · 넘어간 요청의 응답 버리기 ·
 // 보는 화면이 없어지면 놓기)이 이 안에서 지켜진다. action 에는 무엇을 언제 무효화하는가만 남는다.
 export type CacheEntry<V> =
   | { status: "loading"; value: V | null; error: null }

@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
 import { fetchJson } from "@/shared/lib/fetchJson";
-import { createServerCache } from "@/shared/lib/serverCache";
+import { createServerCache } from "@infrastructure/serverCache";
 import { ResultsDrawViewModel } from "../model/ResultsDraw.viewmodel";
 import { ResultsCheckItemViewModel } from "../model/ResultsCheckItem.viewmodel";
 import { resultsCheckResponse } from "../mapper/resultsCheck.mapper";

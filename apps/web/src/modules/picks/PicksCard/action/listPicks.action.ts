@@ -1,6 +1,6 @@
 import { useEffect, useSyncExternalStore } from "react";
 import { fetchJson } from "@/shared/lib/fetchJson";
-import { createServerCache } from "@/shared/lib/serverCache";
+import { createServerCache } from "@infrastructure/serverCache";
 import { PickViewModel } from "../model/Pick.viewmodel";
 import { picksListResponse } from "../mapper/picksList.mapper";
 
