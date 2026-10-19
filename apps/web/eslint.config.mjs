@@ -60,7 +60,7 @@ export default tseslint.config(
   {
     // 규칙 이름이 같으면 뒤의 설정이 앞의 것을 통째로 덮는다 — 화면 파일에는 선택자들을 함께 건다
     files: ["src/modules/**/*.tsx", "src/app/**/*.tsx"], // app/ 의 셸도 화면이다 — 상태는 Home.presenter 가 쥔다
-    ignores: ["src/**/*.presenter.tsx"], // JSX 를 담은 조정자는 화면이 아니다
+    ignores: ["src/**/*.presenter.tsx", "src/app/AppContainer.tsx"], // JSX 를 담은 조정자와 컨테이너 공급자는 화면이 아니다
     rules: {
       "no-restricted-syntax": ["error", VIEW_STATE, VIEW_STATE_MEMBER, VIEWMODEL_SPREAD],
     },
