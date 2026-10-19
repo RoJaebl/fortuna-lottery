@@ -1,20 +1,30 @@
 import { Container } from "@lib/di";
 import { DOMAIN_EVENTS, DomainEvents } from "@infrastructure/events";
 import { FetchHttpClient, HTTP_CLIENT, TEST_HTTP, TestHttpClient } from "@infrastructure/http";
-import { GENERATE_COMBINATION, createGenerateCombination } from "@/modules/generator";
 import {
+  BACKTEST_COMBINATION,
   CHECK_POPULARITY,
+  CHECK_RESULTS,
+  DELETE_PICK,
   EVALUATE_ASSUMPTION,
   GENERATE_ASSUMED,
+  GENERATE_COMBINATION,
+  LIST_PICKS,
+  LOTTERIETUS_STATUS,
+  SAVE_PICK,
+  STATISTICS,
+  createBacktestCombination,
+  createCheckResultsCache,
+  createDeletePick,
   createEvaluateAssumption,
   createGenerateAssumed,
+  createGenerateCombination,
+  createListPicksCache,
+  createLotterietusStatusCache,
   createPopularityCache,
-} from "@/modules/hypothesis";
-import { LOTTERIETUS_STATUS, createLotterietusStatusCache } from "@/modules/lotterietus";
-import { DELETE_PICK, LIST_PICKS, SAVE_PICK, createDeletePick, createListPicksCache, createSavePick } from "@/modules/picks";
-import { CHECK_RESULTS, createCheckResultsCache } from "@/modules/results";
-import { BACKTEST_COMBINATION, createBacktestCombination } from "@/modules/simulation";
-import { STATISTICS, createStatisticsCache } from "@/modules/statistics";
+  createSavePick,
+  createStatisticsCache,
+} from "@app/(home)";
 import { registerPropagation } from "./propagation";
 
 export type Binding = "real" | "test" | "fake";

@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { TEST_HTTP } from "@infrastructure/http";
-import { DELETE_PICK, LIST_PICKS, SAVE_PICK } from "@/modules/picks";
-import { CHECK_RESULTS } from "@/modules/results";
+import { CHECK_RESULTS, DELETE_PICK, LIST_PICKS, SAVE_PICK } from "@app/(home)";
 import { createContainer } from "./createContainer";
 
 const count = (sent: { path: string; init: RequestInit }[], path: string, method: string) =>

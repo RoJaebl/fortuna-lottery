@@ -1,6 +1,6 @@
 import type { Container } from "@lib/di";
 import { DOMAIN_EVENTS } from "@infrastructure/events";
-import { LIST_PICKS, PICKS_REMOVED, PICKS_SAVED } from "@/modules/picks";
+import { LIST_PICKS, PICKS_REMOVED, PICKS_SAVED } from "@app/(home)";
 
 /** 무엇이 무엇을 갱신하는가, 전부 여기 (frontend-app-layers §6 전파 규칙 파일) */
 export function registerPropagation(c: Container): void {

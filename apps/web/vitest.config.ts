@@ -12,7 +12,6 @@ export default defineConfig({
       "@infrastructure": path.resolve(__dirname, "src/infrastructure"),
       "@lib": path.resolve(__dirname, "src/shared/lib"),
       "@ui": path.resolve(__dirname, "src/shared/ui"),
-      "@": path.resolve(__dirname, "src"),
     },
   },
   test: {

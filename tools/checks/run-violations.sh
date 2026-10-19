@@ -47,6 +47,9 @@ declare -A EXPECT=(
   [view-with-state]='화면은 상태를 갖지 않는다'
   [viewmodel-spread]='표시 모델을 얕은 전개로 복제하면'
   [view-folder-public-surface]='뷰 폴더 밖에서는 그 폴더의 index 만'
+  [no-root-alias]='층 별칭을 쓴다'
+  [hook-resolves-own-token-only]='(hook-resolves-own-token-only)'
+  [no-path-literal]='(no-path-literal)'
 )
 for dir in "$ROOT"/tools/checks/eslint-violations/*/; do
   name="$(basename "$dir")"
