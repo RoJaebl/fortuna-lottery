@@ -2,9 +2,11 @@
 // 화면(apps/web)과 응용 서버(apps/api)를 함께 띄우는 프로그램 — `pnpm dev`·`pnpm start` 가 부른다 (launcher-ports)
 //
 // - 포트를 고르는 자리는 여기 하나다. 고른 값을 환경으로 넘기고, 받는 쪽은 옮기지 않는다.
-// - dev   : 화면 3000·서버 4000 에서 시작해 쥐여 있으면 하나씩 올린다. 서버는 `nest build --watch` 가 낸 dist 를
-//           지켜보다 조용해지면 이 프로그램이 다시 띄운다(런타임의 감시 모드를 쓰지 않는다).
-// - start : FORTUNA_WEB_PORT·FORTUNA_API_PORT 를 적으면 그 번호에 고정으로 서고(쥐여 있으면 실패), 없으면 OS 가 준 빈 포트.
+// - dev   : 화면 3000·서버 4000 에서 시작해 쥐여 있으면 하나씩 올린다. FORTUNA_DEV_WEB_PORT·FORTUNA_DEV_API_PORT 를 적으면 그 번호에 그대로
+//           서고 쥐여 있으면 실패한다. 서버는 `nest build --watch` 가 낸 dist 를 지켜보다 조용해지면 이 프로그램이 다시
+//           띄운다(런타임의 감시 모드를 쓰지 않는다).
+// - start : OS 가 준 빈 포트. FORTUNA_WEB_PORT·FORTUNA_API_PORT 를 적으면 그 번호부터 쥔 포트를 피해 간다.
+// - 둘 다 서버를 띄우기 전에 SQLite 를 마이그레이션하고 시드(prisma/seed.sql)를 넣는다 — Docker 가 필요 없다.
 //
 // 자식은 셸을 거치지 않고 `node <패키지의 bin 파일>` 로 띄운다 — 패키지의 package.json `bin` 을 그 앱 기준으로 찾으므로
 // 운영체제마다 다른 `.bin` 껍데기(sh·.cmd)에 기대지 않는다.
@@ -211,6 +213,32 @@ async function announce(webPort, apiPort) {
   if (!shuttingDown) say(`화면 http://127.0.0.1:${webPort}/ · 서버 http://127.0.0.1:${apiPort}/api`);
 }
 
+// ── DB ──────────────────────────────────────────────────────
+
+/** apps/api 의 config.ts DEFAULT_DATABASE_URL 과 같은 값 — 상대 경로는 schema.prisma 기준이다 */
+const DEFAULT_DATABASE_URL = "file:./fortuna.db";
+
+/**
+ * 클라이언트를 스키마에 맞춰 다시 짓고, 마이그레이션을 적용하고, 시드를 넣는다. 시드는 INSERT OR IGNORE 라 몇 번 넣어도 같다.
+ * generate 는 pnpm install 때만 돌므로, 스키마를 바꾼 커밋을 받은 체크아웃은 옛 클라이언트(예: postgresql)로 남는다
+ */
+async function prepareDb() {
+  const prisma = binOf(API_DIR, "prisma", "prisma");
+  const env = { ...process.env, DATABASE_URL: process.env.DATABASE_URL || DEFAULT_DATABASE_URL };
+  const steps = [
+    ["generate", "--no-hints"],
+    ["migrate", "deploy"],
+    ["db", "execute", "--file", "prisma/seed.sql", "--schema", "prisma/schema.prisma"],
+  ];
+  for (const args of steps) {
+    const result = await run("db", prisma, args, { cwd: API_DIR, env }).done;
+    if (exitCodeOf(result) !== 0) {
+      complain(`DB 준비(prisma ${args.join(" ")})에 실패했다`);
+      process.exit(1);
+    }
+  }
+}
+
 // ── dev ─────────────────────────────────────────────────────
 
 /** dist 를 지켜보다 QUIET_MS 동안 조용해지고 main.js 가 있으면 onQuiet 를 부른다. dist 가 잠시 사라져도 견딘다 */
@@ -240,13 +268,29 @@ function watchDist(onQuiet) {
   setInterval(tick, 200).unref();
 }
 
+/** 포트 번호 환경 값을 읽는다. 없으면 undefined */
+function portFromEnv(name) {
+  const raw = process.env[name];
+  if (raw === undefined || raw === "") return undefined;
+  const port = Number(raw);
+  if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error(`${name}=${raw} 는 포트 번호가 아니다`);
+  return port;
+}
+
+/** 사람이 적은 번호면 그 번호에 그대로(쥐여 있으면 실패), 없으면 기본 번호부터 빈 포트 */
+async function devPort(name, from) {
+  const fixed = portFromEnv(name);
+  return fixed === undefined ? pickPort({ from }) : pickPort({ from: fixed, strict: true });
+}
+
 async function dev() {
   if ((await runPnpm(["--filter", "./packages/*", "build"])) !== 0) {
     complain("공용 패키지 빌드에 실패했다");
     process.exit(1);
   }
-  const webPort = await pickPort({ from: 3000 });
-  const apiPort = await pickPort({ from: 4000 });
+  const webPort = await devPort("FORTUNA_DEV_WEB_PORT", 3000);
+  const apiPort = await devPort("FORTUNA_DEV_API_PORT", 4000);
+  await prepareDb();
 
   // 감시자가 첫 바퀴를 마친 뒤에 서버를 띄우려고 지난 dist 를 먼저 지운다
   rmSync(API_DIST, { recursive: true, force: true });
@@ -309,13 +353,10 @@ async function dev() {
 
 // ── start ───────────────────────────────────────────────────
 
-/** 운영자가 적은 번호면 그 번호에 고정, 없으면 OS 가 준 빈 포트 */
+/** 운영자가 적은 번호면 그 번호부터 쥔 포트를 피해 가고, 없으면 OS 가 준 빈 포트 */
 async function startPort(name) {
-  const raw = process.env[name];
-  if (raw === undefined || raw === "") return pickPort({});
-  const from = Number(raw);
-  if (!Number.isInteger(from) || from < 1 || from > 65535) throw new Error(`${name}=${raw} 는 포트 번호가 아니다`);
-  return pickPort({ from, strict: true });
+  const from = portFromEnv(name);
+  return from === undefined ? pickPort({}) : pickPort({ from });
 }
 
 async function start() {
@@ -328,13 +369,13 @@ async function start() {
   try {
     webPort = await startPort("FORTUNA_WEB_PORT");
     apiPort = await startPort("FORTUNA_API_PORT");
-    // OS 가 두 번 모두 같은 번호를 줄 수는 있으므로 서버 쪽을 다시 받는다
-    while (apiPort === webPort && !process.env.FORTUNA_API_PORT) apiPort = await pickPort({});
-    if (apiPort === webPort) throw new Error(`FORTUNA_WEB_PORT 와 FORTUNA_API_PORT 가 같은 번호(${webPort})다`);
+    // OS 가 두 번 모두 같은 번호를 줄 수 있고, 적은 두 번호의 찾는 범위가 겹칠 수도 있다 — 서버 쪽을 그다음 빈 포트로 옮긴다
+    while (apiPort === webPort) apiPort = process.env.FORTUNA_API_PORT ? await pickPort({ from: apiPort + 1 }) : await pickPort({});
   } catch (error) {
     complain(error.message);
     process.exit(1);
   }
+  await prepareDb();
 
   const api = run("api", API_MAIN, [], {
     cwd: API_DIR,

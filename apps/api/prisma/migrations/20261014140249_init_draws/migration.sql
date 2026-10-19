@@ -1,6 +1,6 @@
 -- CreateTable
 CREATE TABLE "draws" (
-    "round" INTEGER NOT NULL,
+    "round" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "n1" INTEGER NOT NULL,
     "n2" INTEGER NOT NULL,
     "n3" INTEGER NOT NULL,
@@ -8,7 +8,5 @@ CREATE TABLE "draws" (
     "n5" INTEGER NOT NULL,
     "n6" INTEGER NOT NULL,
     "bonus" INTEGER NOT NULL,
-    "drawn_at" DATE NOT NULL,
-
-    CONSTRAINT "draws_pkey" PRIMARY KEY ("round")
+    "drawn_at" DATETIME NOT NULL
 );

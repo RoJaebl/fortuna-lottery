@@ -28,17 +28,16 @@ packages/kernel/     로또 순수 커널 — apps/api 만 참조한다
 
 ```bash
 pnpm install
-docker compose up -d   # 로컬 Postgres — apps/api/.env 는 .env.example 을 본뜬다
-pnpm --filter @fortuna-lottery/api db:migrate   # draws 테이블을 만든다 (prisma migrate dev)
 pnpm dev               # apps/web 과 apps/api 를 함께 띄운다 — 회차 수집 스케줄러는 꺼진 채로
 pnpm check             # 타입 검사 · lint · 의존 규칙 · 시험 · 런처 시험
 pnpm build             # 프로덕션 빌드
 pnpm start             # 빌드 결과로 두 서버를 띄운다 — 회차 수집 스케줄러는 켜진 채로
 ```
 
+- Docker 가 필요 없다. DB 는 SQLite 파일 `apps/api/prisma/fortuna.db` 이고, 런처가 서버를 띄우기 전에 마이그레이션(`prisma migrate deploy`)과 시드(`apps/api/prisma/seed.sql`, 회차 1~1245)를 넣는다. 파일을 지우면 다음 실행이 다시 만든다.
 - `pnpm dev`·`pnpm start` 는 런처 `tools/launch/launch.mjs` 를 부른다. 두 서버가 선 뒤 `화면 http://127.0.0.1:<포트>/ · 서버 http://127.0.0.1:<포트>/api` 한 줄로 열린 주소를 알린다.
-- `pnpm dev` 는 화면 3000·서버 4000 에서 시작해 쥐여 있으면 다음 빈 포트를 쓴다. 서버 소스를 고치면 런처가 서버를 다시 띄운다.
-- `pnpm start` 는 OS 가 준 빈 포트에 선다. `FORTUNA_WEB_PORT`·`FORTUNA_API_PORT` 를 적으면 그 번호에 고정으로 서고, 쥐여 있으면 실패한다.
+- `pnpm dev` 는 화면 3000·서버 4000 에서 시작해 쥐여 있으면 다음 빈 포트를 쓴다. `FORTUNA_DEV_WEB_PORT`·`FORTUNA_DEV_API_PORT` 를 적으면 그 번호에 그대로 선다. 서버 소스를 고치면 런처가 서버를 다시 띄운다.
+- `pnpm start` 는 OS 가 준 빈 포트에 선다. `FORTUNA_WEB_PORT`·`FORTUNA_API_PORT` 를 적으면 그 번호부터 쥔 포트를 피해 간다.
 - 환경 이름과 기본 번호는 `.claude/context/launcher-ports.md` 에 있다.
 - `apps/api` 는 기동할 때 `apps/api/.env` 를 스스로 싣는다(이미 있는 환경 변수가 이긴다).
 - 회차 수집 스케줄러는 `SCHEDULER_ENABLED` 를 적지 않으면 `pnpm dev` 에서 꺼지고 `pnpm start` 에서 켜진다(런처가 넘기는 `FORTUNA_MODE`). 적으면 그 값이 이긴다.

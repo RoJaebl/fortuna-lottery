@@ -24,7 +24,7 @@ function toRow(draw: Draw) {
     n5,
     n6,
     bonus: draw.bonus,
-    // @db.Date 컬럼이라 날짜만 저장된다 — 읽을 때 drawnAtFromDate가 추첨 시각을 복원한다
+    // 읽을 때 drawnAtFromDate 가 UTC 날짜에 정식 추첨 시각을 다시 붙인다 — 저장된 시각에 기대지 않는다
     drawnAt: new Date(draw.drawnAt),
   };
 }

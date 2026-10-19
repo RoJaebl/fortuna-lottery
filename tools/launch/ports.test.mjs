@@ -4,11 +4,11 @@ import { test } from "node:test";
 import { isFree, pickPort } from "./ports.mjs";
 
 /** OS 가 준 빈 포트 하나를 쥔 서버를 연다 — 시험이 끝나면 닫는다 */
-function hold(port = 0) {
+function hold(port = 0, host = "127.0.0.1") {
   return new Promise((resolve, reject) => {
     const server = createServer();
     server.once("error", reject);
-    server.listen(port, "127.0.0.1", () => resolve(server));
+    server.listen(port, host, () => resolve(server));
   });
 }
 
@@ -48,4 +48,20 @@ test("from 이 없으면 0 이 아닌 번호", async () => {
   const picked = await pickPort({});
   assert.ok(Number.isInteger(picked) && picked > 0);
   assert.equal(await isFree(picked), true);
+});
+
+test("IPv6 :: 에서 쥔 포트도 쓰이는 것으로 본다 — next·nest 는 :: 에 선다", async (t) => {
+  let held;
+  try {
+    held = await hold(0, "::");
+  } catch {
+    return t.skip("이 기기는 IPv6 를 열 수 없다");
+  }
+  const port = held.address().port;
+  try {
+    assert.equal(await isFree(port), false);
+    assert.notEqual(await pickPort({ from: port }), port);
+  } finally {
+    await close(held);
+  }
 });
