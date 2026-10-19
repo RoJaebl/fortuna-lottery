@@ -66,3 +66,4 @@ export type { ResultsDrawModel } from "./model/ResultsDraw.model";
 export type { ResultsDrawViewModel } from "./model/ResultsDraw.viewmodel";
 export type { ResultsCheckItemModel } from "./model/ResultsCheckItem.model";
 export type { ResultsCheckItemViewModel } from "./model/ResultsCheckItem.viewmodel";
+export { CHECK_RESULTS, createCheckResultsCache } from "./action/checkResults.action";

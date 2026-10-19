@@ -183,7 +183,7 @@ tools/launch/        런처 — pnpm dev·pnpm start 가 부르고 포트를 고
   모듈 간 소통을 배럴로만 하라고 하므로 배럴 import 는 합법이다. boundary-enforcement §3 의 설정 문구가
   배럴 예외(pathNot)를 이미 담고 있어 이 저장소의 규칙과 같다. `tools/checks/allowed/` 표본이 이를 지킨다.
 - **`picks` 의 저장·삭제는 `results` 캐시를 무효화하지 않는다.** 결과 확인은 사람이 「확인」을 눌러 받는 값이고,
-  누르기 전까지는 앞선 결과를 그대로 보인다(`checkResults.action.ts` 주석).
+  누르기 전까지는 앞선 결과를 그대로 보인다(`apps/web/src/composition/propagation.ts` 주석).
 - **`turbo.json` 의 `lint` 는 `^build` 에 기댄다.** baseline §3 의 `{}` 보다 엄격한 의도된 이탈이다.
 - **`Entity` 부류는 없다.** 픽은 `picks/domain/model/Pick.model.ts` 의 도메인 원형이다.
 - **도구 판본.** `packageManager` 는 `pnpm@11.18.0` 이고, 설치 때 빌드 스크립트를 허용할 패키지(prisma,

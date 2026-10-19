@@ -89,9 +89,9 @@ module.exports = {
     },
     {
       name: 'module-must-not-reach-composition',
-      comment: '조립은 위에서 내려온다. 모듈이 조립 루트를 올려다보지 않는다',
+      comment: '조립은 위에서 내려온다. 모듈이 조립 루트를 올려다보지 않는다. 화면 앱 시험 파일만 예외다 — createContainer("test") 로 짓는다',
       severity: 'error',
-      from: { path: '^apps/[^/]+/src/modules/' },
+      from: { path: '^apps/[^/]+/src/modules/', pathNot: '^apps/web/.*\\.test\\.tsx?$' },
       to:   { path: '^apps/[^/]+/src/composition/' },
     },
     {

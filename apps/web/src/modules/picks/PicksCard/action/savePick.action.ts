@@ -1,31 +1,50 @@
 import { useCallback, useState } from "react";
-import { fetchJson } from "@/shared/lib/fetchJson";
+import { token, useResolve } from "@lib/di";
+import type { HttpClient } from "@infrastructure/http";
+import type { DomainEvents } from "@infrastructure/events";
 import { picksCreateRequest } from "../mapper/picksCreate.mapper";
-import { listPicksCache } from "./listPicks.action";
 
-/** 픽 저장 — 성공하면 이 바꿈이 낡게 만든 목록 캐시를 여기서 버린다(조정자가 「저장 후 재조회」를 잇지 않는다) */
+/** 이 action 이 내는 사건 — 이름과 값의 타입을 내는 쪽이 정의하고 공개 표면으로 내놓는다 */
+export const PICKS_SAVED = "picks.saved";
+export interface PicksSaved {
+  numbers: readonly number[];
+}
+
+export const SAVE_PICK = token<ReturnType<typeof createSavePick>>("savePick");
+
+/** 짓는 법 — 요청 한 번을 하는 함수를 내놓는다. 성공하면 사건을 내고 캐시를 건드리지 않는다 */
+export function createSavePick(http: HttpClient, events: DomainEvents) {
+  return async (numbers: readonly number[]): Promise<void> => {
+    await http.send("/api/picks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(picksCreateRequest(numbers)),
+    });
+    events.emit(PICKS_SAVED, { numbers } satisfies PicksSaved);
+  };
+}
+
 export function useSavePickAction() {
+  const save = useResolve(SAVE_PICK);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const run = useCallback(async (numbers: readonly number[]): Promise<boolean> => {
-    setPending(true);
-    setError(null);
-    try {
-      await fetchJson("/api/picks", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(picksCreateRequest(numbers)),
-      });
-      listPicksCache.invalidate();
-      return true;
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "저장에 실패했습니다");
-      return false;
-    } finally {
-      setPending(false);
-    }
-  }, []);
+  const run = useCallback(
+    async (numbers: readonly number[]): Promise<boolean> => {
+      setPending(true);
+      setError(null);
+      try {
+        await save(numbers);
+        return true;
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "저장에 실패했습니다");
+        return false;
+      } finally {
+        setPending(false);
+      }
+    },
+    [save],
+  );
 
   const clearError = useCallback(() => setError(null), []);
 

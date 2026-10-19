@@ -58,3 +58,4 @@ export function StatisticsPanel({ myNumbers }: StatisticsPanelProps) {
 
 export type { StatisticsModel } from "./model/Statistics.model";
 export type { StatisticsViewModel } from "./model/Statistics.viewmodel";
+export { STATISTICS, createStatisticsCache } from "./action/getStatistics.action";
