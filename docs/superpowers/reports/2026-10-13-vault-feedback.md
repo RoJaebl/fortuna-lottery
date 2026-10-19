@@ -63,7 +63,7 @@
 ## 9. 캐시 도구의 `invalidate` 가 `Q = void` 일 때 새로 받지 않는다
 
 - 문서·절: frontend-module-layout §3.1 (전문 199 행 근방의 캐시 도구 목록).
-- 지금 문구: `invalidate` 가 `query !== undefined` 로 갈라 다시 받는다.
+- 지금 문구: 규격 코드가 `if (watchers.has(key) && query !== undefined) void fetchInto(key, query)` 로 갈라 다시 받는다(frontend-module-layout 226 행 근방). 조건이 `void` 인 캐시는 값이 늘 `undefined` 라 이 줄이 다시 받지 못한다.
 - 문제: 입력이 없는 캐시(`Q = void`)는 `query` 가 늘 `undefined` 라서 지우기만 하고 다시 받지도 알리지도 않는다.
 - 제안: 조건을 `queries.has(key)` 로 바꾼다. 이 저장소는 `serverCache.ts` 에서 고쳤고 회귀 시험을 더했다.
 
@@ -73,3 +73,17 @@
 - 지금 문구: 문서와 일치한다. dev 에서 응용 서버가 죽으면 화면을 올려 두고 다음 빌드 결과로 서버를 다시 띄운다.
 - 문제: 어긋남은 없고 알려 둘 한계가 있다. 런처 자신이 SIGKILL 을 받으면 정리 코드가 돌지 못해 자식이 남을 수 있다. 이는 `.claude/context/launcher-ports.md` 에 적었다.
 - 제안: §5 에 SIGKILL 은 잡을 수 없다는 한계를 한 줄 더한다.
+
+## 11. 규격 `FetchHttpClient` 는 서버 본문의 오류 문구를 버린다
+
+- 문서·절: [frontend-app-layers §4.2 `infrastructure/` — 앱이 쓸 구현](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/frontend-app-layers.md#42-infrastructure--앱이-쓸-구현>) (HTTP 클라이언트 규격 코드).
+- 지금 문구: 응답이 실패하면 ``if (!res.ok) throw new Error(`${res.status} ${path}`)`` 로 상태 코드와 경로만 담아 예외를 던진다.
+- 문제: 계약이 「도메인 실패는 메시지를 실은 400」을 정한 저장소에서는 서버가 준 문구가 사라져 화면에 보일 문구가 없다.
+- 제안: 실패 응답의 본문에서 오류 문구를 꺼내 예외 메시지로 쓰도록 규격 코드에 싣는다. 이 저장소는 `infrastructure/http` 에서 그렇게 했다.
+
+## 12. 규격 §3.2 예의 `useSyncExternalStore` 에 `getServerSnapshot` 이 없다
+
+- 문서·절: frontend-module-layout §3.2 (조회 action 의 훅 예).
+- 지금 문구: `useSyncExternalStore` 에 구독 함수와 읽기 함수 둘만 넘긴다.
+- 문제: Next 가 서버에서 그릴 때 셋째 인자가 없으면 렌더가 실패한다.
+- 제안: 예에 서버 스냅샷(서버에서는 값 없음)을 셋째 인자로 더한다. 이 저장소의 훅은 `readOnServer` 를 넘긴다.

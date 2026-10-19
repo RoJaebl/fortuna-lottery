@@ -106,7 +106,7 @@ pnpm --filter @fortuna-lottery/web exec vitest run <path>   # 파일 하나
 
 ## 아키텍처 — vault 골조를 가리킨다
 
-구조의 규칙은 이 파일이 아니라 vault 의 골조 문서 여덟 장이 소유한다. 이 기기에서는
+구조의 규칙은 이 파일이 아니라 vault 의 골조 문서 열 장이 소유한다(`architecture/` 폴더의 일곱 장과 `frontend/` 폴더의 세 장). 이 기기에서는
 `C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/` 에서 읽는다(그 사본은
 고치지 않는다). 먼저 [architecture-baseline](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/architecture-baseline.md>)을
 열면 어느 작업에 어느 장을 읽는지 알려 준다.
@@ -114,8 +114,10 @@ pnpm --filter @fortuna-lottery/web exec vitest run <path>   # 파일 하나
 - 서버 모듈의 네 계층(`interface/{api,facade}` · `business` · `context` · `domain/{model,port,adapter}`)과
   조립 루트는 [backend-module-layout](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/backend-module-layout.md>)이 정한다.
 - 화면 모듈의 네 역할(화면 · 표시 조정자 · action · 변환기)과 파일 이름은
-  [frontend-module-layout](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend-module-layout.md>)이,
-  뷰 폴더 승격과 소유물의 깊이는 [fractal-view-promotion](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/fractal-view-promotion.md>)이 정한다.
+  [frontend-module-layout](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/frontend-module-layout.md>)이,
+  뷰 폴더 승격과 소유물의 깊이는 [fractal-view-promotion](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/fractal-view-promotion.md>)이 정한다.
+- 화면 앱 전체의 층과 조립(`app` · `widgets` · `composition` · `infrastructure` · `shared`, 여섯 층 별칭, 컨테이너, 전파 규칙 파일)은
+  [frontend-app-layers](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/frontend-app-layers.md>)가 정한다.
 - 타입 부류(와이어 모델 · 도메인 원형 · 표시 모델 · 값 객체 · 파생 조회 모델)는
   [model-vocabulary](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/model-vocabulary.md>)가 정한다.
   옛 저장소의 모델 타입 표(`use*ViewModel` = presenter, `*Entity`, `*VO`, `*ReadModel`, 2-tier 엄격도)는
@@ -129,13 +131,15 @@ pnpm --filter @fortuna-lottery/web exec vitest run <path>   # 파일 하나
 packages/contract/   @fortuna-lottery/contract — 도메인별 zod 스키마(와이어 모델의 SSOT). 두 앱이 참조한다
 packages/kernel/     @fortuna-lottery/kernel — 로또 순수 커널(combination · scoring · rng · result · generate). apps/api 만 참조한다
 apps/api/            NestJS 응용 서버 — src/modules/<도메인>/, src/composition/CompositionModule.ts, prisma/
-apps/web/            Next.js 화면 앱 — src/app/(셸), src/modules/<도메인>/, src/shared/{ui,lib}/
+apps/web/            Next.js 화면 앱 — src/app/(home)/, src/composition/, src/infrastructure/, src/shared/{ui,lib}/
 tools/checks/        이관 상태 스크립트와 규칙마다 하나씩 둔 위반 표본
 tools/launch/        런처 — pnpm dev·pnpm start 가 부르고 포트를 고르는 유일한 자리(Node 내장 모듈만 쓴다)
 ```
 
 의존 방향과 층 경계는 루트의 `.dependency-cruiser.cjs` 가, 코드 모양(화면에 상태 없음, 표시 모델 얕은
-전개 금지, 뷰 폴더의 공개 표면)은 `apps/web/eslint.config.mjs` 가 강제한다. 둘 다 `pnpm check` 에 들어
+전개 금지, 뷰 폴더의 공개 표면, 훅이 자기 유스케이스 토큰 하나만 꺼내기 `hook-resolves-own-token-only`,
+`href`·`push`·`replace` 에 경로 리터럴 금지 `no-path-literal`, `@/` 뿌리 별칭 금지 `no-root-alias`)은
+`apps/web/eslint.config.mjs` 가 강제한다. 둘 다 `pnpm check` 에 들어
 있으므로 위반은 곧 검증 실패다.
 
 ## 이 저장소가 정한 것 — vault 골조가 답하지 않는 자리
@@ -143,7 +147,7 @@ tools/launch/        런처 — pnpm dev·pnpm start 가 부르고 포트를 고
 아래는 골조 문서가 규정하지 않아 이 저장소가 정한 것이다. 바꾸려면 여기와 코드를 함께 고친다.
 
 - **브라우저는 여전히 `apps/web` 의 `/api/*` 를 부른다.** `apps/web/src/app/api/[...path]/route.ts` 의 Next
-  경로 처리기가 `shared/lib/apiProxy.ts` 의 `proxyToApi` 로 요청(메서드·헤더·본문·쿼리)을 `${API_ORIGIN}/api/...`
+  경로 처리기가 `infrastructure/apiProxy.ts` 의 `proxyToApi` 로 요청(메서드·헤더·본문·쿼리)을 `${API_ORIGIN}/api/...`
   로 그대로 넘긴다. 주소는 요청마다 읽는다(기본값 `http://127.0.0.1:4000`). 응용 서버에 닿지 않으면 503
   `{ "error": "서버에 닿지 않습니다" }` 를 돌려주고 로그는 5 초에 한 줄만 남긴다. CORS 를 열 필요가 없다.
 - **로또 순수 커널은 `packages/kernel` 에 둔다.** 여러 서버 모듈이 함께 쓰므로 모듈 하나에 두면
@@ -173,17 +177,19 @@ tools/launch/        런처 — pnpm dev·pnpm start 가 부르고 포트를 고
 - **vault 골조 문서에 올릴 어긋남은 [보고 문서](<docs/superpowers/reports/2026-10-13-vault-feedback.md>)에 모았다.**
 - **모듈 시험은 모듈 뿌리에 둔다.** `modules/<도메인>/<도메인>Module.test.ts` 가 그 모듈 하나를 띄우고
   `configureApp` 으로 실제 접두를 건 뒤 HTTP 로 부른다. 유스케이스 시험은 `business/` 의 파일 옆에 둔다.
-- **셸의 조정자는 `apps/web/src/app/Home.presenter.ts` 다.** 모듈 사이에 오가는 상태 셋(현재 조합,
+- **셸의 조정자는 `apps/web/src/app/(home)/Home.presenter.ts` 다.** 자식 뷰 사이에 오가는 상태 셋(현재 조합,
   생성기 열림, 활성 탭)만 갖고, `page.tsx` 는 조립과 입력 묶음 전개만 한다. 화면 상태 금지 ESLint 규칙이
   `app/` 의 `.tsx` 에도 걸린다.
-- **서버 상태 캐시는 [frontend-module-layout §3.1 캐시 도구 — 전역 공용부에 하나](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend-module-layout.md#31-캐시-도구--전역-공용부에-하나>)
-  그대로다.** `apps/web/src/shared/lib/serverCache.ts` 가 그것이다.
-- **`no-deep-module-import` 는 다른 모듈의 배럴(`modules/<다른>/index.ts(x)`)을 허용한다.**
-  [frontend-module-layout §8 공개 표면 — 배럴이 내보내는 것](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend-module-layout.md>)이
-  모듈 간 소통을 배럴로만 하라고 하므로 배럴 import 는 합법이다. boundary-enforcement §3 의 설정 문구가
-  배럴 예외(pathNot)를 이미 담고 있어 이 저장소의 규칙과 같다. `tools/checks/allowed/` 표본이 이를 지킨다.
-- **`picks` 의 저장·삭제는 `results` 캐시를 무효화하지 않는다.** 결과 확인은 사람이 「확인」을 눌러 받는 값이고,
-  누르기 전까지는 앞선 결과를 그대로 보인다(`checkResults.action.ts` 주석).
+- **서버 상태 캐시는 [frontend-module-layout §3.1 캐시 도구 — infrastructure 에 하나](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/frontend-module-layout.md#31-캐시-도구--infrastructure-에-하나>)
+  그대로다.** `apps/web/src/infrastructure/serverCache.ts` 가 그것이다.
+- **화면 앱에는 화면 모듈이 하나(`app/(home)/`)뿐이므로 모듈 사이 import 는 없다.** 개정판은 화면 모듈끼리 배럴 import 도 금지한다.
+- **컨테이너는 `composition/createContainer.ts` 가 짓고 `app/AppContainer.tsx` 가 내린다.** 시험은 `createContainer('test')` 와 `TEST_HTTP` 를 쓴다.
+- **규격 코드와 다르게 지킨 것이 셋 있다.** 셋 다 [보고 문서](<docs/superpowers/reports/2026-10-13-vault-feedback.md>)에 올렸다.
+  - `FetchHttpClient`(`infrastructure/http`)는 서버 본문의 `{ error }` 문구를 꺼내 예외 메시지로 쓴다. 계약이 도메인 실패를 메시지를 실은 400 으로 정하므로 버리면 화면 문구가 사라진다.
+  - `serverCache` 의 `invalidate` 는 조건이 `void` 인 캐시도 다시 받도록 `query !== undefined` 대신 `queries.has(key)` 로 가린다.
+  - 조회 훅은 `useSyncExternalStore` 의 셋째 인자로 `readOnServer`(서버 렌더 때는 값 없음)를 넘긴다. 없으면 Next 서버 렌더가 실패한다.
+- **`picks` 의 저장·삭제는 `results` 캐시를 무효화하지 않는다.** 결과 확인은 사람이 「당첨 대조」를 눌러 받는 값이고,
+  누르기 전까지는 앞선 결과를 그대로 보인다(`apps/web/src/composition/propagation.ts` 주석).
 - **`turbo.json` 의 `lint` 는 `^build` 에 기댄다.** baseline §3 의 `{}` 보다 엄격한 의도된 이탈이다.
 - **`Entity` 부류는 없다.** 픽은 `picks/domain/model/Pick.model.ts` 의 도메인 원형이다.
 - **도구 판본.** `packageManager` 는 `pnpm@11.18.0` 이고, 설치 때 빌드 스크립트를 허용할 패키지(prisma,
@@ -216,7 +222,7 @@ DB 아님)에 저장된다. `apps/api` 를 다시 띄우면 사라진다. 나중
 계약 스키마를 고쳤는데 화면 변환기 시험이 하나도 깨지지 않았다면 변환기가 스키마를 반영하지 않는다는 회귀 신호다 — 자동 검사가 아니라 사람이 지키는 방어선이다(wire-contract §6).
 커널은 `packages/kernel/src/*.test.ts`, 서버 유스케이스는 `apps/api/src/modules/<도메인>/business/*.test.ts`,
 계약은 `packages/contract/src/<도메인>/schema.test.ts`, 화면의 표시 조정자·표시 모델은
-`apps/web/src/modules/**/*.presenter.test.ts` 와 `*.viewmodel.test.ts` 가 본보기다.
+`apps/web/src/app/**/*.presenter.test.ts` 와 `*.viewmodel.test.ts` 가 본보기다.
 
 ## git 분기 전략 — vault 공통 정책을 따른다
 

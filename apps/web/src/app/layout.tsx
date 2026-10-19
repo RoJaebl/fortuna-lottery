@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
+import { AppContainer } from "./AppContainer";
 
 export const metadata: Metadata = {
   title: "로또랩 — 사기 전에, 데이터로 확인하세요",
@@ -11,7 +12,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ko" data-ground="paper">
-      <body className="min-h-screen font-sans antialiased">{children}</body>
+      <body className="min-h-screen font-sans antialiased">
+        <AppContainer>{children}</AppContainer>
+      </body>
     </html>
   );
 }

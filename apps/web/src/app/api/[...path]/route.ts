@@ -1,4 +1,4 @@
-import { proxyToApi } from "@/shared/lib/apiProxy";
+import { proxyToApi } from "@infrastructure/apiProxy";
 
 export const dynamic = "force-dynamic";
 

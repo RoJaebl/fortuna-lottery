@@ -9,7 +9,7 @@ BIN="$ROOT/node_modules/dependency-cruiser/bin/dependency-cruiser.mjs"
 bad=0
 
 # 폴더 이름의 `--` 뒤는 같은 규칙의 다른 표본(예: 패키지 이름 꼴 import)이다.
-# 표본 폴더에 tsconfig.json 이 있으면 그 paths 로 패키지 이름·@/ 별칭을 표본 안의 경로로 푼다.
+# 표본 폴더에 tsconfig.json 이 있으면 그 paths 로 패키지 이름·여섯 층 별칭(@app/ 등)을 표본 안의 경로로 푼다.
 for dir in "$ROOT"/tools/checks/violations/*/; do
   name="$(basename "$dir")"
   rule="${name%%--*}"
@@ -47,6 +47,9 @@ declare -A EXPECT=(
   [view-with-state]='화면은 상태를 갖지 않는다'
   [viewmodel-spread]='표시 모델을 얕은 전개로 복제하면'
   [view-folder-public-surface]='뷰 폴더 밖에서는 그 폴더의 index 만'
+  [no-root-alias]='층 별칭을 쓴다'
+  [hook-resolves-own-token-only]='(hook-resolves-own-token-only)'
+  [no-path-literal]='(no-path-literal)'
 )
 for dir in "$ROOT"/tools/checks/eslint-violations/*/; do
   name="$(basename "$dir")"
