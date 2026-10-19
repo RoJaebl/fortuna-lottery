@@ -73,3 +73,24 @@
 - 지금 문구: 문서와 일치한다. dev 에서 응용 서버가 죽으면 화면을 올려 두고 다음 빌드 결과로 서버를 다시 띄운다.
 - 문제: 어긋남은 없고 알려 둘 한계가 있다. 런처 자신이 SIGKILL 을 받으면 정리 코드가 돌지 못해 자식이 남을 수 있다. 이는 `.claude/context/launcher-ports.md` 에 적었다.
 - 제안: §5 에 SIGKILL 은 잡을 수 없다는 한계를 한 줄 더한다.
+
+## 11. 규격 `FetchHttpClient` 는 서버 본문의 오류 문구를 버린다
+
+- 문서·절: frontend-app-layers (HTTP 클라이언트 규격 코드).
+- 지금 문구: 응답이 실패하면 상태 코드만으로 예외를 던진다.
+- 문제: 계약이 「도메인 실패는 메시지를 실은 400」을 정한 저장소에서는 서버가 준 문구가 사라져 화면에 보일 문구가 없다.
+- 제안: 실패 응답의 본문에서 오류 문구를 꺼내 예외 메시지로 쓰도록 규격 코드에 싣는다. 이 저장소는 `infrastructure/http` 에서 그렇게 했다.
+
+## 12. 규격 `serverCache.invalidate` 의 `query !== undefined` 판별은 조건이 `void` 인 캐시를 다시 받지 못한다
+
+- 문서·절: frontend-module-layout §3.1 (캐시 도구의 `invalidate`).
+- 지금 문구: 보고 있는 조건인지 `query !== undefined` 로 가려 다시 받는다.
+- 문제: 9번과 같은 어긋남을 규격 코드 쪽에서 다시 적는다. 조건이 `void` 인 캐시는 값이 늘 `undefined` 라 다시 받지 못한다.
+- 제안: 판별을 `queries.has(key)` 로 바꾼다. 9번의 제안과 같다.
+
+## 13. 규격 §3.2 예의 `useSyncExternalStore` 에 `getServerSnapshot` 이 없다
+
+- 문서·절: frontend-module-layout §3.2 (조회 action 의 훅 예).
+- 지금 문구: `useSyncExternalStore` 에 구독 함수와 읽기 함수 둘만 넘긴다.
+- 문제: Next 가 서버에서 그릴 때 셋째 인자가 없으면 렌더가 실패한다.
+- 제안: 예에 서버 스냅샷(서버에서는 값 없음)을 셋째 인자로 더한다. 이 저장소의 훅은 `readOnServer` 를 넘긴다.
