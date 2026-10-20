@@ -1,11 +1,12 @@
-import { token } from "@lib/di";
 import type { HttpClient } from "./http.port";
-import type { TestHttpClient } from "./testHttpClient";
 
 export type { HttpClient } from "./http.port";
 export { FetchHttpClient } from "./fetchHttpClient";
 export { TestHttpClient } from "./testHttpClient";
 
-export const HTTP_CLIENT = token<HttpClient>("HTTP_CLIENT");
-/** test 환경에서만 등록된다 — 시험이 응답을 정하려고 꺼낸다 */
-export const TEST_HTTP = token<TestHttpClient>("TEST_HTTP");
+/** 등록 콜백이 받는 인자에 HTTP 를 더한다 — 화면 쪽은 이 타입을 import 하지 않고 콜백 인자로만 받는다 */
+declare module "@lib/store" {
+  interface StoreDeps {
+    http: HttpClient;
+  }
+}

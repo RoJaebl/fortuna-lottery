@@ -1,15 +1,14 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { createElement, type ReactNode } from "react";
 import { describe, expect, it } from "vitest";
-import { ContainerProvider } from "@lib/di";
-import { TEST_HTTP } from "@infrastructure/http";
+import { StoreProvider } from "@lib/store/react";
 import { createContainer } from "@composition/createContainer";
 import { useCheckPopularityAction } from "./checkPopularity.action";
 
 function setup() {
   const container = createContainer("test");
-  const wrapper = ({ children }: { children: ReactNode }) => createElement(ContainerProvider, { container, children });
-  return { http: container.resolve(TEST_HTTP), wrapper };
+  const wrapper = ({ children }: { children: ReactNode }) => createElement(StoreProvider, { container, children });
+  return { http: container.deps.http, wrapper };
 }
 
 describe("useCheckPopularityAction", () => {

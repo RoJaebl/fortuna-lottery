@@ -21,26 +21,21 @@ const VIEWMODEL_SPREAD = {
     "Object.assign(new XViewModel(), vm, patch) 또는 withX() 를 쓴다.",
 };
 
-// hook-resolves-own-token-only (근사) — 둘로 나뉜다
+// hook-resolves-own-token-only (근사) — action 밖에서 컨테이너를 꺼내는 꼴. key 대조는 Task 3 이 더한다
 const RESOLVE_OUTSIDE_ACTION = {
-  selector: "CallExpression[callee.name='useResolve']",
+  selector: "CallExpression[callee.name='useStore']",
   message: "컨테이너에서 꺼내는 것은 action 의 훅뿐이다 (hook-resolves-own-token-only)",
 };
-const RESOLVE_INFRA_TOKEN = {
-  // 이 저장소의 infrastructure 토큰 이름 — infrastructure 에 토큰을 더하면 여기에도 더한다
-  selector: "CallExpression[callee.name='useResolve'][arguments.0.name=/^(HTTP_CLIENT|DOMAIN_EVENTS|TEST_HTTP)$/]",
-  message: "훅은 자기 유스케이스 토큰 하나만 꺼낸다 — infrastructure 토큰을 꺼내지 않는다 (hook-resolves-own-token-only)",
-};
 
-// no-path-literal (근사) — 주소는 app/routes.ts 로만 만든다. 선택자 정규식 안의 / 는 / 로 적는다
+// no-path-literal (근사) — 주소는 route(key) 로만 만든다. 선택자 정규식 안의 / 는 / 로 적는다
 const PATH_LITERAL = [
   {
     selector: "JSXAttribute[name.name='href'] :matches(Literal[value=/^\\u002F/], TemplateElement[value.raw=/^\\u002F/])",
-    message: "주소는 @app/routes 로 만든다 (no-path-literal)",
+    message: "주소는 @lib/store 의 route(key) 로 만든다 (no-path-literal)",
   },
   {
     selector: "CallExpression[callee.property.name=/^(push|replace)$/] > :matches(Literal[value=/^\\u002F/], TemplateLiteral[quasis.0.value.raw=/^\\u002F/])",
-    message: "주소는 @app/routes 로 만든다 (no-path-literal)",
+    message: "주소는 @lib/store 의 route(key) 로 만든다 (no-path-literal)",
   },
 ];
 
@@ -89,6 +84,14 @@ export default tseslint.config(
     },
   },
   {
+    // 라우트 폴더의 index.ts 는 등록 목록이라 자식 뷰 폴더의 _action/ 을 직접 짚는다 (frontend-module-layout §8).
+    // 자식 뷰 폴더의 index.tsx 는 확장자가 달라 이 블록에 걸리지 않는다
+    files: ["src/app/**/index.ts"],
+    rules: {
+      "no-restricted-imports": ["error", { patterns: [ROOT_ALIAS] }],
+    },
+  },
+  {
     // 규칙 이름이 같으면 뒤 블록이 앞 블록을 통째로 덮는다 — 블록마다 걸릴 선택자를 전부 싣는다
     files: [`${SCREEN}/**/*.{ts,tsx}`],
     rules: {
@@ -96,9 +99,9 @@ export default tseslint.config(
     },
   },
   {
-    files: [`${SCREEN}/**/*.action.ts`], // action 의 훅만 useResolve 를 부른다
+    files: [`${SCREEN}/**/*.action.ts`], // action 의 훅만 useStore 를 부른다
     rules: {
-      "no-restricted-syntax": ["error", VIEWMODEL_SPREAD, RESOLVE_INFRA_TOKEN, ...PATH_LITERAL],
+      "no-restricted-syntax": ["error", VIEWMODEL_SPREAD, ...PATH_LITERAL],
     },
   },
   {
@@ -116,6 +119,13 @@ export default tseslint.config(
         RESOLVE_OUTSIDE_ACTION,
         ...PATH_LITERAL,
       ],
+    },
+  },
+  {
+    // store 자신의 시험은 it 안에서 등록하고 useStore 를 직접 부르는 것이 일이다
+    files: ["src/shared/lib/store/store.test.ts"],
+    rules: {
+      "no-restricted-syntax": "off",
     },
   },
 );

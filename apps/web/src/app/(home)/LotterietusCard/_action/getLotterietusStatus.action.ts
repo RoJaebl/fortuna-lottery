@@ -1,25 +1,28 @@
 import { useCallback, useEffect, useSyncExternalStore } from "react";
-import { token, useResolve } from "@lib/di";
-import type { HttpClient } from "@infrastructure/http";
+import { store } from "@lib/store";
+import { useStore } from "@lib/store/react";
 import { createServerCache } from "@infrastructure/serverCache";
 import { LotterietusViewModel } from "../_model/Lotterietus.viewmodel";
 import { lotterietusReadResponse } from "../_mapper/lotterietusRead.mapper";
 
-/** 이 유스케이스의 토큰 — 조립 루트가 이 토큰에 캐시를 한 번 짓는다 */
-export const LOTTERIETUS_STATUS = token<ReturnType<typeof createLotterietusStatusCache>>("lotterietusStatus");
+declare module "@lib/store" {
+  interface StoreRegistry {
+    "cache.lotterietus.status": ReturnType<typeof createServerCache<void, LotterietusViewModel>>;
+  }
+}
 
-/** 짓는 법 — 조회 조건이 없으므로 캐시키도 하나다 */
-export function createLotterietusStatusCache(http: HttpClient) {
-  return createServerCache<void, LotterietusViewModel>(
+/** 정의 — 조회 조건이 없으므로 캐시키도 하나다. 인스턴스는 컨테이너가 처음 꺼낼 때 짓는다 */
+store.cache("cache.lotterietus.status", ({ http }) =>
+  createServerCache<void, LotterietusViewModel>(
     () => "lotterietus",
     async () => LotterietusViewModel.from(lotterietusReadResponse(await http.get("/api/lotterietus"))),
-  );
-}
+  ),
+);
 
 const readOnServer = () => undefined; // 서버에서 그리는 동안에는 받은 값이 없다
 
 export function useGetLotterietusStatusAction() {
-  const cache = useResolve(LOTTERIETUS_STATUS);
+  const cache = useStore("cache.lotterietus.status");
   const subscribe = useCallback((fn: () => void) => cache.subscribe(undefined, fn), [cache]);
   const entry = useSyncExternalStore(subscribe, () => cache.read(undefined), readOnServer);
   useEffect(() => cache.ensure(), [cache]);

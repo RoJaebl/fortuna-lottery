@@ -1,3 +1,4 @@
+import "@composition/routes"; // 서버 컴포넌트 그래프에 주소 등록을 싣는다 (frontend-app-layers §5.5)
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";

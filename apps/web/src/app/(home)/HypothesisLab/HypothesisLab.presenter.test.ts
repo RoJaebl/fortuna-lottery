@@ -1,7 +1,7 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { createElement, type ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ContainerProvider } from "@lib/di";
+import { StoreProvider } from "@lib/store/react";
 import { createContainer } from "@composition/createContainer";
 import { assumptionRequest, useHypothesisLabPresenter } from "./HypothesisLab.presenter";
 
@@ -34,7 +34,7 @@ function stubFetch() {
 /** 훅이 유스케이스를 꺼낼 컨테이너 — real 환경이라 위의 fetch 대역이 그대로 받는다 */
 function withContainer() {
   const container = createContainer("real");
-  return { wrapper: ({ children }: { children: ReactNode }) => createElement(ContainerProvider, { container, children }) };
+  return { wrapper: ({ children }: { children: ReactNode }) => createElement(StoreProvider, { container, children }) };
 }
 
 const calledPaths = (fetch: ReturnType<typeof stubFetch>) => fetch.mock.calls.map(([path]) => path);

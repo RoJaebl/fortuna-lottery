@@ -136,6 +136,3 @@ export function HypothesisLab({ numbers, onGenerated }: HypothesisLabProps) {
 export type { AssumptionModel, EvaluationModel } from "./_model/Evaluation.model";
 export type { EvaluationViewModel } from "./_model/Evaluation.viewmodel";
 export type { PopularityPattern, PopularityViewModel } from "./_model/Popularity.viewmodel";
-export { CHECK_POPULARITY, createPopularityCache } from "./_action/checkPopularity.action";
-export { EVALUATE_ASSUMPTION, createEvaluateAssumption } from "./_action/evaluateAssumption.action";
-export { GENERATE_ASSUMED, createGenerateAssumed } from "./_action/generateAssumed.action";
