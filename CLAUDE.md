@@ -137,7 +137,8 @@ tools/launch/        런처 — pnpm dev·pnpm start 가 부르고 포트를 고
 ```
 
 의존 방향과 층 경계는 루트의 `.dependency-cruiser.cjs` 가, 코드 모양(화면에 상태 없음, 표시 모델 얕은
-전개 금지, 뷰 폴더의 공개 표면, 훅이 자기 key 하나만 꺼내기 `hook-resolves-own-key-only`, action 의 store 등록은 파일 최상단에서만 `store-registers-at-top-level`, 전파 규칙은 자기 캐시만 겨냥 `rule-targets-own-cache`,
+전개 금지, 뷰 폴더의 공개 표면, 훅이 자기 key 하나만 꺼내기 `hook-resolves-own-key-only`,
+action 의 store 등록은 파일 최상단에서만 `store-registers-at-top-level`, 전파 규칙은 자기 캐시만 겨냥 `rule-targets-own-cache`,
 `href`·`push`·`replace` 에 경로 리터럴 금지 `no-path-literal`, `@/` 뿌리 별칭 금지 `no-root-alias`)은
 `apps/web/eslint.config.mjs` 가 강제한다. 둘 다 `pnpm check` 에 들어
 있으므로 위반은 곧 검증 실패다. `"sideEffects": false` 는 store 등록(import 부수효과)을 지우므로 `pnpm lint:side-effects` 가 막는다.
