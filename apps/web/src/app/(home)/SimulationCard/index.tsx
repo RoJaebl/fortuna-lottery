@@ -53,4 +53,3 @@ export function SimulationCard({ numbers }: SimulationCardProps) {
 
 export type { SimulationResultModel } from "./_model/SimulationResult.model";
 export type { SimulationResultViewModel } from "./_model/SimulationResult.viewmodel";
-export { BACKTEST_COMBINATION, createBacktestCombination } from "./_action/backtestCombination.action";

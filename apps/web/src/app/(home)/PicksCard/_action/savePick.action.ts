@@ -1,31 +1,30 @@
 import { useCallback, useState } from "react";
-import { token, useResolve } from "@lib/di";
-import type { HttpClient } from "@infrastructure/http";
-import type { DomainEvents } from "@infrastructure/events";
+import { store } from "@lib/store";
+import { useStore } from "@lib/store/react";
 import { picksCreateRequest } from "../_mapper/picksCreate.mapper";
 
-/** 이 action 이 내는 사건 — 이름과 값의 타입을 내는 쪽이 정의하고 공개 표면으로 내놓는다 */
-export const PICKS_SAVED = "picks.saved";
-export interface PicksSaved {
-  numbers: readonly number[];
+/** 이 파일이 올리는 key 둘 — 내는 사건도 내는 쪽인 이 파일이 등록부에 올린다 */
+declare module "@lib/store" {
+  interface StoreRegistry {
+    "event.picks.saved": { numbers: readonly number[] };
+    "http.picks.save": (numbers: readonly number[]) => Promise<void>;
+  }
 }
 
-export const SAVE_PICK = token<ReturnType<typeof createSavePick>>("savePick");
+store.event("event.picks.saved", { from: "tab" });
 
-/** 짓는 법 — 요청 한 번을 하는 함수를 내놓는다. 성공하면 사건을 내고 캐시를 건드리지 않는다 */
-export function createSavePick(http: HttpClient, events: DomainEvents) {
-  return async (numbers: readonly number[]): Promise<void> => {
-    await http.send("/api/picks", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(picksCreateRequest(numbers)),
-    });
-    events.emit(PICKS_SAVED, { numbers } satisfies PicksSaved);
-  };
-}
+/** 정의 — 요청 한 번을 하는 함수를 돌려준다. 성공하면 사건을 내고 캐시를 건드리지 않는다 */
+store.http("http.picks.save", ({ http, emit }) => async (numbers) => {
+  await http.send("/api/picks", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(picksCreateRequest(numbers)),
+  });
+  emit("event.picks.saved", { numbers });
+});
 
 export function useSavePickAction() {
-  const save = useResolve(SAVE_PICK);
+  const save = useStore("http.picks.save");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

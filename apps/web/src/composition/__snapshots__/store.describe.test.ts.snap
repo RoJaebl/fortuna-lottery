@@ -1,0 +1,26 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`store > store 에 등록된 전부 1`] = `
+"[cache]
+cache.hypothesis.popularity
+cache.lotterietus.status
+cache.picks.list
+cache.results.check
+cache.statistics.get
+[http]
+http.generator.generate
+http.hypothesis.evaluate
+http.hypothesis.generate
+http.picks.delete
+http.picks.save
+http.simulation.backtest
+[event]
+event.picks.removed (from: tab)
+  낡게 한다: cache.picks.list (from: tab)
+  일부러 낡게 하지 않는다: cache.results.check — 결과는 사람이 「당첨 대조」를 눌러 받는다
+event.picks.saved (from: tab)
+  낡게 한다: cache.picks.list (from: tab)
+  일부러 낡게 하지 않는다: cache.results.check — 결과는 사람이 「당첨 대조」를 눌러 받는다
+[route]
+route.home.index"
+`;

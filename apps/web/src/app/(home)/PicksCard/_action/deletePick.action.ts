@@ -1,29 +1,28 @@
 import { useCallback, useState } from "react";
-import { token, useResolve } from "@lib/di";
-import type { HttpClient } from "@infrastructure/http";
-import type { DomainEvents } from "@infrastructure/events";
+import { store } from "@lib/store";
+import { useStore } from "@lib/store/react";
 
-/** 이 action 이 내는 사건 — 이름과 값의 타입을 내는 쪽이 정의하고 공개 표면으로 내놓는다 */
-export const PICKS_REMOVED = "picks.removed";
-export interface PicksRemoved {
-  id: string;
+/** 이 파일이 올리는 key 둘 — 내는 사건도 내는 쪽인 이 파일이 등록부에 올린다 */
+declare module "@lib/store" {
+  interface StoreRegistry {
+    "event.picks.removed": { id: string };
+    "http.picks.delete": (id: string) => Promise<void>;
+  }
 }
 
-export const DELETE_PICK = token<ReturnType<typeof createDeletePick>>("deletePick");
+store.event("event.picks.removed", { from: "tab" });
 
 /**
- * 짓는 법 — 요청 본문도 응답 값도 쓰지 않는다(경로의 id 뿐이라 변환기가 없다).
+ * 정의 — 요청 본문도 응답 값도 쓰지 않는다(경로의 id 뿐이라 변환기가 없다).
  * 성공하면 사건을 내고 캐시를 건드리지 않는다.
  */
-export function createDeletePick(http: HttpClient, events: DomainEvents) {
-  return async (id: string): Promise<void> => {
-    await http.send(`/api/picks/${encodeURIComponent(id)}`, { method: "DELETE" });
-    events.emit(PICKS_REMOVED, { id } satisfies PicksRemoved);
-  };
-}
+store.http("http.picks.delete", ({ http, emit }) => async (id) => {
+  await http.send(`/api/picks/${encodeURIComponent(id)}`, { method: "DELETE" });
+  emit("event.picks.removed", { id });
+});
 
 export function useDeletePickAction() {
-  const remove = useResolve(DELETE_PICK);
+  const remove = useStore("http.picks.delete");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

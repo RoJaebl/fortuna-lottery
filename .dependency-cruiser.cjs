@@ -55,9 +55,9 @@ module.exports = {
       name: 'no-deep-screen-or-widget-import',
       comment: '화면 모듈·위젯·묶음 위젯의 안쪽 파일은 그 폴더 밖에서 짚지 않는다. 밖에서는 공개 표면만 본다',
       severity: 'error',
-      // $1 은 폴더 하나 — widgets/combined/<이름>, widgets/<이름>, app, composition 가운데 하나다.
-      // app/ 안의 파일끼리는 screen-must-not-reach-screen 이 본다
-      from: { path: '^apps/web/src/(widgets/combined/[^/]+|widgets/(?!combined/)[^/]+|app|composition)/' },
+      // $1 은 폴더 하나 — widgets/combined/<이름>, widgets/<이름>, app 가운데 하나다.
+      // app/ 안의 파일끼리는 screen-must-not-reach-screen 이, 조립 루트는 아래 세 벌이 본다
+      from: { path: '^apps/web/src/(widgets/combined/[^/]+|widgets/(?!combined/)[^/]+|app)/' },
       to:   { path: `^apps/web/src/(widgets/.+|app/(?!api/|\\(dev\\)/)[^/]+/.+)`,
               // 자기 폴더 안과 남의 공개 표면은 이 규칙이 막지 않는다. 뷰 폴더의 index.tsx 는 공개 표면이 아니다
               pathNot: ['^apps/web/src/$1/',
@@ -65,20 +65,44 @@ module.exports = {
                         '^apps/web/src/widgets/[^/]+/index\\.tsx?$',
                         '^apps/web/src/widgets/combined/[^/]+/index\\.tsx?$'] },
     },
-    // 화면 모듈마다 한 벌 — 자기 파일과 조상 라우트의 소유물 폴더(위로 보기), 주소 목록만 본다
+    // 조립 루트 세 벌 — 화면 모듈과 위젯에 닿는 것은 등록 목록 둘뿐이고, 둘이 짚는 파일도 정해져 있다
+    {
+      name: 'no-deep-screen-or-widget-import',
+      comment: 'composition/screens.ts 가 화면 모듈과 위젯에서 보는 것은 화면 모듈의 index.ts 와 위젯의 register.ts 뿐이다',
+      severity: 'error',
+      from: { path: '^apps/web/src/composition/screens\\.ts$' },
+      to:   { path: '^apps/web/src/(widgets|app)/',
+              pathNot: [`^${APP}/(?!api/|\\(dev\\)/).*/index\\.ts$`,
+                        '^apps/web/src/widgets/(combined/)?[^/]+/register\\.ts$'] },
+    },
+    {
+      name: 'no-deep-screen-or-widget-import',
+      comment: 'composition/routes.ts 가 보는 것은 라우트 폴더의 routes.ts 뿐이다',
+      severity: 'error',
+      from: { path: '^apps/web/src/composition/routes\\.ts$' },
+      to:   { path: '^apps/web/src/(widgets|app)/', pathNot: `^${APP}/(?!api/|\\(dev\\)/).*/routes\\.ts$` },
+    },
+    {
+      name: 'no-deep-screen-or-widget-import',
+      comment: '조립 루트의 나머지 파일은 화면 모듈과 위젯에 닿지 않는다 — screens.ts·routes.ts 를 거친다',
+      severity: 'error',
+      from: { path: '^apps/web/src/composition/', pathNot: '^apps/web/src/composition/(screens|routes)\\.ts$' },
+      to:   { path: '^apps/web/src/(widgets|app)/' },
+    },
+    // 화면 모듈마다 한 벌 — 자기 파일과 조상 라우트의 소유물 폴더(위로 보기)만 본다
     ...screenModules().map((mod) => ({
       name: 'screen-must-not-reach-screen',
       comment: `${mod} 은 다른 화면 모듈과 셸을 보지 않는다. 조상 라우트의 소유물 폴더만 위로 본다`,
       severity: 'error',
       from: { path: ownFiles(mod) },
-      to:   { path: `^${APP}/`, pathNot: [ownFiles(mod), ...ancestorOwned(mod), `^${APP}/routes\\.ts$`] },
+      to:   { path: `^${APP}/`, pathNot: [ownFiles(mod), ...ancestorOwned(mod)] },
     })),
     {
       name: 'screen-must-not-reach-screen',
-      comment: '위젯과 묶음 위젯은 화면 모듈을 index.ts 까지 보지 않는다. app/ 에서 보는 것은 주소 목록뿐이다',
+      comment: '위젯과 묶음 위젯은 app/ 을 보지 않는다. 화면 모듈의 사건과 주소는 key 문자열로만 쓴다',
       severity: 'error',
       from: { path: '^apps/web/src/widgets/' },
-      to:   { path: `^${APP}/`, pathNot: `^${APP}/routes\\.ts$` },
+      to:   { path: `^${APP}/` },
     },
     {
       name: 'screen-must-not-reach-screen',
@@ -125,14 +149,23 @@ module.exports = {
     },
     {
       name: 'nothing-reaches-composition',
-      comment: '아무도 조립 루트를 import 하지 않는다. 컨테이너를 내리는 셸, 놀이터 문 페이지, 시험 파일만 예외다',
+      comment: '아무도 조립 루트를 import 하지 않는다. 예외는 다섯이다',
       severity: 'error',
       from: { path: '^apps/web/src/',
               pathNot: ['^apps/web/src/composition/',              // 조립 루트 안의 파일끼리
                         '^apps/web/src/app/AppContainer\\.tsx$',   // 셸이 createContainer 로 컨테이너를 짓는다
+                        '^apps/web/src/app/layout\\.tsx$',         // 서버 루트가 주소 등록을 싣는다 — 아래 한 벌이 좁힌다
+                        '^apps/web/src/(middleware|proxy)\\.ts$',  // middleware 가 주소 등록을 싣는다 — middleware 규칙이 좁힌다
                         '^apps/web/src/app/\\(dev\\)/',            // 놀이터가 시나리오마다 컨테이너를 짓는다
                         '\\.test\\.tsx?$'] },                      // 시험이 createContainer("test") 로 짓는다
       to:   { path: '^apps/web/src/composition/' },
+    },
+    {
+      name: 'nothing-reaches-composition',
+      comment: '서버로 남는 루트 layout.tsx 가 조립 루트에서 보는 것은 주소 등록 목록 composition/routes.ts 하나다',
+      severity: 'error',
+      from: { path: '^apps/web/src/app/layout\\.tsx$' },
+      to:   { path: '^apps/web/src/composition/', pathNot: '^apps/web/src/composition/routes\\.ts$' },
     },
     {
       name: 'infrastructure-reaches-lib-only',
@@ -143,14 +176,12 @@ module.exports = {
     },
     {
       name: 'screen-sees-infrastructure-types-only',
-      comment: '화면 모듈·위젯이 infrastructure 에서 값으로 가져오는 것은 캐시 도구뿐이다. HTTP 포트와 사건 통로는 타입으로만 본다',
+      comment: '화면 모듈·위젯이 infrastructure 에서 가져오는 것은 캐시 도구(값) 하나다. HTTP 포트와 사건 통로는 타입으로도 보지 않는다',
       severity: 'error',
       from: { path: `(${ROUTE}|^apps/web/src/widgets/)`,
-              pathNot: ['\\.test\\.tsx?$',                         // 시험이 TEST_HTTP 로 응답을 정한다
-                        '/playground\\.ts$'] },                    // 놀이터 표면이 가짜 서버를 값으로 가져온다
+              pathNot: '/playground\\.ts$' },                      // 놀이터 표면이 가짜 서버를 값으로 가져온다
       to:   { path: '^apps/web/src/infrastructure/',
-              pathNot: '^apps/web/src/infrastructure/serverCache',
-              dependencyTypesNot: ['type-only'] },
+              pathNot: '^apps/web/src/infrastructure/serverCache\\.ts$' },
     },
     {
       name: 'shell-reaches-no-infrastructure',
@@ -191,11 +222,11 @@ module.exports = {
     },
     {
       name: 'middleware-sees-infrastructure-lib-routes-only',
-      comment: 'middleware.ts(Next 16 부터 proxy.ts)가 보는 것은 infrastructure·shared/lib·주소 목록뿐이다',
+      comment: 'middleware.ts(Next 16 부터 proxy.ts)가 보는 것은 infrastructure·shared/lib·주소 등록 목록 composition/routes.ts 뿐이다',
       severity: 'error',
       from: { path: '^apps/web/src/(middleware|proxy)\\.ts$' },   // 두 이름을 같은 규칙으로 읽는다
       to:   { path: '^apps/web/src/',
-              pathNot: ['^apps/web/src/(infrastructure|shared/lib)/', `^${APP}/routes\\.ts$`] },
+              pathNot: ['^apps/web/src/(infrastructure|shared/lib)/', '^apps/web/src/composition/routes\\.ts$'] },
     },
     {
       name: 'domain-model-has-zero-dependencies',

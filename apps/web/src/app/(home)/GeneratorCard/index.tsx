@@ -73,4 +73,3 @@ export function GeneratorCard({ onGenerated }: GeneratorCardProps) {
 export type { GeneratedCombinationModel } from "./_model/GeneratedCombination.model";
 export type { GeneratedCombinationViewModel } from "./_model/GeneratedCombination.viewmodel";
 export type { GeneratorMode } from "./_model/GeneratorMode.model";
-export { GENERATE_COMBINATION, createGenerateCombination } from "./_action/generateCombination.action";

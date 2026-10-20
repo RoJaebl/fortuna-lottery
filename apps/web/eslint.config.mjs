@@ -21,26 +21,85 @@ const VIEWMODEL_SPREAD = {
     "Object.assign(new XViewModel(), vm, patch) 또는 withX() 를 쓴다.",
 };
 
-// hook-resolves-own-token-only (근사) — 둘로 나뉜다
-const RESOLVE_OUTSIDE_ACTION = {
-  selector: "CallExpression[callee.name='useResolve']",
-  message: "컨테이너에서 꺼내는 것은 action 의 훅뿐이다 (hook-resolves-own-token-only)",
-};
-const RESOLVE_INFRA_TOKEN = {
-  // 이 저장소의 infrastructure 토큰 이름 — infrastructure 에 토큰을 더하면 여기에도 더한다
-  selector: "CallExpression[callee.name='useResolve'][arguments.0.name=/^(HTTP_CLIENT|DOMAIN_EVENTS|TEST_HTTP)$/]",
-  message: "훅은 자기 유스케이스 토큰 하나만 꺼낸다 — infrastructure 토큰을 꺼내지 않는다 (hook-resolves-own-token-only)",
+// hook-resolves-own-key-only 의 첫 갈래 — action 파일 밖에서는 store 에서 꺼내지 않는다
+const STORE_OUTSIDE_ACTION = {
+  selector: "CallExpression[callee.name='useStore']",
+  message: "store 에서 꺼내는 것은 action 의 훅뿐이다 (hook-resolves-own-key-only)",
 };
 
-// no-path-literal (근사) — 주소는 app/routes.ts 로만 만든다. 선택자 정규식 안의 / 는 / 로 적는다
+// store-registers-at-top-level — 등록 호출은 모듈 최상단의 문장으로만 선다
+const STORE_REGISTER_NESTED = {
+  selector:
+    "CallExpression[callee.object.name='store'][callee.property.name=/^(cache|http|event|invalidates|unaffected|route)$/]" +
+    ":not(Program > ExpressionStatement > CallExpression)",
+  message:
+    "store 등록은 모듈 최상단에서만 한다 — 함수나 컴포넌트 안에서 하면 불릴 때마다 같은 key 를 다시 등록한다 (store-registers-at-top-level)",
+};
+
+// key 를 같은 파일의 등록과 대조하는 근사 둘 — hook-resolves-own-key-only 의 둘째 갈래와 rule-targets-own-cache.
+// key 는 문자열 리터럴로만 읽는다
+const storeCall = (node, names) =>
+  node.callee.type === "MemberExpression" &&
+  node.callee.object.name === "store" &&
+  names.includes(node.callee.property.name);
+const keyOf = (arg) => (arg?.type === "Literal" && typeof arg.value === "string" ? arg.value : null);
+
+/** 이 파일이 areas 로 등록한 key 를 모으고, 파일 끝에서 pick 이 고른 인자마다 judge 를 돌린다 */
+const ownKeyRule = (areas, pick, judge) => ({
+  meta: { type: "problem", schema: [] },
+  create(context) {
+    const own = new Set();
+    const used = [];
+    return {
+      CallExpression(node) {
+        if (storeCall(node, areas) && keyOf(node.arguments[0])) own.add(keyOf(node.arguments[0]));
+        const arg = pick(node);
+        if (arg) used.push(arg);
+      },
+      "Program:exit"() {
+        for (const arg of used) {
+          const message = judge(keyOf(arg), own);
+          if (message) context.report({ node: arg, message });
+        }
+      },
+    };
+  },
+});
+
+const STORE_KEYS = {
+  rules: {
+    "hook-resolves-own-key-only": ownKeyRule(
+      ["cache", "http"],
+      (node) => node.callee.name === "useStore" && node.arguments[0],
+      (key, own) =>
+        key === null
+          ? "useStore 의 key 는 문자열 그대로 쓴다 (hook-resolves-own-key-only)"
+          : /^(event|route)\./.test(key)
+            ? "사건은 콜백의 emit 으로 내고 주소는 route(key) 로 만든다 — useStore 로 꺼내지 않는다 (hook-resolves-own-key-only)"
+            : own.has(key)
+              ? null
+              : "훅은 이 파일이 store.cache·store.http 로 등록한 key 만 꺼낸다 (hook-resolves-own-key-only)",
+    ),
+    "rule-targets-own-cache": ownKeyRule(
+      ["cache"],
+      (node) => storeCall(node, ["invalidates", "unaffected"]) && node.arguments[1],
+      (key, own) =>
+        key !== null && own.has(key)
+          ? null
+          : "전파 규칙의 둘째 인자는 이 파일이 store.cache 로 등록한 key 다 — 규칙은 낡는 쪽 캐시의 파일에 둔다 (rule-targets-own-cache)",
+    ),
+  },
+};
+
+// no-path-literal (근사) — 주소는 route(key) 로만 만든다. 선택자 정규식 안의 / 는 / 로 적는다
 const PATH_LITERAL = [
   {
     selector: "JSXAttribute[name.name='href'] :matches(Literal[value=/^\\u002F/], TemplateElement[value.raw=/^\\u002F/])",
-    message: "주소는 @app/routes 로 만든다 (no-path-literal)",
+    message: "주소는 @lib/store 의 route(key) 로 만든다 (no-path-literal)",
   },
   {
     selector: "CallExpression[callee.property.name=/^(push|replace)$/] > :matches(Literal[value=/^\\u002F/], TemplateLiteral[quasis.0.value.raw=/^\\u002F/])",
-    message: "주소는 @app/routes 로 만든다 (no-path-literal)",
+    message: "주소는 @lib/store 의 route(key) 로 만든다 (no-path-literal)",
   },
 ];
 
@@ -76,9 +135,11 @@ export default tseslint.config(
   {
     files: ["src/**/*.{ts,tsx}"],
     languageOptions: { parser: tseslint.parser },
+    plugins: { store: STORE_KEYS },
     rules: {
       "no-restricted-imports": ["error", { patterns: [ROOT_ALIAS] }],
-      "no-restricted-syntax": ["error", RESOLVE_OUTSIDE_ACTION],
+      "no-restricted-syntax": ["error", STORE_OUTSIDE_ACTION, STORE_REGISTER_NESTED],
+      "store/rule-targets-own-cache": "error",
     },
   },
   {
@@ -89,16 +150,25 @@ export default tseslint.config(
     },
   },
   {
-    // 규칙 이름이 같으면 뒤 블록이 앞 블록을 통째로 덮는다 — 블록마다 걸릴 선택자를 전부 싣는다
-    files: [`${SCREEN}/**/*.{ts,tsx}`],
+    // 라우트 폴더의 index.ts 는 등록 목록이라 자식 뷰 폴더의 _action/ 을 직접 짚는다 (frontend-module-layout §8).
+    // 자식 뷰 폴더의 index.tsx 는 확장자가 달라 이 블록에 걸리지 않는다
+    files: ["src/app/**/index.ts"],
     rules: {
-      "no-restricted-syntax": ["error", VIEWMODEL_SPREAD, RESOLVE_OUTSIDE_ACTION, ...PATH_LITERAL],
+      "no-restricted-imports": ["error", { patterns: [ROOT_ALIAS] }],
     },
   },
   {
-    files: [`${SCREEN}/**/*.action.ts`], // action 의 훅만 useResolve 를 부른다
+    // 규칙 이름이 같으면 뒤 블록이 앞 블록을 통째로 덮는다 — 블록마다 걸릴 선택자를 전부 싣는다
+    files: [`${SCREEN}/**/*.{ts,tsx}`],
     rules: {
-      "no-restricted-syntax": ["error", VIEWMODEL_SPREAD, RESOLVE_INFRA_TOKEN, ...PATH_LITERAL],
+      "no-restricted-syntax": ["error", VIEWMODEL_SPREAD, STORE_OUTSIDE_ACTION, STORE_REGISTER_NESTED, ...PATH_LITERAL],
+    },
+  },
+  {
+    files: [`${SCREEN}/**/*.action.ts`], // action 의 훅만 useStore 를 부른다
+    rules: {
+      "no-restricted-syntax": ["error", VIEWMODEL_SPREAD, STORE_REGISTER_NESTED, ...PATH_LITERAL],
+      "store/hook-resolves-own-key-only": "error",
     },
   },
   {
@@ -113,9 +183,17 @@ export default tseslint.config(
         VIEW_STATE,
         VIEW_STATE_MEMBER,
         VIEWMODEL_SPREAD,
-        RESOLVE_OUTSIDE_ACTION,
+        STORE_OUTSIDE_ACTION,
+        STORE_REGISTER_NESTED,
         ...PATH_LITERAL,
       ],
+    },
+  },
+  {
+    // store 자신의 시험은 it 안에서 등록하고 useStore 를 직접 부르는 것이 일이다
+    files: ["src/shared/lib/store/store.test.ts"],
+    rules: {
+      "no-restricted-syntax": "off",
     },
   },
 );

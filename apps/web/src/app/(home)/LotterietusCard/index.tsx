@@ -56,4 +56,3 @@ export function LotterietusCard({ generatorOpen, onToggleGenerator }: Lotterietu
 
 export type { LotterietusModel } from "./_model/Lotterietus.model";
 export type { LotterietusViewModel } from "./_model/Lotterietus.viewmodel";
-export { LOTTERIETUS_STATUS, createLotterietusStatusCache } from "./_action/getLotterietusStatus.action";

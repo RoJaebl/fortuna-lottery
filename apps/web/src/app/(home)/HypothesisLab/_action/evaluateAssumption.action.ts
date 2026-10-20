@@ -1,30 +1,32 @@
 import { useCallback, useRef, useState } from "react";
-import { token, useResolve } from "@lib/di";
-import type { HttpClient } from "@infrastructure/http";
+import { store } from "@lib/store";
+import { useStore } from "@lib/store/react";
 import type { AssumptionModel } from "../_model/Evaluation.model";
 import { EvaluationViewModel } from "../_model/Evaluation.viewmodel";
 import { hypothesisEvaluateRequest, hypothesisEvaluateResponse } from "../_mapper/hypothesisEvaluate.mapper";
 
-export const EVALUATE_ASSUMPTION = token<ReturnType<typeof createEvaluateAssumption>>("evaluateAssumption");
-
-/** 짓는 법 — 누를 때마다 그 가정으로 새로 계산하는 요청이라 캐시하지 않는다. 요청 한 번을 하고 표시 모델을 돌려준다 */
-export function createEvaluateAssumption(http: HttpClient) {
-  return async (assumption: AssumptionModel): Promise<EvaluationViewModel> => {
-    const res = await http.send<Parameters<typeof hypothesisEvaluateResponse>[0]>("/api/hypothesis/evaluate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(hypothesisEvaluateRequest(assumption)),
-    });
-    return EvaluationViewModel.from(hypothesisEvaluateResponse(res));
-  };
+declare module "@lib/store" {
+  interface StoreRegistry {
+    "http.hypothesis.evaluate": (assumption: AssumptionModel) => Promise<EvaluationViewModel>;
+  }
 }
+
+/** 정의 — 누를 때마다 그 가정으로 새로 계산하는 요청이라 캐시하지 않는다. 요청 한 번을 하고 표시 모델을 돌려준다 */
+store.http("http.hypothesis.evaluate", ({ http }) => async (assumption) => {
+  const res = await http.send<Parameters<typeof hypothesisEvaluateResponse>[0]>("/api/hypothesis/evaluate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(hypothesisEvaluateRequest(assumption)),
+  });
+  return EvaluationViewModel.from(hypothesisEvaluateResponse(res));
+});
 
 /**
  * 가정 평가 — frontend-module-layout 규칙 3.3 의 모양.
  * 결과·진행·오류는 그 요청의 경과이고 누른 화면 하나의 것이므로 훅 안에 산다.
  */
 export function useEvaluateAssumptionAction() {
-  const evaluate = useResolve(EVALUATE_ASSUMPTION);
+  const evaluate = useStore("http.hypothesis.evaluate");
   const [result, setResult] = useState<EvaluationViewModel | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
