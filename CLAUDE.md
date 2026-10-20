@@ -49,7 +49,7 @@ PARA/MOC 규칙과는 무관하다.
 ```bash
 pnpm install                 # apps/api 의 postinstall 이 prisma generate 를 돈다
 pnpm dev                     # 런처(tools/launch/launch.mjs) — apps/web(next dev, 3000~)과 apps/api(nest build --watch 의 dist, 4000~)를 함께 띄운다
-pnpm check                   # typecheck → lint → lint:deps → test → test:tools. 과업 끝의 검증 명령이다
+pnpm check                   # typecheck → lint → lint:deps → lint:side-effects → test → test:tools. 과업 끝의 검증 명령이다
 pnpm lint:deps               # dependency-cruiser 로 의존 방향·층 경계를 검사한다
 pnpm check:migration         # 골조 이관 상태를 낸다. 지금은 「옛 구역 파일: 0」
 pnpm build                   # turbo build
@@ -137,10 +137,10 @@ tools/launch/        런처 — pnpm dev·pnpm start 가 부르고 포트를 고
 ```
 
 의존 방향과 층 경계는 루트의 `.dependency-cruiser.cjs` 가, 코드 모양(화면에 상태 없음, 표시 모델 얕은
-전개 금지, 뷰 폴더의 공개 표면, 훅이 자기 유스케이스 토큰 하나만 꺼내기 `hook-resolves-own-token-only`,
+전개 금지, 뷰 폴더의 공개 표면, 훅이 자기 key 하나만 꺼내기 `hook-resolves-own-key-only`, action 의 store 등록은 파일 최상단에서만 `store-registers-at-top-level`, 전파 규칙은 자기 캐시만 겨냥 `rule-targets-own-cache`,
 `href`·`push`·`replace` 에 경로 리터럴 금지 `no-path-literal`, `@/` 뿌리 별칭 금지 `no-root-alias`)은
 `apps/web/eslint.config.mjs` 가 강제한다. 둘 다 `pnpm check` 에 들어
-있으므로 위반은 곧 검증 실패다.
+있으므로 위반은 곧 검증 실패다. `"sideEffects": false` 는 store 등록(import 부수효과)을 지우므로 `pnpm lint:side-effects` 가 막는다.
 
 ## 이 저장소가 정한 것 — vault 골조가 답하지 않는 자리
 
@@ -183,13 +183,13 @@ tools/launch/        런처 — pnpm dev·pnpm start 가 부르고 포트를 고
 - **서버 상태 캐시는 [frontend-module-layout §3.1 캐시 도구 — infrastructure 에 하나](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/frontend-module-layout.md#31-캐시-도구--infrastructure-에-하나>)
   그대로다.** `apps/web/src/infrastructure/serverCache.ts` 가 그것이다.
 - **화면 앱에는 화면 모듈이 하나(`app/(home)/`)뿐이므로 모듈 사이 import 는 없다.** 개정판은 화면 모듈끼리 배럴 import 도 금지한다.
-- **컨테이너는 `composition/createContainer.ts` 가 짓고 `app/AppContainer.tsx` 가 내린다.** 시험은 `createContainer('test')` 와 `TEST_HTTP` 를 쓴다.
+- **store 는 `shared/lib/store/` 에 있고 action 이 스스로 등록한다. 컨테이너는 `composition/createContainer.ts` 가 짓고 `app/AppContainer.tsx` 가 `StoreProvider` 로 내린다.** 시험은 `createContainer('test')` 의 `c.deps.http` 와 `c.resolve(key)` 를 쓴다.
 - **규격 코드와 다르게 지킨 것이 셋 있다.** 셋 다 [보고 문서](<docs/superpowers/reports/2026-10-13-vault-feedback.md>)에 올렸다.
   - `FetchHttpClient`(`infrastructure/http`)는 서버 본문의 `{ error }` 문구를 꺼내 예외 메시지로 쓴다. 계약이 도메인 실패를 메시지를 실은 400 으로 정하므로 버리면 화면 문구가 사라진다.
   - `serverCache` 의 `invalidate` 는 조건이 `void` 인 캐시도 다시 받도록 `query !== undefined` 대신 `queries.has(key)` 로 가린다.
   - 조회 훅은 `useSyncExternalStore` 의 셋째 인자로 `readOnServer`(서버 렌더 때는 값 없음)를 넘긴다. 없으면 Next 서버 렌더가 실패한다.
 - **`picks` 의 저장·삭제는 `results` 캐시를 무효화하지 않는다.** 결과 확인은 사람이 「당첨 대조」를 눌러 받는 값이고,
-  누르기 전까지는 앞선 결과를 그대로 보인다(`apps/web/src/composition/propagation.ts` 주석).
+  누르기 전까지는 앞선 결과를 그대로 보인다(`checkResults.action.ts` 의 `store.unaffected`). 무엇이 무엇을 갱신하는지는 `apps/web/src/composition/__snapshots__/store.describe.test.ts.snap` 에서 읽는다.
 - **`turbo.json` 의 `lint` 는 `^build` 에 기댄다.** baseline §3 의 `{}` 보다 엄격한 의도된 이탈이다.
 - **`Entity` 부류는 없다.** 픽은 `picks/domain/model/Pick.model.ts` 의 도메인 원형이다.
 - **도구 판본.** `packageManager` 는 `pnpm@11.18.0` 이고, 설치 때 빌드 스크립트를 허용할 패키지(prisma,

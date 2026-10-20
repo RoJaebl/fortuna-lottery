@@ -87,3 +87,24 @@
 - 지금 문구: `useSyncExternalStore` 에 구독 함수와 읽기 함수 둘만 넘긴다.
 - 문제: Next 가 서버에서 그릴 때 셋째 인자가 없으면 렌더가 실패한다.
 - 제안: 예에 서버 스냅샷(서버에서는 값 없음)을 셋째 인자로 더한다. 이 저장소의 훅은 `readOnServer` 를 넘긴다.
+
+## 13. `Container` 에 훅 없이 꺼내는 길이 없다
+
+- 문서·절: frontend-app-layers §5 (컨테이너).
+- 지금 문구: 시험이 `deps` 로 가짜 HTTP 를 꺼내는 길만 적는다.
+- 문제: 훅 없이 등록된 캐시·요청을 꺼내는 길이 없다. 전파 규칙 시험이 그 길을 필요로 한다.
+- 제안: `Container` 에 `resolve(key)` 를 더한다. 이 저장소는 그렇게 했다.
+
+## 14. 라우트 폴더 `index.ts` 가 뷰 폴더 공개 표면 규칙과 부딪친다
+
+- 문서·절: frontend-app-layers §7 (라우트 영역), boundary-enforcement §4.
+- 지금 문구: 라우트 폴더 `index.ts` 가 자식 뷰 폴더의 `_action/` 을 직접 짚게 한다.
+- 문제: 그 꼴은 뷰 폴더 공개 표면 규칙(`VIEW_FOLDER_SURFACE`)과 부딪친다. 경계 검사 장이 이 겹침을 다루지 않는다.
+- 제안: 라우트 폴더 `index.ts` 를 그 규칙의 예외로 적는다. 이 저장소는 `src/app/**/index.ts` 를 예외로 두었다.
+
+## 15. ESLint 전문의 첫 블록이 `shared/lib/store` 자신의 시험을 잡는다
+
+- 문서·절: boundary-enforcement §4 (ESLint 전문), frontend-app-layers §4.1.
+- 지금 문구: 첫 블록이 `src/**` 전체에 `useStore` 금지와 최상단 등록 선택자를 건다.
+- 문제: `shared/lib/store` 자신의 시험이 걸린다.
+- 제안: store 시험을 그 블록의 예외로 적는다. 이 저장소는 시험 파일 하나에서 `no-restricted-syntax` 를 껐다.
