@@ -74,7 +74,7 @@ const STORE_KEYS = {
       (key, own) =>
         key === null
           ? "useStore 의 key 는 문자열 그대로 쓴다 (hook-resolves-own-key-only)"
-          : /^(event|route)./.test(key)
+          : /^(event|route)\./.test(key)
             ? "사건은 콜백의 emit 으로 내고 주소는 route(key) 로 만든다 — useStore 로 꺼내지 않는다 (hook-resolves-own-key-only)"
             : own.has(key)
               ? null
