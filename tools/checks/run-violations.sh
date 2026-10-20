@@ -48,7 +48,9 @@ declare -A EXPECT=(
   [viewmodel-spread]='표시 모델을 얕은 전개로 복제하면'
   [view-folder-public-surface]='뷰 폴더 밖에서는 그 폴더의 index 만'
   [no-root-alias]='층 별칭을 쓴다'
-  [hook-resolves-own-token-only]='(hook-resolves-own-token-only)'
+  [hook-resolves-own-key-only]='(hook-resolves-own-key-only)'
+  [store-registers-at-top-level]='(store-registers-at-top-level)'
+  [rule-targets-own-cache]='(rule-targets-own-cache)'
   [no-path-literal]='(no-path-literal)'
 )
 for dir in "$ROOT"/tools/checks/eslint-violations/*/; do
@@ -76,5 +78,14 @@ for dir in "$ROOT"/tools/checks/eslint-allowed/*/; do
     echo "OK   $name (eslint, allowed)"
   fi
 done
+
+# package.json 표본 — "sideEffects": false 를 막는 검사가 표본에서 실제로 우는지 확인한다.
+out="$(node "$ROOT/tools/checks/no-side-effects-false.mjs" "$ROOT/tools/checks/package-violations/no-side-effects-false/apps/web/package.json" 2>&1)"
+if grep -q "error no-side-effects-false:" <<<"$out"; then
+  echo "OK   no-side-effects-false (package)"
+else
+  echo "FAIL no-side-effects-false (package) — 표본에서 울지 않았다"
+  bad=1
+fi
 
 exit $bad

@@ -1,1 +1,1 @@
-export const HTTP_CLIENT = 'http'
+export interface HttpClient { get(url: string): Promise<unknown>; }

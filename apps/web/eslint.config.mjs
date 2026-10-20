@@ -21,10 +21,74 @@ const VIEWMODEL_SPREAD = {
     "Object.assign(new XViewModel(), vm, patch) 또는 withX() 를 쓴다.",
 };
 
-// hook-resolves-own-token-only (근사) — action 밖에서 컨테이너를 꺼내는 꼴. key 대조는 Task 3 이 더한다
-const RESOLVE_OUTSIDE_ACTION = {
+// hook-resolves-own-key-only 의 첫 갈래 — action 파일 밖에서는 store 에서 꺼내지 않는다
+const STORE_OUTSIDE_ACTION = {
   selector: "CallExpression[callee.name='useStore']",
-  message: "컨테이너에서 꺼내는 것은 action 의 훅뿐이다 (hook-resolves-own-token-only)",
+  message: "store 에서 꺼내는 것은 action 의 훅뿐이다 (hook-resolves-own-key-only)",
+};
+
+// store-registers-at-top-level — 등록 호출은 모듈 최상단의 문장으로만 선다
+const STORE_REGISTER_NESTED = {
+  selector:
+    "CallExpression[callee.object.name='store'][callee.property.name=/^(cache|http|event|invalidates|unaffected|route)$/]" +
+    ":not(Program > ExpressionStatement > CallExpression)",
+  message:
+    "store 등록은 모듈 최상단에서만 한다 — 함수나 컴포넌트 안에서 하면 불릴 때마다 같은 key 를 다시 등록한다 (store-registers-at-top-level)",
+};
+
+// key 를 같은 파일의 등록과 대조하는 근사 둘 — hook-resolves-own-key-only 의 둘째 갈래와 rule-targets-own-cache.
+// key 는 문자열 리터럴로만 읽는다
+const storeCall = (node, names) =>
+  node.callee.type === "MemberExpression" &&
+  node.callee.object.name === "store" &&
+  names.includes(node.callee.property.name);
+const keyOf = (arg) => (arg?.type === "Literal" && typeof arg.value === "string" ? arg.value : null);
+
+/** 이 파일이 areas 로 등록한 key 를 모으고, 파일 끝에서 pick 이 고른 인자마다 judge 를 돌린다 */
+const ownKeyRule = (areas, pick, judge) => ({
+  meta: { type: "problem", schema: [] },
+  create(context) {
+    const own = new Set();
+    const used = [];
+    return {
+      CallExpression(node) {
+        if (storeCall(node, areas) && keyOf(node.arguments[0])) own.add(keyOf(node.arguments[0]));
+        const arg = pick(node);
+        if (arg) used.push(arg);
+      },
+      "Program:exit"() {
+        for (const arg of used) {
+          const message = judge(keyOf(arg), own);
+          if (message) context.report({ node: arg, message });
+        }
+      },
+    };
+  },
+});
+
+const STORE_KEYS = {
+  rules: {
+    "hook-resolves-own-key-only": ownKeyRule(
+      ["cache", "http"],
+      (node) => node.callee.name === "useStore" && node.arguments[0],
+      (key, own) =>
+        key === null
+          ? "useStore 의 key 는 문자열 그대로 쓴다 (hook-resolves-own-key-only)"
+          : /^(event|route)./.test(key)
+            ? "사건은 콜백의 emit 으로 내고 주소는 route(key) 로 만든다 — useStore 로 꺼내지 않는다 (hook-resolves-own-key-only)"
+            : own.has(key)
+              ? null
+              : "훅은 이 파일이 store.cache·store.http 로 등록한 key 만 꺼낸다 (hook-resolves-own-key-only)",
+    ),
+    "rule-targets-own-cache": ownKeyRule(
+      ["cache"],
+      (node) => storeCall(node, ["invalidates", "unaffected"]) && node.arguments[1],
+      (key, own) =>
+        key !== null && own.has(key)
+          ? null
+          : "전파 규칙의 둘째 인자는 이 파일이 store.cache 로 등록한 key 다 — 규칙은 낡는 쪽 캐시의 파일에 둔다 (rule-targets-own-cache)",
+    ),
+  },
 };
 
 // no-path-literal (근사) — 주소는 route(key) 로만 만든다. 선택자 정규식 안의 / 는 / 로 적는다
@@ -71,9 +135,11 @@ export default tseslint.config(
   {
     files: ["src/**/*.{ts,tsx}"],
     languageOptions: { parser: tseslint.parser },
+    plugins: { store: STORE_KEYS },
     rules: {
       "no-restricted-imports": ["error", { patterns: [ROOT_ALIAS] }],
-      "no-restricted-syntax": ["error", RESOLVE_OUTSIDE_ACTION],
+      "no-restricted-syntax": ["error", STORE_OUTSIDE_ACTION, STORE_REGISTER_NESTED],
+      "store/rule-targets-own-cache": "error",
     },
   },
   {
@@ -95,13 +161,14 @@ export default tseslint.config(
     // 규칙 이름이 같으면 뒤 블록이 앞 블록을 통째로 덮는다 — 블록마다 걸릴 선택자를 전부 싣는다
     files: [`${SCREEN}/**/*.{ts,tsx}`],
     rules: {
-      "no-restricted-syntax": ["error", VIEWMODEL_SPREAD, RESOLVE_OUTSIDE_ACTION, ...PATH_LITERAL],
+      "no-restricted-syntax": ["error", VIEWMODEL_SPREAD, STORE_OUTSIDE_ACTION, STORE_REGISTER_NESTED, ...PATH_LITERAL],
     },
   },
   {
     files: [`${SCREEN}/**/*.action.ts`], // action 의 훅만 useStore 를 부른다
     rules: {
-      "no-restricted-syntax": ["error", VIEWMODEL_SPREAD, ...PATH_LITERAL],
+      "no-restricted-syntax": ["error", VIEWMODEL_SPREAD, STORE_REGISTER_NESTED, ...PATH_LITERAL],
+      "store/hook-resolves-own-key-only": "error",
     },
   },
   {
@@ -116,7 +183,8 @@ export default tseslint.config(
         VIEW_STATE,
         VIEW_STATE_MEMBER,
         VIEWMODEL_SPREAD,
-        RESOLVE_OUTSIDE_ACTION,
+        STORE_OUTSIDE_ACTION,
+        STORE_REGISTER_NESTED,
         ...PATH_LITERAL,
       ],
     },
