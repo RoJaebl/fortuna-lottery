@@ -81,7 +81,7 @@ export function createStore<R extends object, D extends object>(): {
     },
 
     container(deps) {
-      for (const r of rules.values()) {
+      for (const r of [...rules.values(), ...unaffecteds.values()]) {
         if (!events.has(r.event)) throw missingEvent(r.event);
         if (!caches.has(r.cache)) throw missingKey(r.cache);
       }

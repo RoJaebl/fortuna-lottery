@@ -127,6 +127,14 @@ describe("store", () => {
     b.event("event.t.saved", { from: "tab" });
     b.invalidates("event.t.saved", "cache.t.list", { from: "tab" });
     expect(() => b.container(deps())).toThrow("등록되지 않은 key 다: cache.t.list");
+    const c = createStore<Reg, Deps>().store;
+    c.cache("cache.t.other", entry);
+    c.unaffected("event.t.saved", "cache.t.other", "사유");
+    expect(() => c.container(deps())).toThrow("등록되지 않은 사건이다: event.t.saved");
+    const d = createStore<Reg, Deps>().store;
+    d.event("event.t.saved", { from: "tab" });
+    d.unaffected("event.t.saved", "cache.t.other", "사유");
+    expect(() => d.container(deps())).toThrow("등록되지 않은 key 다: cache.t.other");
   });
 
   it("등록되지 않은 key 를 꺼내면 key 이름으로 실패한다", () => {
