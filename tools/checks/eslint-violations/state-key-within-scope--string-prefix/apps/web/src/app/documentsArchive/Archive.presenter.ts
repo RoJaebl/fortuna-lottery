@@ -1,6 +1,6 @@
 // 사례: 글자로만 앞부분인 key 를 꺼낸다 — 앞부분은 마디 단위로 잰다.
-declare function useStoreState(key: string): [unknown, unknown];
+import { useSharedState } from "@fortuna-lottery/store/react";
 export function useArchivePresenter() {
-  const [selected] = useStoreState("state.documents.selection");
+  const selected = useSharedState("state.documents.selection", (s) => s);
   return { selected };
 }
