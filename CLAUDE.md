@@ -142,7 +142,7 @@ tools/launch/        런처 — pnpm dev·pnpm start 가 부르고 포트를 고
 
 의존 방향과 층 경계는 루트의 `.dependency-cruiser.cjs` 가, 코드 모양(화면에 상태 없음, 표시 모델 얕은
 전개 금지, 뷰 폴더의 공개 표면, 훅이 자기 key 하나만 꺼내기 `hook-resolves-own-key-only`,
-action 의 store 등록은 파일 최상단에서만 `store-registers-at-top-level`, 전파 규칙은 자기 캐시만 겨냥 `rule-targets-own-cache`,
+action 의 store 등록과 `_state/` 파일의 `createStore` 는 파일 최상단에서만 `store-registers-at-top-level`, 전파 규칙은 자기 캐시만 겨냥 `rule-targets-own-cache`,
 `href`·`push`·`replace` 에 경로 리터럴 금지 `no-path-literal`, `@/` 뿌리 별칭 금지 `no-root-alias`,
 `@framework` 에서 제 이름으로만 가져오기 `no-renamed-store-import`, 공통 상태의 key·자리·범위를 `framework/paths.mjs` 로
 판정하는 `state-key-literal`·`state-key-matches-folder`·`state-key-within-scope`·`state-only-in-presenter`·`state-registers-in-state-folder`)은
@@ -193,7 +193,9 @@ action 의 store 등록은 파일 최상단에서만 `store-registers-at-top-lev
   `StateTypes` 가 준다. presenter 는 `useSharedState(key, select)` 로 꺼낸다. 시험은 `getStore` 로 값을 미리 정하고
   `test.setup.ts` 의 `afterEach(resetStores)` 가 되돌린다. 생성 파일은 `apps/web/store.config.ts` 의 `targets`(tsserver·next·cli)가
   쓴다. VS Code 는 「TypeScript: Select TypeScript Version → Use Workspace Version」으로 작업 공간 TypeScript 를 써야 tsserver
-  플러그인이 실린다(`.vscode/settings.json` 의 `tsdk` 가 가리킨다).
+  플러그인이 실린다(`.vscode/settings.json` 의 `tsdk` 가 가리킨다). **이 문장은 수동 확인 대상이다** — 사람이 TS Server 로그에서
+  `Plugin validation succeeded` 를 본 적이 아직 없다. tsserver 는 플러그인을 tsconfig 폴더가 아니라 TypeScript 곁(`../../..`)에서
+  찾으므로, 루트 `package.json` 의 devDependencies 에 `@fortuna-lottery/store` 를 두어 루트 `node_modules` 에 놓는다.
 - **서버 상태 캐시는 [frontend-module-layout §3.1 캐시 도구 — shared/lib/cache](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/frontend-module-layout.md#31-캐시-도구--sharedlibcache>)
   그대로다.** `apps/web/src/shared/lib/cache/createServerCache.ts` 가 그것이다.
 - **화면 앱에는 화면 모듈이 하나(`app/(home)/`)뿐이므로 모듈 사이 import 는 없다.** 개정판은 화면 모듈끼리 배럴 import 도 금지한다.
