@@ -129,3 +129,10 @@
 - 지금 문구: 「소스를 훑는 일은 paths.mjs 를 쓴다. 시험만 부른다」. 소스 뿌리를 찾는 법은 적지 않는다.
 - 문제: 화면 시험은 jsdom 환경에서 돌고, 거기서 `import.meta.url` 은 `file:` 이 아니라 `fileURLToPath` 가 실패한다.
 - 제안: 시험 러너가 넣어 주는 `__dirname` 으로 찾는다고 적는다. 이 저장소의 `framework/describe.ts` 가 그렇게 한다.
+
+## 19. state 가 규약 층의 store 영역을 떠나 독립 패키지가 되었다
+
+- 문서·절: [frontend-store §2 영역 — store 와 독립 라이브러리를 잇는 연결부](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/frontend-store.md#2-영역--store-와-독립-라이브러리를-잇는-연결부>), [frontend-store §3 규약 층 — framework/](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/frontend-store.md#3-규약-층--framework>), frontend-shared-state 전체.
+- 지금 문구: state 를 규약 층 store 의 영역으로 적고, `store.state(key, 정의)` 와 `useStoreState`, 공급자(`StoreProvider`)를 거치는 모양을 적는다.
+- 문제: 이 저장소는 state 를 독립 패키지 `@fortuna-lottery/store` 로 옮겼다. 공급자가 없고(전역 등록부), 정의는 `createStore("key", …)`, 꺼내기는 `useSharedState`, 타입은 생성기가 쓰는 `StateTypes` 가 준다. 위 두 문서가 아직 옛 모양을 적는다. 16번의 「정의 자체를 등록부 값으로」도 이 변경으로 필요 없어졌다.
+- 제안: frontend-store §2·§3 에서 state 영역을 빼고, frontend-shared-state 를 전역 등록부·타입 생성기 모양으로 고쳐 쓴다. cache·http·event·route 는 아직 옛 store 에 있다(1단계).
