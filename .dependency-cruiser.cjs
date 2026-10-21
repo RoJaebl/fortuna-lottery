@@ -159,7 +159,7 @@ module.exports = {
       comment: '화면 모듈·위젯은 store 를 @framework·@framework/react 로만 쓴다. 영역이 꽂히지 않은 store 와 그 React 묶음, 그 밑의 di·events 를 직접 가져오지 않는다',
       severity: 'error',
       // 등록부에 key 를 덧붙이는 declare module '@lib/store' 는 import 가 아니다 — 허용 표본이 그것을 지킨다.
-      // _state/ 파일이 StateDef 타입을 보려고 하는 import type 도 막는다 — 정의 꼴은 @framework 가 다시 내보낸다
+      // 공통 상태는 이 규칙과 무관하다 — _state/ 파일은 @fortuna-lottery/store 를 직접 가져온다
       from: { path: `(${ROUTE}|^apps/web/src/widgets/)` },
       to:   { path: '^apps/web/src/shared/lib/(store(-react)?|di|events)/' },
     },

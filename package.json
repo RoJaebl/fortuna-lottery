@@ -16,6 +16,7 @@
     "check:migration": "bash tools/checks/migration-status.sh"
   },
   "devDependencies": {
+    "@fortuna-lottery/store": "workspace:*",
     "dependency-cruiser": "^18.4.0",
     "turbo": "^2.5.0"
   }
