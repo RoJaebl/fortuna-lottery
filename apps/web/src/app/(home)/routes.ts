@@ -1,5 +1,5 @@
 import type { Route } from "next";
-import { store } from "@lib/store";
+import { store } from "@framework";
 
 declare module "@lib/store" {
   interface StoreRegistry {

@@ -1,3 +1,4 @@
+import { useStoreState } from "@framework/react";
 import { useDeletePickAction } from "./_action/deletePick.action";
 import { useListPicksAction } from "./_action/listPicks.action";
 import { useSavePickAction } from "./_action/savePick.action";
@@ -8,7 +9,8 @@ export function saveButtonLabel(saving: boolean, hasNumbers: boolean): string {
   return hasNumbers ? "현재 번호 저장" : "먼저 번호를 생성하세요";
 }
 
-export function usePicksCardPresenter(currentNumbers: number[] | null) {
+export function usePicksCardPresenter() {
+  const [currentNumbers] = useStoreState("state.home.combination");
   const list = useListPicksAction();
   const save = useSavePickAction();
   const remove = useDeletePickAction();

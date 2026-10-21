@@ -1,7 +1,7 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { createElement, type ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { StoreProvider } from "@lib/store/react";
+import { StoreProvider } from "@framework/react";
 import { createContainer } from "@composition/createContainer";
 import { assumptionRequest, useHypothesisLabPresenter } from "./HypothesisLab.presenter";
 
@@ -32,8 +32,9 @@ function stubFetch() {
 }
 
 /** 훅이 유스케이스를 꺼낼 컨테이너 — real 환경이라 위의 fetch 대역이 그대로 받는다 */
-function withContainer() {
+function withContainer(numbers: number[] | null = null) {
   const container = createContainer("real");
+  if (numbers) container.resolve("state.home.combination").actions.choose(numbers);
   return { wrapper: ({ children }: { children: ReactNode }) => createElement(StoreProvider, { container, children }) };
 }
 
@@ -46,7 +47,7 @@ afterEach(() => {
 describe("useHypothesisLabPresenter — 인기 패턴 요청", () => {
   it("현재 조합이 없으면 인기 패턴을 묻지 않는다", async () => {
     const fetch = stubFetch();
-    const { result } = renderHook(() => useHypothesisLabPresenter(null, () => {}), withContainer());
+    const { result } = renderHook(() => useHypothesisLabPresenter(), withContainer());
 
     await act(async () => {});
     expect(fetch).not.toHaveBeenCalled();
@@ -55,7 +56,7 @@ describe("useHypothesisLabPresenter — 인기 패턴 요청", () => {
 
   it("현재 조합이 있으면 그 조합으로 묻는다", async () => {
     const fetch = stubFetch();
-    const { result } = renderHook(() => useHypothesisLabPresenter([1, 2, 3, 4, 5, 6], () => {}), withContainer());
+    const { result } = renderHook(() => useHypothesisLabPresenter(), withContainer([1, 2, 3, 4, 5, 6]));
 
     await waitFor(() => expect(result.current.popularityMessages).toEqual(["알려진 인기 패턴이 없습니다."]));
     expect(calledPaths(fetch)).toEqual(["/api/hypothesis/popularity"]);
@@ -66,7 +67,7 @@ describe("useHypothesisLabPresenter — 인기 패턴 요청", () => {
 describe("useHypothesisLabPresenter — 스위치를 바꾸면 평가 결과를 비운다", () => {
   const evaluated = async () => {
     stubFetch();
-    const hook = renderHook(() => useHypothesisLabPresenter(null, () => {}), withContainer());
+    const hook = renderHook(() => useHypothesisLabPresenter(), withContainer());
     await act(async () => hook.result.current.evaluate());
     await waitFor(() => expect(hook.result.current.evaluation).not.toBeNull());
     return hook;
@@ -102,7 +103,7 @@ describe("useHypothesisLabPresenter — 늦게 온 평가 응답", () => {
         return new Response(JSON.stringify(EVALUATION), { status: 200 });
       }),
     );
-    const { result } = renderHook(() => useHypothesisLabPresenter(null, () => {}), withContainer());
+    const { result } = renderHook(() => useHypothesisLabPresenter(), withContainer());
     act(() => result.current.evaluate());
     act(() => result.current.toggleTopK());
     await act(async () => {

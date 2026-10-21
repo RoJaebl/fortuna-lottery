@@ -1,5 +1,6 @@
 // 모든 표현은 과거 데이터의 사실만 말한다 (정직성 원칙).
 import { useState } from "react";
+import { useStoreState } from "@framework/react";
 import { LOW_MAX } from "@lib/lotto-rules";
 import type { TabItem } from "@ui/tabs";
 import type { StatisticsModel } from "./_model/Statistics.model";
@@ -114,7 +115,8 @@ function highlightBars(bars: DistBar[], highlight: number | null): PatternBar[] 
   return bars.map((bar, i) => ({ ...bar, highlighted: i === highlight }));
 }
 
-export function useStatisticsPanelPresenter(myNumbers: number[] | null) {
+export function useStatisticsPanelPresenter() {
+  const [myNumbers] = useStoreState("state.home.combination"); // 분포 위 내 위치 마커에 쓴다
   const { loading, stats, error } = useGetStatisticsAction();
   const [activeStatView, setActiveStatView] = useState<StatView>("probability");
 

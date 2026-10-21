@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
-import { store } from "@lib/store";
-import { useStore } from "@lib/store/react";
+import { store } from "@framework";
+import { useStore } from "@framework/react";
 import type { AssumptionModel } from "../_model/Evaluation.model";
 import { hypothesisGenerateRequest, hypothesisGenerateResponse } from "../_mapper/hypothesisGenerate.mapper";
 

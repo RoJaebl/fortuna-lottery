@@ -5,7 +5,19 @@ import { LotterietusViewModel } from "./_model/Lotterietus.viewmodel";
 import { useGetLotterietusStatusAction } from "./_action/getLotterietusStatus.action";
 import { useLotterietusCardPresenter } from "./LotterietusCard.presenter";
 
-vi.mock("./_action/getLotterietusStatus.action", () => ({ useGetLotterietusStatusAction: vi.fn() }));
+import { createElement, type ReactNode } from "react";
+import { StoreProvider } from "@framework/react";
+import { createContainer } from "@composition/createContainer";
+
+vi.mock("./_action/getLotterietusStatus.action", async (importOriginal) => ({ ...(await importOriginal<object>()), useGetLotterietusStatusAction: vi.fn() }));
+
+/** presenter 가 공통 상태를 꺼내므로 공급자 안에서 그린다 — 조합과 생성기 열림을 미리 정한다 */
+function withState(numbers: number[] | null = null, generatorOpen = false) {
+  const container = createContainer("test");
+  if (numbers) container.resolve("state.home.combination").actions.choose(numbers);
+  if (generatorOpen) container.resolve("state.home.generatorOpen").actions.toggle();
+  return { wrapper: ({ children }: { children: ReactNode }) => createElement(StoreProvider, { container, children }) };
+}
 
 describe("formatRemaining (카운트다운 presenter)", () => {
   it("일 단위가 있으면 D-표기", () => {
@@ -26,7 +38,7 @@ describe("formatRemaining (카운트다운 presenter)", () => {
 describe("useLotterietusCardPresenter", () => {
   it("불러오는 중이면 loading 이 참", () => {
     vi.mocked(useGetLotterietusStatusAction).mockReturnValue({ loading: true, error: null, status: null, retry: vi.fn() });
-    const { result } = renderHook(() => useLotterietusCardPresenter(false));
+    const { result } = renderHook(() => useLotterietusCardPresenter(), withState());
     expect(result.current.loading).toBe(true);
     expect(result.current.remaining).toBeNull();
   });
@@ -41,14 +53,14 @@ describe("useLotterietusCardPresenter", () => {
       nextDrawAt: new Date(Date.now() + 60_000),
     });
     vi.mocked(useGetLotterietusStatusAction).mockReturnValue({ loading: true, error: null, status, retry: vi.fn() });
-    const { result } = renderHook(() => useLotterietusCardPresenter(false));
+    const { result } = renderHook(() => useLotterietusCardPresenter(), withState());
     expect(result.current.loading).toBe(false);
   });
 
   it("ctaLabel — 생성기가 열려 있는지에 따라", () => {
     vi.mocked(useGetLotterietusStatusAction).mockReturnValue({ loading: true, error: null, status: null, retry: vi.fn() });
-    expect(renderHook(() => useLotterietusCardPresenter(true)).result.current.ctaLabel).toBe("생성기 닫기");
-    expect(renderHook(() => useLotterietusCardPresenter(false)).result.current.ctaLabel).toBe("번호 생성하기");
+    expect(renderHook(() => useLotterietusCardPresenter(), withState(null, true)).result.current.ctaLabel).toBe("생성기 닫기");
+    expect(renderHook(() => useLotterietusCardPresenter(), withState()).result.current.ctaLabel).toBe("번호 생성하기");
   });
 });
 

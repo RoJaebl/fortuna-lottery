@@ -1,7 +1,8 @@
 import { readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { route, store, type KeyOf } from "@lib/store";
+import { route, store, type KeyOf } from "@framework";
+import { describeWithUsage } from "@framework/describe";
 import "./screens";
 
 /** page.tsx 를 가진 폴더의 주소 — 라우트 그룹 마디는 빠지고 동적 마디([id] 등)는 "x" 가 된다 */
@@ -30,7 +31,8 @@ function routePaths(): string[] {
 
 describe("store", () => {
   it("store 에 등록된 전부", () => {
-    expect(store.describe()).toMatchSnapshot(); // 「무엇이 무엇을 갱신하는가」를 읽는 자리
+    // 「무엇이 무엇을 갱신하는가」와 「어느 presenter 가 어느 상태를 쓰는가」를 읽는 자리
+    expect(describeWithUsage()).toMatchSnapshot();
   });
 
   it("page.tsx 를 가진 폴더마다 주소가 있고 주소마다 폴더가 있다", () => {

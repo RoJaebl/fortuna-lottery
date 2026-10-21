@@ -3,7 +3,19 @@ import { describe, expect, it, vi } from "vitest";
 import { useGenerateCombinationAction } from "./_action/generateCombination.action";
 import { canGenerate, modeHint, useGeneratorCardPresenter } from "./GeneratorCard.presenter";
 
-vi.mock("./_action/generateCombination.action", () => ({ useGenerateCombinationAction: vi.fn() }));
+import { createElement, type ReactNode } from "react";
+import { StoreProvider } from "@framework/react";
+import { createContainer } from "@composition/createContainer";
+
+vi.mock("./_action/generateCombination.action", async (importOriginal) => ({ ...(await importOriginal<object>()), useGenerateCombinationAction: vi.fn() }));
+
+/** presenter 가 공통 상태를 꺼내므로 공급자 안에서 그린다 — 조합과 생성기 열림을 미리 정한다 */
+function withState(numbers: number[] | null = null, generatorOpen = false) {
+  const container = createContainer("test");
+  if (numbers) container.resolve("state.home.combination").actions.choose(numbers);
+  if (generatorOpen) container.resolve("state.home.generatorOpen").actions.toggle();
+  return { wrapper: ({ children }: { children: ReactNode }) => createElement(StoreProvider, { container, children }) };
+}
 
 const mockAction = (pending = false) =>
   vi.mocked(useGenerateCombinationAction).mockReturnValue({
@@ -32,7 +44,7 @@ describe("GeneratorCard 표시 조정자", () => {
 
   it("modeItems · numberItems — 지금 모드와 고른 번호를 항목마다 표시한다", () => {
     mockAction();
-    const { result } = renderHook(() => useGeneratorCardPresenter(vi.fn()));
+    const { result } = renderHook(() => useGeneratorCardPresenter(), withState());
     expect(result.current.modeItems).toEqual([
       { key: "auto", label: "자동", active: true },
       { key: "semi", label: "부분 선택", active: false },
@@ -50,14 +62,14 @@ describe("GeneratorCard 표시 조정자", () => {
 
   it("generateDisabled · generateLabel — 생성할 수 없거나 진행 중이면 막는다", () => {
     mockAction();
-    const { result } = renderHook(() => useGeneratorCardPresenter(vi.fn()));
+    const { result } = renderHook(() => useGeneratorCardPresenter(), withState());
     expect(result.current.generateDisabled).toBe(false);
     expect(result.current.generateLabel).toBe("번호 생성");
     act(() => result.current.changeMode("manual"));
     expect(result.current.generateDisabled).toBe(true);
 
     mockAction(true);
-    const busy = renderHook(() => useGeneratorCardPresenter(vi.fn())).result.current;
+    const busy = renderHook(() => useGeneratorCardPresenter(), withState()).result.current;
     expect(busy.generateDisabled).toBe(true);
     expect(busy.generateLabel).toBe("생성 중…");
   });

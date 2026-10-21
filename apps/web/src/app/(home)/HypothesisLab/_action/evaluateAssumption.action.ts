@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from "react";
-import { store } from "@lib/store";
-import { useStore } from "@lib/store/react";
+import { store } from "@framework";
+import { useStore } from "@framework/react";
 import type { AssumptionModel } from "../_model/Evaluation.model";
 import { EvaluationViewModel } from "../_model/Evaluation.viewmodel";
 import { hypothesisEvaluateRequest, hypothesisEvaluateResponse } from "../_mapper/hypothesisEvaluate.mapper";

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useStoreState } from "@framework/react";
 import { useGetLotterietusStatusAction } from "./_action/getLotterietusStatus.action";
 
 /** 남은 시간(ms) → "D-3 12:34:56" — 지금 시각에 따라 바뀌므로 표시 모델이 아니라 조정자에 둔다 */
@@ -17,7 +18,8 @@ export function ctaLabel(generatorOpen: boolean): string {
   return generatorOpen ? "생성기 닫기" : "번호 생성하기";
 }
 
-export function useLotterietusCardPresenter(generatorOpen: boolean) {
+export function useLotterietusCardPresenter() {
+  const [generatorOpen, generator] = useStoreState("state.home.generatorOpen");
   const { loading, status, error } = useGetLotterietusStatusAction();
   const [now, setNow] = useState(() => Date.now());
 
@@ -34,5 +36,7 @@ export function useLotterietusCardPresenter(generatorOpen: boolean) {
     error,
     remaining: status ? formatRemaining(status.nextDrawAt.getTime() - now) : null,
     ctaLabel: ctaLabel(generatorOpen),
+    generatorOpen,
+    toggleGenerator: generator.toggle,
   };
 }

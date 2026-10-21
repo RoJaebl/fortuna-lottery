@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useStoreState } from "@framework/react";
 import type { GeneratorMode } from "./_model/GeneratorMode.model";
 import { useGenerateCombinationAction } from "./_action/generateCombination.action";
 
@@ -40,7 +41,8 @@ export function generateButtonLabel(busy: boolean): string {
   return busy ? "생성 중…" : "번호 생성";
 }
 
-export function useGeneratorCardPresenter(onGenerated: (numbers: number[]) => void) {
+export function useGeneratorCardPresenter() {
+  const [, combination] = useStoreState("state.home.combination");
   const [mode, setMode] = useState<GeneratorMode>("auto");
   const [selected, setSelected] = useState<number[]>([]);
   const action = useGenerateCombinationAction();
@@ -60,8 +62,8 @@ export function useGeneratorCardPresenter(onGenerated: (numbers: number[]) => vo
   };
 
   const generate = async () => {
-    const combination = await action.run(mode, selected);
-    if (combination) onGenerated(combination.numbers);
+    const generated = await action.run(mode, selected);
+    if (generated) combination.choose(generated.numbers);
   };
 
   return {

@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
-import { store } from "@lib/store";
-import { useStore } from "@lib/store/react";
+import { store } from "@framework";
+import { useStore } from "@framework/react";
 import { GeneratedCombinationViewModel } from "../_model/GeneratedCombination.viewmodel";
 import type { GeneratorMode } from "../_model/GeneratorMode.model";
 import { generatorGenerateRequest, generatorGenerateResponse } from "../_mapper/generatorGenerate.mapper";

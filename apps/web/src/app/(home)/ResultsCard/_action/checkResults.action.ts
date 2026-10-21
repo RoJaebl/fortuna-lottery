@@ -1,7 +1,7 @@
 import { useCallback, useSyncExternalStore } from "react";
-import { store } from "@lib/store";
-import { useStore } from "@lib/store/react";
-import { createServerCache } from "@infrastructure/serverCache";
+import { store } from "@framework";
+import { useStore } from "@framework/react";
+import { createServerCache } from "@lib/cache";
 import { ResultsDrawViewModel } from "../_model/ResultsDraw.viewmodel";
 import { ResultsCheckItemViewModel } from "../_model/ResultsCheckItem.viewmodel";
 import { resultsCheckResponse } from "../_mapper/resultsCheck.mapper";
