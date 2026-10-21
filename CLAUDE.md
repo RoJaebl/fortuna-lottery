@@ -113,15 +113,17 @@ pnpm --filter @fortuna-lottery/web exec vitest run <path>   # 파일 하나
 
 - 서버 모듈의 네 계층(`interface/{api,facade}` · `business` · `context` · `domain/{model,port,adapter}`)과
   조립 루트는 [backend-module-layout](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/backend-module-layout.md>)이 정한다.
-- 화면 모듈의 네 역할(화면 · 표시 조정자 · action · 변환기)과 파일 이름은
+- 화면 모듈의 네 역할(화면 · presenter · action · 변환기)과 파일 이름은
   [frontend-module-layout](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/frontend-module-layout.md>)이,
   뷰 폴더 승격과 소유물의 깊이는 [fractal-view-promotion](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/fractal-view-promotion.md>)이 정한다.
-- 화면 앱 전체의 층과 조립(`app` · `widgets` · `composition` · `infrastructure` · `shared`, 여섯 층 별칭, 컨테이너, 전파 규칙 파일)은
-  [frontend-app-layers](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/frontend-app-layers.md>)가 정한다.
+- 화면 앱 전체의 층과 조립(`app` · `widgets` · `framework` · `composition` · `infrastructure` · `shared`, 일곱 층 별칭, 컨테이너)은
+  [frontend-app-layers](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/frontend-app-layers.md>)가,
+  독립 라이브러리 다섯·영역 다섯·규약 층·전파 규칙·주소는 [frontend-store](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/frontend-store.md>)가,
+  여러 presenter 가 함께 쓰는 공통 상태(`_state/`)는 [frontend-shared-state](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/frontend-shared-state.md>)가 정한다.
 - 타입 부류(와이어 모델 · 도메인 원형 · 표시 모델 · 값 객체 · 파생 조회 모델)는
   [model-vocabulary](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/model-vocabulary.md>)가 정한다.
   옛 저장소의 모델 타입 표(`use*ViewModel` = presenter, `*Entity`, `*VO`, `*ReadModel`, 2-tier 엄격도)는
-  버렸다. 지금 `*.viewmodel.ts` 는 표시 모델 클래스이고, 조정자는 `*.presenter.ts` 의 `use*Presenter` 다.
+  버렸다. 지금 `*.viewmodel.ts` 는 표시 모델 클래스이고, presenter 는 `*.presenter.ts` 의 `use*Presenter` 다.
 - 계약 패키지의 스키마와 이름은 [wire-contract](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/wire-contract.md>)가,
   의존 규칙과 모양 규칙은 [boundary-enforcement](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/boundary-enforcement.md>)가 정한다.
 
@@ -131,7 +133,7 @@ pnpm --filter @fortuna-lottery/web exec vitest run <path>   # 파일 하나
 packages/contract/   @fortuna-lottery/contract — 도메인별 zod 스키마(와이어 모델의 SSOT). 두 앱이 참조한다
 packages/kernel/     @fortuna-lottery/kernel — 로또 순수 커널(combination · scoring · rng · result · generate). apps/api 만 참조한다
 apps/api/            NestJS 응용 서버 — src/modules/<도메인>/, src/composition/CompositionModule.ts, prisma/
-apps/web/            Next.js 화면 앱 — src/app/(home)/, src/composition/, src/infrastructure/, src/shared/{ui,lib}/
+apps/web/            Next.js 화면 앱 — src/app/(home)/, src/framework/, src/composition/, src/infrastructure/, src/shared/{ui,lib}/
 tools/checks/        이관 상태 스크립트와 규칙마다 하나씩 둔 위반 표본
 tools/launch/        런처 — pnpm dev·pnpm start 가 부르고 포트를 고르는 유일한 자리(Node 내장 모듈만 쓴다)
 ```
@@ -139,7 +141,9 @@ tools/launch/        런처 — pnpm dev·pnpm start 가 부르고 포트를 고
 의존 방향과 층 경계는 루트의 `.dependency-cruiser.cjs` 가, 코드 모양(화면에 상태 없음, 표시 모델 얕은
 전개 금지, 뷰 폴더의 공개 표면, 훅이 자기 key 하나만 꺼내기 `hook-resolves-own-key-only`,
 action 의 store 등록은 파일 최상단에서만 `store-registers-at-top-level`, 전파 규칙은 자기 캐시만 겨냥 `rule-targets-own-cache`,
-`href`·`push`·`replace` 에 경로 리터럴 금지 `no-path-literal`, `@/` 뿌리 별칭 금지 `no-root-alias`)은
+`href`·`push`·`replace` 에 경로 리터럴 금지 `no-path-literal`, `@/` 뿌리 별칭 금지 `no-root-alias`,
+`@framework` 에서 제 이름으로만 가져오기 `no-renamed-store-import`, 공통 상태의 key·자리·범위를 `framework/paths.mjs` 로
+판정하는 `state-key-literal`·`state-key-matches-folder`·`state-key-within-scope`·`state-only-in-presenter`·`state-registers-in-state-folder`)은
 `apps/web/eslint.config.mjs` 가 강제한다. 둘 다 `pnpm check` 에 들어
 있으므로 위반은 곧 검증 실패다. `"sideEffects": false` 는 store 등록(import 부수효과)을 지우므로 `pnpm lint:side-effects` 가 막는다.
 
@@ -178,16 +182,26 @@ action 의 store 등록은 파일 최상단에서만 `store-registers-at-top-lev
 - **vault 골조 문서에 올릴 어긋남은 [보고 문서](<docs/superpowers/reports/2026-10-13-vault-feedback.md>)에 모았다.**
 - **모듈 시험은 모듈 뿌리에 둔다.** `modules/<도메인>/<도메인>Module.test.ts` 가 그 모듈 하나를 띄우고
   `configureApp` 으로 실제 접두를 건 뒤 HTTP 로 부른다. 유스케이스 시험은 `business/` 의 파일 옆에 둔다.
-- **셸의 조정자는 `apps/web/src/app/(home)/Home.presenter.ts` 다.** 자식 뷰 사이에 오가는 상태 셋(현재 조합,
-  생성기 열림, 활성 탭)만 갖고, `page.tsx` 는 조립과 입력 묶음 전개만 한다. 화면 상태 금지 ESLint 규칙이
-  `app/` 의 `.tsx` 에도 걸린다.
-- **서버 상태 캐시는 [frontend-module-layout §3.1 캐시 도구 — infrastructure 에 하나](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/frontend-module-layout.md#31-캐시-도구--infrastructure-에-하나>)
-  그대로다.** `apps/web/src/infrastructure/serverCache.ts` 가 그것이다.
+- **자식 뷰가 함께 쓰는 상태 둘은 `app/(home)/_state/` 의 공통 상태다.** 현재 조합(`state.home.combination`)은
+  생성기·가정 실험실이 바꾸고 통계·시뮬레이션·내 번호·가정 실험실이 읽는다. 생성기 열림(`state.home.generatorOpen`)은
+  회차 카드가 바꾸고 페이지와 회차 카드가 읽는다. 활성 탭은 `Home.presenter.ts` 의 지역 상태이고, `page.tsx` 는
+  조립만 한다. 누가 무엇을 읽고 바꾸는지는 store 출력 스냅숏이 적는다.
+- **state 의 등록부 값은 값 타입이 아니라 정의 자체다.** `_state/` 파일은 정의를 `satisfies StateDef<값>` 으로 짓고
+  `declare module '@lib/store'` 에 `typeof 정의` 를 올린다. 값 타입만으로는 `useStoreState` 가 돌려줄 바꾸는 함수의
+  타입이 나오지 않기 때문이다([보고 문서](<docs/superpowers/reports/2026-10-13-vault-feedback.md>) 16).
+- **서버 상태 캐시는 [frontend-module-layout §3.1 캐시 도구 — shared/lib/cache](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/frontend-module-layout.md#31-캐시-도구--sharedlibcache>)
+  그대로다.** `apps/web/src/shared/lib/cache/createServerCache.ts` 가 그것이다.
 - **화면 앱에는 화면 모듈이 하나(`app/(home)/`)뿐이므로 모듈 사이 import 는 없다.** 개정판은 화면 모듈끼리 배럴 import 도 금지한다.
-- **store 는 `shared/lib/store/` 에 있고 action 이 스스로 등록한다. 컨테이너는 `composition/createContainer.ts` 가 짓고 `app/AppContainer.tsx` 가 `StoreProvider` 로 내린다.** 시험은 `createContainer('test')` 의 `c.deps.http` 와 `c.resolve(key)` 를 쓴다.
+- **store 엔진은 `shared/lib/store/`, 영역 다섯을 꽂은 store 는 `framework/` 에 있다.** 화면 쪽은 `@framework`(`store`·`route`)와
+  `@framework/react`(`StoreProvider`·`useStore`·`useStoreState`)만 본다. action·`_state/` 파일이 스스로 등록하고, 컨테이너는
+  `composition/createContainer.ts` 가 짓고 `app/AppContainer.tsx` 가 내린다. 시험은 `createContainer('test')` 의 `c.deps.http` 와
+  `c.resolve(key)` 를 쓴다 — state key 를 꺼내면 상태 부품(`get`·`actions`)이 나온다.
+- **엔진의 등록 함수는 `(key, 정의)` 하나뿐이라, event 영역의 `store.invalidates`·`store.unaffected` 는 `framework/index.ts` 가
+  「사건 → 캐시」 key 의 event 정의로 바꿔 넘긴다.** 영역의 출력 꼴(`describe`)은 key 하나가 아니라 영역의 정의 전부를 받아
+  사건 아래에 그 규칙을 단다([보고 문서](<docs/superpowers/reports/2026-10-13-vault-feedback.md>) 17).
 - **규격 코드와 다르게 지킨 것이 셋 있다.** 셋 다 [보고 문서](<docs/superpowers/reports/2026-10-13-vault-feedback.md>)에 올렸다.
   - `FetchHttpClient`(`infrastructure/http`)는 서버 본문의 `{ error }` 문구를 꺼내 예외 메시지로 쓴다. 계약이 도메인 실패를 메시지를 실은 400 으로 정하므로 버리면 화면 문구가 사라진다.
-  - `serverCache` 의 `invalidate` 는 조건이 `void` 인 캐시도 다시 받도록 `query !== undefined` 대신 `queries.has(key)` 로 가린다.
+  - `createServerCache` 의 `invalidate` 는 조건이 `void` 인 캐시도 다시 받도록 `query !== undefined` 대신 `queries.has(key)` 로 가린다.
   - 조회 훅은 `useSyncExternalStore` 의 셋째 인자로 `readOnServer`(서버 렌더 때는 값 없음)를 넘긴다. 없으면 Next 서버 렌더가 실패한다.
 - **`picks` 의 저장·삭제는 `results` 캐시를 무효화하지 않는다.** 결과 확인은 사람이 「당첨 대조」를 눌러 받는 값이고,
   누르기 전까지는 앞선 결과를 그대로 보인다(`checkResults.action.ts` 의 `store.unaffected`). 무엇이 무엇을 갱신하는지는 `apps/web/src/composition/__snapshots__/store.describe.test.ts.snap` 에서 읽는다.
@@ -222,7 +236,7 @@ DB 아님)에 저장된다. `apps/api` 를 다시 띄우면 사라진다. 나중
 순수 함수로 유지하는 이유가 바로 이것이다. 구현 전에 대상 파일 옆에 `*.test.ts` 를 먼저 쓴다.
 계약 스키마를 고쳤는데 화면 변환기 시험이 하나도 깨지지 않았다면 변환기가 스키마를 반영하지 않는다는 회귀 신호다 — 자동 검사가 아니라 사람이 지키는 방어선이다(wire-contract §6).
 커널은 `packages/kernel/src/*.test.ts`, 서버 유스케이스는 `apps/api/src/modules/<도메인>/business/*.test.ts`,
-계약은 `packages/contract/src/<도메인>/schema.test.ts`, 화면의 표시 조정자·표시 모델은
+계약은 `packages/contract/src/<도메인>/schema.test.ts`, 화면의 presenter·표시 모델은
 `apps/web/src/app/**/*.presenter.test.ts` 와 `*.viewmodel.test.ts` 가 본보기다.
 
 ## git 분기 전략 — vault 공통 정책을 따른다

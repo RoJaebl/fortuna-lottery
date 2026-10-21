@@ -108,3 +108,24 @@
 - 지금 문구: 첫 블록이 `src/**` 전체에 `useStore` 금지와 최상단 등록 선택자를 건다.
 - 문제: `shared/lib/store` 자신의 시험이 걸린다.
 - 제안: store 시험을 그 블록의 예외로 적는다. 이 저장소는 시험 파일 하나에서 `no-restricted-syntax` 를 껐다.
+
+## 16. state 의 등록부 값이 값 타입이면 바꾸는 함수의 타입이 나오지 않는다
+
+- 문서·절: [frontend-shared-state §2 정의는 _state 파일이 한다](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/frontend-shared-state.md#2-정의는-_state-파일이-한다>), [§4 presenter 가 쓰는 법](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/frontend-shared-state.md#4-presenter-가-쓰는-법>).
+- 지금 문구: 등록부에 `'state.documents.selection': readonly DocumentPath[]` 처럼 값 타입을 올리고, `useStoreState` 가 「[값, 바꾸는 함수들] — 타입은 key 에서 나온다」고 적는다.
+- 문제: 등록부에 값 타입만 있으면 바꾸는 함수의 이름과 인자 타입을 key 에서 얻을 길이 없다. 또 정의를 인라인 객체로 넘기면 바꾸는 함수의 첫 인자(`now`)에 문맥 타입이 없어 암묵적 `any` 가 된다.
+- 제안: 등록부 값을 정의 자체로 정한다. 이 저장소는 정의를 `const x = { initial, actions } satisfies StateDef<값>` 으로 짓고 `'state.home.combination': typeof x` 를 올린 뒤 `store.state(key, x)` 로 등록한다. 규약 층이 등록부 값에서 값 타입과 바꾸는 함수 타입을 뽑아 `useStoreState`·`c.resolve` 의 반환 타입을 짓는다.
+
+## 17. 엔진의 등록 함수 하나로는 event 영역의 등록 함수 셋을 낼 수 없다
+
+- 문서·절: [frontend-store §1 독립 라이브러리 다섯 — shared/lib](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/frontend-store.md#1-독립-라이브러리-다섯--sharedlib>), [§2 영역 — store 와 독립 라이브러리를 잇는 연결부](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/frontend-store.md#2-영역--store-와-독립-라이브러리를-잇는-연결부>).
+- 지금 문구: 「꽂은 이름이 곧 등록 함수의 이름이 된다 — store.<영역 이름>(key, 정의)」. 그런데 event 영역은 `store.event`·`store.invalidates`·`store.unaffected` 셋으로 등록한다. `defineArea` 의 `describe(key, def)` 는 key 하나를 찍는다.
+- 문제: 영역 하나가 등록 함수 하나만 가지므로 `invalidates(사건, 캐시, meta)` 꼴이 엔진에서 나오지 않는다. 사건 아래에 그 규칙을 다는 출력도 key 하나만 보는 `describe` 로는 지을 수 없다. `emit` 이 등록된 사건을 확인하려면 http 영역이 event 영역의 정의를 보아야 하는데 `build(def, ctx)` 는 자기 정의만 받는다.
+- 제안: 셋 중 하나를 문서에 정한다. 이 저장소는 (1) `framework/index.ts` 가 `invalidates`·`unaffected` 를 「사건 → 캐시」 key 의 event 정의로 바꿔 넘기고, (2) `describe` 를 영역의 정의 전부를 받는 꼴로 넓히고, (3) event 영역의 `attach` 가 컨테이너마다 등록된 사건을 기억해 http 영역의 `emit` 이 그것을 확인하게 했다. 세 일 모두 규약 층 안에서 끝나고 엔진은 영역 이름을 모른다.
+
+## 18. `describeWithUsage()` 가 `import.meta.url` 로 소스 뿌리를 찾으면 시험 러너에서 실패한다
+
+- 문서·절: [frontend-store §3 규약 층 — framework/](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/frontend-store.md#3-규약-층--framework>), [frontend-shared-state §6 store 출력이 쓰는 곳까지 적는다](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/frontend-shared-state.md#6-store-출력이-쓰는-곳까지-적는다>).
+- 지금 문구: 「소스를 훑는 일은 paths.mjs 를 쓴다. 시험만 부른다」. 소스 뿌리를 찾는 법은 적지 않는다.
+- 문제: 화면 시험은 jsdom 환경에서 돌고, 거기서 `import.meta.url` 은 `file:` 이 아니라 `fileURLToPath` 가 실패한다.
+- 제안: 시험 러너가 넣어 주는 `__dirname` 으로 찾는다고 적는다. 이 저장소의 `framework/describe.ts` 가 그렇게 한다.
