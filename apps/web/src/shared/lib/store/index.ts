@@ -7,4 +7,3 @@ export interface StoreRegistry {}
 export interface StoreDeps {}
 
 export { createStore, defineArea, type Area, type Store } from "./createStore";
-export { createState, type BoundActions, type StateActions, type StateCell, type StateDef } from "./state";

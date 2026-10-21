@@ -8,7 +8,7 @@
     "jsx": "preserve",
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "plugins": [{ "name": "next" }],
+    "plugins": [{ "name": "next" }, { "name": "@fortuna-lottery/store/tools/plugin.cjs" }],
     "paths": {
       "@app/*": ["./src/app/*"],
       "@widgets/*": ["./src/widgets/*"],

@@ -1,6 +1,6 @@
 // 사례: 형제 라우트의 공통 상태를 꺼낸다 — documents.[id] 는 documents.new 의 앞부분이 아니다.
-declare function useStoreState(key: string): [unknown, unknown];
+import { useSharedState } from "@fortuna-lottery/store/react";
 export function useNewDocumentPresenter() {
-  const [panel] = useStoreState("state.documents.[id].panel");
+  const panel = useSharedState("state.documents.[id].panel", (s) => s);
   return { panel };
 }

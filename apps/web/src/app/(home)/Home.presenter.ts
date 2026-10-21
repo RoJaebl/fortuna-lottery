@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useStoreState } from "@framework/react";
+import { useSharedState } from "@fortuna-lottery/store/react";
 import type { TabItem, TabsProps } from "@ui/tabs";
 
 export type HomeTabKey = "statistics" | "simulation" | "picks" | "results" | "hypothesis";
@@ -18,7 +18,7 @@ const TABS: readonly TabItem<HomeTabKey>[] = [
  * _state/ 의 공통 상태이고, 이 presenter 는 생성기를 펼칠지만 읽는다 (frontend-shared-state §1)
  */
 export function useHomePresenter() {
-  const [isGeneratorOpen] = useStoreState("state.home.generatorOpen");
+  const isGeneratorOpen = useSharedState("state.home.generatorOpen", (s) => s.open);
   const [activeTab, setActiveTab] = useState<HomeTabKey>("statistics");
 
   const tabs: TabsProps<HomeTabKey> = {

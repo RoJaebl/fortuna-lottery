@@ -56,6 +56,7 @@ pnpm build                   # turbo build
 pnpm start                   # 런처 — 빌드 결과로 두 서버를 OS 포트(또는 FORTUNA_WEB_PORT·FORTUNA_API_PORT 부터 빈 포트)에 띄운다
 pnpm --filter @fortuna-lottery/api db:migrate   # prisma migrate dev — 스키마를 고쳤을 때 마이그레이션을 새로 만든다
 pnpm test:tools              # 런처 시험(node --test)
+pnpm --filter @fortuna-lottery/web exec store-gen   # 공통 상태 생성 파일(src/composition/store.gen.ts)을 쓴다. typecheck·lint:deps·vitest 가 먼저 부른다
 ```
 
 `apps/api` 는 기동할 때 `apps/api/.env` 를 스스로 싣고(`main.ts` 의 `loadEnvFile`, 이미 있는 환경 변수가
@@ -132,6 +133,7 @@ pnpm --filter @fortuna-lottery/web exec vitest run <path>   # 파일 하나
 ```
 packages/contract/   @fortuna-lottery/contract — 도메인별 zod 스키마(와이어 모델의 SSOT). 두 앱이 참조한다
 packages/kernel/     @fortuna-lottery/kernel — 로또 순수 커널(combination · scoring · rng · result · generate). apps/api 만 참조한다
+packages/store/      @fortuna-lottery/store — key 로 등록하는 전역 공통 상태와 타입 생성기(tsserver·Next·CLI). apps/web 만 참조한다
 apps/api/            NestJS 응용 서버 — src/modules/<도메인>/, src/composition/CompositionModule.ts, prisma/
 apps/web/            Next.js 화면 앱 — src/app/(home)/, src/framework/, src/composition/, src/infrastructure/, src/shared/{ui,lib}/
 tools/checks/        이관 상태 스크립트와 규칙마다 하나씩 둔 위반 표본
@@ -140,7 +142,7 @@ tools/launch/        런처 — pnpm dev·pnpm start 가 부르고 포트를 고
 
 의존 방향과 층 경계는 루트의 `.dependency-cruiser.cjs` 가, 코드 모양(화면에 상태 없음, 표시 모델 얕은
 전개 금지, 뷰 폴더의 공개 표면, 훅이 자기 key 하나만 꺼내기 `hook-resolves-own-key-only`,
-action 의 store 등록은 파일 최상단에서만 `store-registers-at-top-level`, 전파 규칙은 자기 캐시만 겨냥 `rule-targets-own-cache`,
+action 의 store 등록과 `_state/` 파일의 `createStore` 는 파일 최상단에서만 `store-registers-at-top-level`, 전파 규칙은 자기 캐시만 겨냥 `rule-targets-own-cache`,
 `href`·`push`·`replace` 에 경로 리터럴 금지 `no-path-literal`, `@/` 뿌리 별칭 금지 `no-root-alias`,
 `@framework` 에서 제 이름으로만 가져오기 `no-renamed-store-import`, 공통 상태의 key·자리·범위를 `framework/paths.mjs` 로
 판정하는 `state-key-literal`·`state-key-matches-folder`·`state-key-within-scope`·`state-only-in-presenter`·`state-registers-in-state-folder`)은
@@ -186,16 +188,21 @@ action 의 store 등록은 파일 최상단에서만 `store-registers-at-top-lev
   생성기·가정 실험실이 바꾸고 통계·시뮬레이션·내 번호·가정 실험실이 읽는다. 생성기 열림(`state.home.generatorOpen`)은
   회차 카드가 바꾸고 페이지와 회차 카드가 읽는다. 활성 탭은 `Home.presenter.ts` 의 지역 상태이고, `page.tsx` 는
   조립만 한다. 누가 무엇을 읽고 바꾸는지는 store 출력 스냅숏이 적는다.
-- **state 의 등록부 값은 값 타입이 아니라 정의 자체다.** `_state/` 파일은 정의를 `satisfies StateDef<값>` 으로 짓고
-  `declare module '@lib/store'` 에 `typeof 정의` 를 올린다. 값 타입만으로는 `useStoreState` 가 돌려줄 바꾸는 함수의
-  타입이 나오지 않기 때문이다([보고 문서](<docs/superpowers/reports/2026-10-13-vault-feedback.md>) 16).
+- **공통 상태는 `@fortuna-lottery/store` 의 전역 등록부에 있고 공급자가 없다.** 정의는 `_state/` 파일의
+  `createStore("key", (set, get) => …)` 하나이고, 타입은 생성 파일(`src/composition/store.gen.ts`, git 에 넣지 않는다)의
+  `StateTypes` 가 준다. presenter 는 `useSharedState(key, select)` 로 꺼낸다. 시험은 `getStore` 로 값을 미리 정하고
+  `test.setup.ts` 의 `afterEach(resetStores)` 가 되돌린다. 생성 파일은 `apps/web/store.config.ts` 의 `targets`(tsserver·next·cli)가
+  쓴다. VS Code 는 「TypeScript: Select TypeScript Version → Use Workspace Version」으로 작업 공간 TypeScript 를 써야 tsserver
+  플러그인이 실린다(`.vscode/settings.json` 의 `tsdk` 가 가리킨다). **이 문장은 수동 확인 대상이다** — 사람이 TS Server 로그에서
+  `Plugin validation succeeded` 를 본 적이 아직 없다. tsserver 는 플러그인을 tsconfig 폴더가 아니라 TypeScript 곁(`../../..`)에서
+  찾으므로, 루트 `package.json` 의 devDependencies 에 `@fortuna-lottery/store` 를 두어 루트 `node_modules` 에 놓는다.
 - **서버 상태 캐시는 [frontend-module-layout §3.1 캐시 도구 — shared/lib/cache](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/frontend-module-layout.md#31-캐시-도구--sharedlibcache>)
   그대로다.** `apps/web/src/shared/lib/cache/createServerCache.ts` 가 그것이다.
 - **화면 앱에는 화면 모듈이 하나(`app/(home)/`)뿐이므로 모듈 사이 import 는 없다.** 개정판은 화면 모듈끼리 배럴 import 도 금지한다.
-- **store 엔진은 `shared/lib/store/`, 영역 다섯을 꽂은 store 는 `framework/` 에 있다.** 화면 쪽은 `@framework`(`store`·`route`)와
-  `@framework/react`(`StoreProvider`·`useStore`·`useStoreState`)만 본다. action·`_state/` 파일이 스스로 등록하고, 컨테이너는
+- **cache·http·event·route 는 아직 옛 store 다(1단계). 엔진은 `shared/lib/store/`, 영역을 꽂은 store 는 `framework/` 에 있다.** 화면 쪽은 `@framework`(`store`·`route`)와
+  `@framework/react`(`StoreProvider`·`useStore`)만 본다. action 파일이 스스로 등록하고, 컨테이너는
   `composition/createContainer.ts` 가 짓고 `app/AppContainer.tsx` 가 내린다. 시험은 `createContainer('test')` 의 `c.deps.http` 와
-  `c.resolve(key)` 를 쓴다 — state key 를 꺼내면 상태 부품(`get`·`actions`)이 나온다.
+  `c.resolve(key)` 를 쓴다.
 - **엔진의 등록 함수는 `(key, 정의)` 하나뿐이라, event 영역의 `store.invalidates`·`store.unaffected` 는 `framework/index.ts` 가
   「사건 → 캐시」 key 의 event 정의로 바꿔 넘긴다.** 영역의 출력 꼴(`describe`)은 key 하나가 아니라 영역의 정의 전부를 받아
   사건 아래에 그 규칙을 단다([보고 문서](<docs/superpowers/reports/2026-10-13-vault-feedback.md>) 17).

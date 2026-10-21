@@ -2,16 +2,14 @@
 
 exports[`store > store 에 등록된 전부 1`] = `
 "[state]
-state.home.combination = null
-  정의: app/(home)/_state/combination.state.ts
+state.home.combination = {"numbers":null}
   바꾸는 함수: choose
-  읽는 곳: HypothesisLab, PicksCard, SimulationCard, StatisticsPanel
-  바꾸는 곳: GeneratorCard, HypothesisLab
-state.home.generatorOpen = false
-  정의: app/(home)/_state/generatorOpen.state.ts
+  정의: app/(home)/_state/combination.state.ts
+  쓰는 곳: GeneratorCard, HypothesisLab, PicksCard, SimulationCard, StatisticsPanel
+state.home.generatorOpen = {"open":false}
   바꾸는 함수: toggle
-  읽는 곳: Home, LotterietusCard
-  바꾸는 곳: LotterietusCard
+  정의: app/(home)/_state/generatorOpen.state.ts
+  쓰는 곳: Home, LotterietusCard
 [cache]
 cache.hypothesis.popularity
 cache.lotterietus.status

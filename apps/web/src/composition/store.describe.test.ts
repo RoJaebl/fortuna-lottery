@@ -35,6 +35,21 @@ describe("store", () => {
     expect(describeWithUsage()).toMatchSnapshot();
   });
 
+  it("state 절은 key 마다 처음 값·바꾸는 함수·정의·쓰는 곳을 찍는다", () => {
+    const lines = describeWithUsage().split("\n");
+    expect(lines.slice(0, 9)).toEqual([
+      "[state]",
+      'state.home.combination = {"numbers":null}',
+      "  바꾸는 함수: choose",
+      "  정의: app/(home)/_state/combination.state.ts",
+      "  쓰는 곳: GeneratorCard, HypothesisLab, PicksCard, SimulationCard, StatisticsPanel",
+      'state.home.generatorOpen = {"open":false}',
+      "  바꾸는 함수: toggle",
+      "  정의: app/(home)/_state/generatorOpen.state.ts",
+      "  쓰는 곳: Home, LotterietusCard",
+    ]);
+  });
+
   it("page.tsx 를 가진 폴더마다 주소가 있고 주소마다 폴더가 있다", () => {
     expect(routePaths().sort()).toEqual(folderPaths().sort());
   });

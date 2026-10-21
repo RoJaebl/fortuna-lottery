@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useStoreState } from "@framework/react";
+import { useSharedState } from "@fortuna-lottery/store/react";
 import { useGetLotterietusStatusAction } from "./_action/getLotterietusStatus.action";
 
 /** 남은 시간(ms) → "D-3 12:34:56" — 지금 시각에 따라 바뀌므로 표시 모델이 아니라 조정자에 둔다 */
@@ -19,7 +19,8 @@ export function ctaLabel(generatorOpen: boolean): string {
 }
 
 export function useLotterietusCardPresenter() {
-  const [generatorOpen, generator] = useStoreState("state.home.generatorOpen");
+  const generatorOpen = useSharedState("state.home.generatorOpen", (s) => s.open);
+  const toggleGenerator = useSharedState("state.home.generatorOpen", (s) => s.toggle);
   const { loading, status, error } = useGetLotterietusStatusAction();
   const [now, setNow] = useState(() => Date.now());
 
@@ -37,6 +38,6 @@ export function useLotterietusCardPresenter() {
     remaining: status ? formatRemaining(status.nextDrawAt.getTime() - now) : null,
     ctaLabel: ctaLabel(generatorOpen),
     generatorOpen,
-    toggleGenerator: generator.toggle,
+    toggleGenerator,
   };
 }

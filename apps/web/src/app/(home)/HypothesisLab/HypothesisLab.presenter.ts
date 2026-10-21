@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useStoreState } from "@framework/react";
+import { useSharedState } from "@fortuna-lottery/store/react";
 import type { AssumptionModel } from "./_model/Evaluation.model";
 import { useCheckPopularityAction } from "./_action/checkPopularity.action";
 import { useEvaluateAssumptionAction } from "./_action/evaluateAssumption.action";
@@ -11,7 +11,8 @@ export function assumptionRequest(excludePastWinners: boolean, topKEnabled: bool
 }
 
 export function useHypothesisLabPresenter() {
-  const [numbers, combination] = useStoreState("state.home.combination");
+  const numbers = useSharedState("state.home.combination", (s) => s.numbers);
+  const choose = useSharedState("state.home.combination", (s) => s.choose);
   const [excludePastWinners, setExcludePastWinners] = useState(true);
   const [topKEnabled, setTopKEnabled] = useState(true);
   const [topK, setTopK] = useState(20);
@@ -23,7 +24,7 @@ export function useHypothesisLabPresenter() {
 
   const generate = async () => {
     const drawn = await generation.run(assumption);
-    if (drawn) combination.choose(drawn);
+    if (drawn) choose(drawn);
   };
 
   return {

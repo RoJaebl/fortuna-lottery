@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useStoreState } from "@framework/react";
+import { useSharedState } from "@fortuna-lottery/store/react";
 import type { GeneratorMode } from "./_model/GeneratorMode.model";
 import { useGenerateCombinationAction } from "./_action/generateCombination.action";
 
@@ -42,7 +42,7 @@ export function generateButtonLabel(busy: boolean): string {
 }
 
 export function useGeneratorCardPresenter() {
-  const [, combination] = useStoreState("state.home.combination");
+  const choose = useSharedState("state.home.combination", (s) => s.choose);
   const [mode, setMode] = useState<GeneratorMode>("auto");
   const [selected, setSelected] = useState<number[]>([]);
   const action = useGenerateCombinationAction();
@@ -63,7 +63,7 @@ export function useGeneratorCardPresenter() {
 
   const generate = async () => {
     const generated = await action.run(mode, selected);
-    if (generated) combination.choose(generated.numbers);
+    if (generated) choose(generated.numbers);
   };
 
   return {

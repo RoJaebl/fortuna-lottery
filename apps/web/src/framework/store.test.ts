@@ -7,7 +7,7 @@ const k = (key: string) => key as never;
 const deps = () => ({ http: { tag: "h" } as never, events: new EventChannel() });
 const entry = () => ({ invalidate: vi.fn(), n: 0 }) as never;
 
-describe("규약 층의 store — 영역 다섯", () => {
+describe("규약 층의 store — 영역 넷", () => {
   it("cache·http 의 등록 콜백은 deps 를 받되 사건 통로는 받지 않고, http 만 emit 을 받는다", () => {
     const { store } = createAppStore();
     let cacheArg: object | undefined;
@@ -79,16 +79,7 @@ describe("규약 층의 store — 영역 다섯", () => {
     expect(() => route(k("route.t.none"))).toThrow("등록되지 않은 key 다: route.t.none");
   });
 
-  it("state 는 컨테이너마다 상태 하나를 짓는다", () => {
-    const { store } = createAppStore();
-    store.state(k("state.t.count"), { initial: 0, actions: { add: (now: number, n: number) => now + n } } as never);
-    const c1 = store.container(deps());
-    const c2 = store.container(deps());
-    expect(c1.resolve(k("state.t.count"))).toBe(c1.resolve(k("state.t.count")));
-    expect(c1.resolve(k("state.t.count"))).not.toBe(c2.resolve(k("state.t.count")));
-  });
-
-  it("describe 는 영역 다섯을 key 순으로 찍고 사건 아래에 그 규칙을 단다", () => {
+  it("describe 는 영역 넷을 key 순으로 찍고 사건 아래에 그 규칙을 단다", () => {
     const { store } = createAppStore();
     store.route(k("route.t.index"), (() => "/t") as never);
     store.unaffected(k("event.t.saved"), k("cache.t.other"), "사람이 누를 때 받는다");
@@ -97,12 +88,8 @@ describe("규약 층의 store — 영역 다섯", () => {
     store.http(k("http.t.save"), () => (async () => undefined) as never);
     store.cache(k("cache.t.other"), entry);
     store.cache(k("cache.t.list"), entry);
-    store.state(k("state.t.open"), { initial: false, actions: { toggle: (now: boolean) => !now } } as never);
     expect(store.describe()).toBe(
       [
-        "[state]",
-        "state.t.open = false",
-        "  바꾸는 함수: toggle",
         "[cache]",
         "cache.t.list",
         "cache.t.other",
