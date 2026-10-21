@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createState, createStore, defineArea } from ".";
+import { createStore, defineArea } from ".";
 
 // 엔진은 영역의 이름을 모른다 — 시험은 영역 둘을 손으로 지어 꽂는다
 const thing = defineArea<() => object, object, { tag: string }>({
@@ -72,24 +72,5 @@ describe("createStore", () => {
     store.label("label.a", "에이");
     store.thing("thing.b", () => ({}));
     expect(store.describe()).toBe(["[thing]", "thing.b", "[label]", "label.a = 에이", "label.z = 제트"].join("\n"));
-  });
-});
-
-describe("createState", () => {
-  it("이름 붙은 바꾸는 함수로만 바뀌고, 바뀌면 구독자에게 알린다", () => {
-    const cell = createState({
-      initial: 0,
-      actions: { add: (now: number, n: number) => now + n, keep: (now: number) => now },
-    });
-    const fn = vi.fn();
-    const off = cell.subscribe(fn);
-    cell.actions.add(2);
-    cell.actions.keep();
-    expect(cell.get()).toBe(2);
-    expect(fn).toHaveBeenCalledTimes(1); // 같은 값이면 알리지 않는다
-    off();
-    cell.actions.add(1);
-    expect(fn).toHaveBeenCalledTimes(1);
-    expect(cell.initial).toBe(0);
   });
 });

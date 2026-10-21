@@ -1,4 +1,4 @@
-import { useStoreState } from "@framework/react";
+import { useSharedState } from "@fortuna-lottery/store/react";
 import { useDeletePickAction } from "./_action/deletePick.action";
 import { useListPicksAction } from "./_action/listPicks.action";
 import { useSavePickAction } from "./_action/savePick.action";
@@ -10,7 +10,7 @@ export function saveButtonLabel(saving: boolean, hasNumbers: boolean): string {
 }
 
 export function usePicksCardPresenter() {
-  const [currentNumbers] = useStoreState("state.home.combination");
+  const currentNumbers = useSharedState("state.home.combination", (s) => s.numbers);
   const list = useListPicksAction();
   const save = useSavePickAction();
   const remove = useDeletePickAction();

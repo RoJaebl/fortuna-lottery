@@ -10,7 +10,7 @@
     "test:tools": "node --test \"tools/launch/*.test.mjs\"",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
-    "lint:deps": "depcruise apps packages --config .dependency-cruiser.cjs",
+    "lint:deps": "pnpm --filter @fortuna-lottery/web exec store-gen && depcruise apps packages --config .dependency-cruiser.cjs",
     "lint:side-effects": "node tools/checks/no-side-effects-false.mjs apps/web/package.json",
     "check": "pnpm typecheck && pnpm lint && pnpm lint:deps && pnpm lint:side-effects && pnpm test && pnpm test:tools",
     "check:migration": "bash tools/checks/migration-status.sh"

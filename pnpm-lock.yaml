@@ -75,6 +75,9 @@ importers:
       '@fortuna-lottery/contract':
         specifier: workspace:*
         version: link:../../packages/contract
+      '@fortuna-lottery/store':
+        specifier: workspace:*
+        version: link:../../packages/store
       next:
         specifier: ^15.3.4
         version: 15.5.20(react-dom@19.2.7(react@19.2.7))(react@19.2.7)

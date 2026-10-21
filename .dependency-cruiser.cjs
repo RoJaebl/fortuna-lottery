@@ -45,6 +45,20 @@ module.exports = {
       to:   { path: '^packages/kernel/' },
     },
     {
+      name: 'api-must-not-reach-store',
+      comment: '응용 서버는 packages/store 를 참조하지 않는다. 화면 앱의 공통 상태 라이브러리다',
+      severity: 'error',
+      from: { path: '^apps/api/' },
+      to:   { path: '^packages/store/' },
+    },
+    {
+      name: 'store-package-reaches-nothing-local',
+      comment: 'packages/store 는 다른 작업 공간 패키지와 앱을 보지 않는다',
+      severity: 'error',
+      from: { path: '^packages/store/' },
+      to:   { path: '^(apps|packages)/', pathNot: '^packages/store/' },
+    },
+    {
       name: 'contract-only-in-mapper',
       comment: '화면 앱에서 계약을 참조하는 것은 변환기뿐이다',
       severity: 'error',
@@ -84,10 +98,17 @@ module.exports = {
     },
     {
       name: 'no-deep-screen-or-widget-import',
-      comment: '조립 루트의 나머지 파일은 화면 모듈과 위젯에 닿지 않는다 — screens.ts·routes.ts 를 거친다',
+      comment: '조립 루트의 나머지 파일은 화면 모듈과 위젯에 닿지 않는다 — screens.ts·routes.ts 를 거친다. 생성 파일 store.gen.ts 는 아래 규칙이 좁힌다',
       severity: 'error',
-      from: { path: '^apps/web/src/composition/', pathNot: '^apps/web/src/composition/(screens|routes)\\.ts$' },
+      from: { path: '^apps/web/src/composition/', pathNot: '^apps/web/src/composition/(screens|routes|store\\.gen)\\.ts$' },
       to:   { path: '^apps/web/src/(widgets|app)/' },
+    },
+    {
+      name: 'store-gen-imports-state-only',
+      comment: '생성 파일 composition/store.gen.ts 가 화면 모듈과 위젯에서 보는 것은 정의 파일(_state/·state/ 의 *.state.ts)뿐이다',
+      severity: 'error',
+      from: { path: '^apps/web/src/composition/store\\.gen\\.ts$' },
+      to:   { path: '^apps/web/src/(app|widgets)/', pathNot: '/(_state|state)/[^/]+\\.state\\.ts$' },
     },
     // 화면 모듈마다 한 벌 — 자기 파일과 조상 라우트의 소유물 폴더(위로 보기)만 본다
     ...screenModules().map((mod) => ({
@@ -166,7 +187,7 @@ module.exports = {
     },
     {
       name: 'nothing-reaches-composition',
-      comment: '아무도 조립 루트를 import 하지 않는다. 예외는 다섯이다',
+      comment: '아무도 조립 루트를 import 하지 않는다. 예외는 여섯이다',
       severity: 'error',
       from: { path: '^apps/web/src/',
               pathNot: ['^apps/web/src/composition/',              // 조립 루트 안의 파일끼리
@@ -174,6 +195,7 @@ module.exports = {
                         '^apps/web/src/app/layout\\.tsx$',         // 서버 루트가 주소 등록을 싣는다 — 아래 한 벌이 좁힌다
                         '^apps/web/src/(middleware|proxy)\\.ts$',  // middleware 가 주소 등록을 싣는다 — middleware 규칙이 좁힌다
                         '^apps/web/src/app/\\(dev\\)/',            // 놀이터가 시나리오마다 컨테이너를 짓는다
+                        '^apps/web/src/test\\.setup\\.ts$',        // 시험 기반이 screens.ts 를 실어 state 등록을 일으킨다
                         '\\.test\\.tsx?$'] },                      // 시험이 createContainer("test") 로 짓는다
       to:   { path: '^apps/web/src/composition/' },
     },

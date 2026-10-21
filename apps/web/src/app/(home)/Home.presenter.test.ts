@@ -1,6 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { createElement, type ReactNode } from "react";
 import { describe, expect, it } from "vitest";
+import { getStore, resetStores } from "@fortuna-lottery/store";
 import { StoreProvider } from "@framework/react";
 import { createContainer } from "@composition/createContainer";
 import { useHomePresenter } from "./Home.presenter";
@@ -8,7 +9,7 @@ import { useHomePresenter } from "./Home.presenter";
 function setup() {
   const container = createContainer("test");
   const wrapper = ({ children }: { children: ReactNode }) => createElement(StoreProvider, { container, children });
-  return { container, wrapper };
+  return { wrapper };
 }
 
 describe("useHomePresenter", () => {
@@ -25,16 +26,16 @@ describe("useHomePresenter", () => {
   });
 
   it("회차 카드가 공통 상태의 생성기 열림을 뒤집으면 페이지가 따라 펼친다", () => {
-    const { container, wrapper } = setup();
+    const { wrapper } = setup();
     const { result } = renderHook(() => useHomePresenter(), { wrapper });
     expect(result.current.isGeneratorOpen).toBe(false);
-    act(() => container.resolve("state.home.generatorOpen").actions.toggle());
+    act(() => getStore("state.home.generatorOpen").getState().toggle());
     expect(result.current.isGeneratorOpen).toBe(true);
   });
 
-  it("컨테이너마다 공통 상태가 따로다", () => {
-    const a = createContainer("test");
-    a.resolve("state.home.combination").actions.choose([1, 2, 3, 4, 5, 6]);
-    expect(createContainer("test").resolve("state.home.combination").get()).toBeNull();
+  it("resetStores 뒤에는 공통 상태가 처음 값이다", () => {
+    getStore("state.home.combination").getState().choose([1, 2, 3, 4, 5, 6]);
+    resetStores();
+    expect(getStore("state.home.combination").getState().numbers).toBeNull();
   });
 });

@@ -1,6 +1,7 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { createElement, type ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { getStore, resetStores } from "@fortuna-lottery/store";
 import { StoreProvider } from "@framework/react";
 import { createContainer } from "@composition/createContainer";
 import { assumptionRequest, useHypothesisLabPresenter } from "./HypothesisLab.presenter";
@@ -34,7 +35,8 @@ function stubFetch() {
 /** 훅이 유스케이스를 꺼낼 컨테이너 — real 환경이라 위의 fetch 대역이 그대로 받는다 */
 function withContainer(numbers: number[] | null = null) {
   const container = createContainer("real");
-  if (numbers) container.resolve("state.home.combination").actions.choose(numbers);
+  resetStores(); // 시험 하나 안에서도 부를 때마다 처음 값에서 시작한다 — 공통 상태는 모듈에 하나뿐이다
+  if (numbers) getStore("state.home.combination").getState().choose(numbers);
   return { wrapper: ({ children }: { children: ReactNode }) => createElement(StoreProvider, { container, children }) };
 }
 
