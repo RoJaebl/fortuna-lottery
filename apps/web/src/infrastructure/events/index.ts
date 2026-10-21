@@ -1,1 +1,0 @@
-export { DomainEvents } from "./DomainEvents";

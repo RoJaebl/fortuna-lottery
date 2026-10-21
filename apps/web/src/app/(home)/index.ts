@@ -1,4 +1,6 @@
-// 공개 표면 — 이 화면 모듈의 _action/ 등록 파일을 불러오는 목록. 뷰와 routes.ts 는 불러오지 않는다 (frontend-module-layout §8)
+// 공개 표면 — 이 화면 모듈의 _action/·_state/ 등록 파일을 불러오는 목록. 뷰와 routes.ts 는 불러오지 않는다 (frontend-module-layout §8)
+import "./_state/combination.state";
+import "./_state/generatorOpen.state";
 import "./StatisticsPanel/_action/getStatistics.action";
 import "./LotterietusCard/_action/getLotterietusStatus.action";
 import "./PicksCard/_action/listPicks.action";

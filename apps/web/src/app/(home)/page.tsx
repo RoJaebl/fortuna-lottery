@@ -1,5 +1,5 @@
 "use client";
-// 셸 = 조립과 입력 묶음 전개만. 모듈 간 공유 상태는 Home.presenter 가 쥔다.
+// 페이지 뷰 = 조립만. 자식이 함께 쓰는 상태는 _state/ 의 공통 상태이고, 활성 탭은 Home.presenter 가 쥔다.
 import type { ReactNode } from "react";
 import { GeneratorCard } from "./GeneratorCard";
 import { HypothesisLab } from "./HypothesisLab";
@@ -12,17 +12,16 @@ import { StatisticsPanel } from "./StatisticsPanel";
 import { Tabs } from "@ui/tabs";
 import { useHomePresenter, type HomeTabKey } from "./Home.presenter";
 
-export default function HomePage() {
-  const { isGeneratorOpen, lotterietus, generator, tabs, statistics, simulation, picks, hypothesis } =
-    useHomePresenter();
+const PANELS: Record<HomeTabKey, ReactNode> = {
+  statistics: <StatisticsPanel />,
+  simulation: <SimulationCard />,
+  picks: <PicksCard />,
+  results: <ResultsCard />,
+  hypothesis: <HypothesisLab />,
+};
 
-  const panels: Record<HomeTabKey, ReactNode> = {
-    statistics: <StatisticsPanel {...statistics} />,
-    simulation: <SimulationCard {...simulation} />,
-    picks: <PicksCard {...picks} />,
-    results: <ResultsCard />,
-    hypothesis: <HypothesisLab {...hypothesis} />,
-  };
+export default function HomePage() {
+  const { isGeneratorOpen, tabs } = useHomePresenter();
 
   return (
     <main className="mx-auto max-w-screen-2xl px-4 py-8 sm:px-6">
@@ -39,11 +38,11 @@ export default function HomePage() {
         <IdentityBadge />
       </header>
 
-      <LotterietusCard {...lotterietus} />
+      <LotterietusCard />
 
       {isGeneratorOpen ? (
         <div className="mt-4">
-          <GeneratorCard {...generator} />
+          <GeneratorCard />
         </div>
       ) : null}
 
@@ -52,7 +51,7 @@ export default function HomePage() {
       </div>
 
       <div role="tabpanel" className="mt-4">
-        {panels[tabs.active]}
+        {PANELS[tabs.active]}
       </div>
     </main>
   );

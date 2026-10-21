@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
-import { store } from "@lib/store";
-import { useStore } from "@lib/store/react";
+import { store } from "@framework";
+import { useStore } from "@framework/react";
 
 /** 이 파일이 올리는 key 둘 — 내는 사건도 내는 쪽인 이 파일이 등록부에 올린다 */
 declare module "@lib/store" {

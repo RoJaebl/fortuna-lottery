@@ -37,13 +37,8 @@ function renderActiveView(active: StatView, views: Views) {
   }
 }
 
-export interface StatisticsPanelProps {
-  /** 현재 조합 — 분포 위 내 위치 마커에 사용 */
-  myNumbers: number[] | null;
-}
-
-export function StatisticsPanel({ myNumbers }: StatisticsPanelProps) {
-  const { error, tabs, views } = useStatisticsPanelPresenter(myNumbers);
+export function StatisticsPanel() {
+  const { error, tabs, views } = useStatisticsPanelPresenter();
 
   if (error) return <p className="text-small text-danger">통계를 불러오지 못했습니다: {error}</p>;
   if (!views) return <p className="text-small text-muted">통계 계산 중…</p>;

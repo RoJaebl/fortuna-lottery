@@ -3,16 +3,12 @@ import { Ball } from "@ui/ball";
 import { Card } from "@ui/card";
 import { useHypothesisLabPresenter } from "./HypothesisLab.presenter";
 
-export interface HypothesisLabProps {
-  numbers: number[] | null;
-  onGenerated: (numbers: number[]) => void;
-}
-
 const BUTTON =
   "rounded-box bg-strong px-4 py-2 text-small font-semibold text-on-strong transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40";
 
-export function HypothesisLab({ numbers, onGenerated }: HypothesisLabProps) {
-  const lab = useHypothesisLabPresenter(numbers, onGenerated);
+export function HypothesisLab() {
+  const lab = useHypothesisLabPresenter();
+  const { numbers } = lab;
   const result = lab.evaluation;
 
   return (

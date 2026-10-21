@@ -3,13 +3,8 @@ import { Ball } from "@ui/ball";
 import { Card } from "@ui/card";
 import { usePicksCardPresenter } from "./PicksCard.presenter";
 
-export interface PicksCardProps {
-  /** 현재 생성된 조합 (없으면 저장 버튼 비활성) */
-  currentNumbers: number[] | null;
-}
-
-export function PicksCard({ currentNumbers }: PicksCardProps) {
-  const card = usePicksCardPresenter(currentNumbers);
+export function PicksCard() {
+  const card = usePicksCardPresenter();
 
   return (
     <Card

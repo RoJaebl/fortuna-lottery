@@ -1,7 +1,18 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`store > store 에 등록된 전부 1`] = `
-"[cache]
+"[state]
+state.home.combination = null
+  정의: app/(home)/_state/combination.state.ts
+  바꾸는 함수: choose
+  읽는 곳: HypothesisLab, PicksCard, SimulationCard, StatisticsPanel
+  바꾸는 곳: GeneratorCard, HypothesisLab
+state.home.generatorOpen = false
+  정의: app/(home)/_state/generatorOpen.state.ts
+  바꾸는 함수: toggle
+  읽는 곳: Home, LotterietusCard
+  바꾸는 곳: LotterietusCard
+[cache]
 cache.hypothesis.popularity
 cache.lotterietus.status
 cache.picks.list

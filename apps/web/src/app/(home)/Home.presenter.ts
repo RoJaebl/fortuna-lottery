@@ -1,10 +1,5 @@
 import { useState } from "react";
-import type { GeneratorCardProps } from "./GeneratorCard";
-import type { HypothesisLabProps } from "./HypothesisLab";
-import type { LotterietusCardProps } from "./LotterietusCard";
-import type { PicksCardProps } from "./PicksCard";
-import type { SimulationCardProps } from "./SimulationCard";
-import type { StatisticsPanelProps } from "./StatisticsPanel";
+import { useStoreState } from "@framework/react";
 import type { TabItem, TabsProps } from "@ui/tabs";
 
 export type HomeTabKey = "statistics" | "simulation" | "picks" | "results" | "hypothesis";
@@ -18,27 +13,20 @@ const TABS: readonly TabItem<HomeTabKey>[] = [
   { key: "hypothesis", label: "가정 실험실" },
 ];
 
-/** 셸의 조정자 — 모듈 간 공유 상태(현재 조합)와 화면 전환 상태만 쥔다 (frontend-module-layout §1) */
+/**
+ * 페이지의 presenter — 활성 탭은 이 화면 안의 지역 상태다. 자식이 함께 쓰는 현재 조합·생성기 열림은
+ * _state/ 의 공통 상태이고, 이 presenter 는 생성기를 펼칠지만 읽는다 (frontend-shared-state §1)
+ */
 export function useHomePresenter() {
-  const [currentNumbers, setCurrentNumbers] = useState<number[] | null>(null);
-  const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
+  const [isGeneratorOpen] = useStoreState("state.home.generatorOpen");
   const [activeTab, setActiveTab] = useState<HomeTabKey>("statistics");
 
-  const lotterietus: LotterietusCardProps = {
-    generatorOpen: isGeneratorOpen,
-    onToggleGenerator: () => setIsGeneratorOpen((open) => !open),
-  };
-  const generator: GeneratorCardProps = { onGenerated: setCurrentNumbers };
   const tabs: TabsProps<HomeTabKey> = {
     items: TABS,
     active: activeTab,
     onChange: setActiveTab,
     label: "주요 화면",
   };
-  const statistics: StatisticsPanelProps = { myNumbers: currentNumbers };
-  const simulation: SimulationCardProps = { numbers: currentNumbers };
-  const picks: PicksCardProps = { currentNumbers };
-  const hypothesis: HypothesisLabProps = { numbers: currentNumbers, onGenerated: setCurrentNumbers };
 
-  return { isGeneratorOpen, lotterietus, generator, tabs, statistics, simulation, picks, hypothesis };
+  return { isGeneratorOpen, tabs };
 }

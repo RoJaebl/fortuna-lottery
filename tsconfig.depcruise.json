@@ -1,11 +1,13 @@
 {
-  "//": "dependency-cruiser 전용 — 화면 앱의 층 별칭 여섯을 저장소 루트 기준으로 풀어 준다. 앱 빌드는 이 파일을 보지 않는다",
+  "//": "dependency-cruiser 전용 — 화면 앱의 층 별칭 일곱을 저장소 루트 기준으로 풀어 준다. 앱 빌드는 이 파일을 보지 않는다",
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
       "@app/*": ["apps/web/src/app/*"],
       "@widgets/*": ["apps/web/src/widgets/*"],
+      "@framework": ["apps/web/src/framework/index.ts"],
+      "@framework/*": ["apps/web/src/framework/*"],
       "@composition/*": ["apps/web/src/composition/*"],
       "@infrastructure/*": ["apps/web/src/infrastructure/*"],
       "@lib/*": ["apps/web/src/shared/lib/*"],

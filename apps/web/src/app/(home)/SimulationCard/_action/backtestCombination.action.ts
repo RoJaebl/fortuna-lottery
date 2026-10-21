@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
-import { store } from "@lib/store";
-import { useStore } from "@lib/store/react";
+import { store } from "@framework";
+import { useStore } from "@framework/react";
 import { SimulationResultViewModel } from "../_model/SimulationResult.viewmodel";
 import { simulationBacktestRequest, simulationBacktestResponse } from "../_mapper/simulationBacktest.mapper";
 

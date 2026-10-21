@@ -2,12 +2,8 @@
 import { Card } from "@ui/card";
 import { useSimulationCardPresenter } from "./SimulationCard.presenter";
 
-export interface SimulationCardProps {
-  numbers: number[] | null;
-}
-
-export function SimulationCard({ numbers }: SimulationCardProps) {
-  const card = useSimulationCardPresenter(numbers);
+export function SimulationCard() {
+  const card = useSimulationCardPresenter();
 
   return (
     <Card

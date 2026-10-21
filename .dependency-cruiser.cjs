@@ -124,6 +124,23 @@ module.exports = {
       severity: 'error',
       from: { path: '^apps/web/src/shared/' },
       to:   { path: '^apps/web/src/', pathNot: '^apps/web/src/shared/' },
+      // shared/lib 안의 라이브러리 사이 의존은 store → di 하나다. 이 규칙은 그것을 가르지 않고 리뷰가 본다
+    },
+    {
+      name: 'framework-reaches-lib-only',
+      comment: '규약 층은 shared/lib 만 본다. 화면 모듈·위젯·조립 루트·infrastructure 를 모른다',
+      severity: 'error',
+      from: { path: '^apps/web/src/framework/' },
+      to:   { path: '^apps/web/src/', pathNot: '^apps/web/src/(framework|shared/lib)/' },
+    },
+    {
+      name: 'screen-reaches-store-through-framework',
+      comment: '화면 모듈·위젯은 store 를 @framework·@framework/react 로만 쓴다. 영역이 꽂히지 않은 store 와 그 React 묶음, 그 밑의 di·events 를 직접 가져오지 않는다',
+      severity: 'error',
+      // 등록부에 key 를 덧붙이는 declare module '@lib/store' 는 import 가 아니다 — 허용 표본이 그것을 지킨다.
+      // _state/ 파일이 StateDef 타입을 보려고 하는 import type 도 막는다 — 정의 꼴은 @framework 가 다시 내보낸다
+      from: { path: `(${ROUTE}|^apps/web/src/widgets/)` },
+      to:   { path: '^apps/web/src/shared/lib/(store(-react)?|di|events)/' },
     },
     {
       name: 'widget-must-not-reach-widget',
@@ -169,19 +186,18 @@ module.exports = {
     },
     {
       name: 'infrastructure-reaches-lib-only',
-      comment: 'infrastructure 는 shared/lib 만 본다. 외부 패키지는 괜찮다',
+      comment: 'infrastructure 는 shared/lib 만 본다. 규약 층도 보지 않는다. 외부 패키지는 괜찮다',
       severity: 'error',
       from: { path: '^apps/web/src/infrastructure/' },
       to:   { path: '^apps/web/src/', pathNot: '^apps/web/src/(infrastructure|shared/lib)/' },
     },
     {
       name: 'screen-sees-infrastructure-types-only',
-      comment: '화면 모듈·위젯이 infrastructure 에서 가져오는 것은 캐시 도구(값) 하나다. HTTP 포트와 사건 통로는 타입으로도 보지 않는다',
+      comment: '화면 모듈·위젯은 infrastructure 에서 아무것도 가져오지 않는다. 캐시 도구는 @lib/cache 에 있고, HTTP 포트와 사건 통로는 타입으로도 보지 않는다',
       severity: 'error',
       from: { path: `(${ROUTE}|^apps/web/src/widgets/)`,
               pathNot: '/playground\\.ts$' },                      // 놀이터 표면이 가짜 서버를 값으로 가져온다
-      to:   { path: '^apps/web/src/infrastructure/',
-              pathNot: '^apps/web/src/infrastructure/serverCache\\.ts$' },
+      to:   { path: '^apps/web/src/infrastructure/' },
     },
     {
       name: 'shell-reaches-no-infrastructure',
@@ -222,11 +238,13 @@ module.exports = {
     },
     {
       name: 'middleware-sees-infrastructure-lib-routes-only',
-      comment: 'middleware.ts(Next 16 부터 proxy.ts)가 보는 것은 infrastructure·shared/lib·주소 등록 목록 composition/routes.ts 뿐이다',
+      comment: 'middleware.ts(Next 16 부터 proxy.ts)가 보는 것은 infrastructure·shared/lib·@framework·주소 등록 목록 composition/routes.ts 뿐이다',
       severity: 'error',
       from: { path: '^apps/web/src/(middleware|proxy)\\.ts$' },   // 두 이름을 같은 규칙으로 읽는다
       to:   { path: '^apps/web/src/',
-              pathNot: ['^apps/web/src/(infrastructure|shared/lib)/', '^apps/web/src/composition/routes\\.ts$'] },
+              pathNot: ['^apps/web/src/(infrastructure|shared/lib)/',
+                        '^apps/web/src/framework/index\\.ts$',     // @framework 의 route — @framework/react 는 막힌다
+                        '^apps/web/src/composition/routes\\.ts$'] },
     },
     {
       name: 'domain-model-has-zero-dependencies',
@@ -307,7 +325,7 @@ module.exports = {
     // 골조 이관 전 구역(exclude)은 비었다 — 도메인을 다 옮기고 packages/core·apps/web/src/server·Next 경로 처리기를 지웠다.
     // 이제 모든 파일에 골조 규칙이 걸린다. 옛 구역을 다시 만들지 않는다 — incremental-migration 규칙 3절.
     doNotFollow: { path: 'node_modules' },
-    // 화면 앱의 층 별칭 여섯은 tsconfig.depcruise.json 의 paths 로, 작업 공간 패키지는 package.json 의 exports 로 푼다.
+    // 화면 앱의 층 별칭 일곱은 tsconfig.depcruise.json 의 paths 로, 작업 공간 패키지는 package.json 의 exports 로 푼다.
     // 풀지 못하면 couldNotResolve 로 남아 계약·커널·배럴 규칙이 아무것도 보지 못한다. 계약·커널의 exports 는 dist 를 가리키므로 build 가 먼저다.
     tsConfig: { fileName: 'tsconfig.depcruise.json' },
     tsPreCompilationDeps: true,

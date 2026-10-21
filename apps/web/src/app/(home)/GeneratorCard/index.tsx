@@ -3,12 +3,8 @@ import { Ball } from "@ui/ball";
 import { Card } from "@ui/card";
 import { useGeneratorCardPresenter } from "./GeneratorCard.presenter";
 
-export interface GeneratorCardProps {
-  onGenerated: (numbers: number[]) => void;
-}
-
-export function GeneratorCard({ onGenerated }: GeneratorCardProps) {
-  const card = useGeneratorCardPresenter(onGenerated);
+export function GeneratorCard() {
+  const card = useGeneratorCardPresenter();
 
   return (
     <Card title="번호 만들기" subtitle={card.hint}>

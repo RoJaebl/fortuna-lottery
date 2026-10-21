@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useSyncExternalStore } from "react";
-import { store } from "@lib/store";
-import { useStore } from "@lib/store/react";
-import { createServerCache } from "@infrastructure/serverCache";
+import { store } from "@framework";
+import { useStore } from "@framework/react";
+import { createServerCache } from "@lib/cache";
 import { LotterietusViewModel } from "../_model/Lotterietus.viewmodel";
 import { lotterietusReadResponse } from "../_mapper/lotterietusRead.mapper";
 

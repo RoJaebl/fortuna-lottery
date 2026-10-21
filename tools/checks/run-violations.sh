@@ -9,7 +9,7 @@ BIN="$ROOT/node_modules/dependency-cruiser/bin/dependency-cruiser.mjs"
 bad=0
 
 # 폴더 이름의 `--` 뒤는 같은 규칙의 다른 표본(예: 패키지 이름 꼴 import)이다.
-# 표본 폴더에 tsconfig.json 이 있으면 그 paths 로 패키지 이름·여섯 층 별칭(@app/ 등)을 표본 안의 경로로 푼다.
+# 표본 폴더에 tsconfig.json 이 있으면 그 paths 로 패키지 이름·일곱 층 별칭(@app/ 등)을 표본 안의 경로로 푼다.
 for dir in "$ROOT"/tools/checks/violations/*/; do
   name="$(basename "$dir")"
   rule="${name%%--*}"
@@ -52,6 +52,12 @@ declare -A EXPECT=(
   [store-registers-at-top-level]='(store-registers-at-top-level)'
   [rule-targets-own-cache]='(rule-targets-own-cache)'
   [no-path-literal]='(no-path-literal)'
+  [state-key-within-scope]='(state-key-within-scope)'
+  [state-key-matches-folder]='(state-key-matches-folder)'
+  [state-key-literal]='(state-key-literal)'
+  [no-renamed-store-import]='(no-renamed-store-import)'
+  [state-only-in-presenter]='(state-only-in-presenter)'
+  [state-registers-in-state-folder]='(state-registers-in-state-folder)'
 )
 for dir in "$ROOT"/tools/checks/eslint-violations/*/; do
   name="$(basename "$dir")"

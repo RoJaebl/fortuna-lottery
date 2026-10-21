@@ -1,0 +1,32 @@
+{
+  "//": "표본 전용 — 화면 앱의 층 별칭 일곱을 이 표본 폴더 안의 apps/web/src 로 푼다",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@app/*": [
+        "apps/web/src/app/*"
+      ],
+      "@widgets/*": [
+        "apps/web/src/widgets/*"
+      ],
+      "@framework": [
+        "apps/web/src/framework/index.ts"
+      ],
+      "@framework/*": [
+        "apps/web/src/framework/*"
+      ],
+      "@composition/*": [
+        "apps/web/src/composition/*"
+      ],
+      "@infrastructure/*": [
+        "apps/web/src/infrastructure/*"
+      ],
+      "@lib/*": [
+        "apps/web/src/shared/lib/*"
+      ],
+      "@ui/*": [
+        "apps/web/src/shared/ui/*"
+      ]
+    }
+  }
+}
