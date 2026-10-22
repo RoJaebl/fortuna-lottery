@@ -39,7 +39,9 @@ const isFunction = (node) => /Function/.test(node.type);
  *   create — @fortuna-lottery/store 에서 가져온 createStore
  *   hook   — @fortuna-lottery/store/react 에서 가져온 useStore
  *   ctx    — createStore 에 넘긴 creator 의 셋째 인자. 이름은 쓰는 이가 정하므로 그 자리에서 읽는다
- *   top    — 이 호출을 감싼 가장 가까운 함수가 creator 자신인가(creator 맨 위인가)
+ *   top    — 이 호출이 store 를 짓는 순간 한 번 도는 자리에 있는가. 감싼 가장 가까운 함수가 creator 이거나,
+ *            그 자리에서 부른 createResource·createEvent(@fortuna-lottery/store/query)의 첫 인자 함수다 —
+ *            createResource 는 정의 함수를 짓는 순간 한 번 부른다
  * 가져온 이름은 바꿔 가져와도 따라가지만, 이름 공간 import(import * as s)와 구조 분해한 ctx 는 보지 못한다
  */
 const callRule = (judge) => ({
@@ -47,33 +49,38 @@ const callRule = (judge) => ({
   create(context) {
     const created = new Set();
     const hooks = new Set();
+    const builders = new Set();
     const ctxs = new Set();
-    const creators = new Set();
+    const tops = new Set();
     const named = (set) => (node) => node.callee.type === "Identifier" && set.has(node.callee.name);
     const top = (node) => {
       let at = node.parent;
       while (at && !isFunction(at)) at = at.parent;
-      return creators.has(at);
+      return tops.has(at);
     };
     const kind = { create: named(created), hook: named(hooks), ctx: named(ctxs), top };
+    const sources = {
+      "@fortuna-lottery/store": [created, ["createStore"]],
+      "@fortuna-lottery/store/react": [hooks, ["useStore"]],
+      "@fortuna-lottery/store/query": [builders, ["createResource", "createEvent"]],
+    };
     return {
       ImportDeclaration(node) {
-        const into = {
-          "@fortuna-lottery/store": [created, "createStore"],
-          "@fortuna-lottery/store/react": [hooks, "useStore"],
-        }[node.source.value];
+        const into = sources[node.source.value];
         if (!into) return;
         for (const spec of node.specifiers) {
-          if (spec.type === "ImportSpecifier" && spec.imported.name === into[1]) into[0].add(spec.local.name);
+          if (spec.type === "ImportSpecifier" && into[1].includes(spec.imported.name)) into[0].add(spec.local.name);
         }
       },
       CallExpression(node) {
-        // creator 를 들어가기 전에 그것과 셋째 인자 이름을 적는다 — 안쪽 호출은 이 뒤에 찾아온다
+        // 짓는 순간 도는 함수를 들어가기 전에 적는다 — 안쪽 호출은 이 뒤에 찾아온다
         const creator = kind.create(node) && node.arguments[1];
         if (creator && isFunction(creator)) {
-          creators.add(creator);
+          tops.add(creator);
           if (creator.params[2]?.type === "Identifier") ctxs.add(creator.params[2].name);
         }
+        const define = named(builders)(node) && top(node) && node.arguments[0];
+        if (define && isFunction(define)) tops.add(define);
         const message = judge(node, context.filename, kind);
         if (message) context.report({ node, message });
       },
@@ -123,8 +130,8 @@ const STORE_KEYS = {
         ? "store 는 정의 파일이 등록한다 — _state/·_action/ 의 *.state.ts(위젯은 state/), 바깥 도구는 infrastructure/<이름>/ 의 *.state.ts (state-registers-in-state-folder)"
         : null,
     ),
-    // 근사 검사 — creator 맨 위(안쪽 함수 밖)에서 ctx(…) 로 꺼낸 값은 짓는 순간의 값이라 곧 낡는다.
-    // 그 자리에서 ctx 를 쓰는 것은 event 에 on·exempt 를 거는 일 하나다. ctx 를 이름으로 알아보므로(creator 의 셋째 인자 이름)
+    // 근사 검사 — creator 맨 위(안쪽 함수 밖)와 그 자리의 createResource·createEvent 정의 함수 맨 위에서
+    // ctx(…) 로 꺼낸 값은 짓는 순간의 값이라 곧 낡는다. 조회·바꾸기 함수 안은 맨 위가 아니다. 그 자리에서 ctx 를 쓰는 것은 event 에 on·exempt 를 거는 일 하나다. ctx 를 이름으로 알아보므로(creator 의 셋째 인자 이름)
     // 구조 분해하거나 다른 이름에 옮겨 담은 ctx 는 보지 못한다
     "ctx-at-top-binds-event-only": callRule((node, _file, kind) => {
       if (!kind.ctx(node) || !kind.top(node)) return null;
@@ -137,7 +144,7 @@ const STORE_KEYS = {
         member.parent.callee === member;
       return binds
         ? null
-        : "creator 맨 위에서 ctx 로 꺼낸 것은 event 의 on·exempt 를 거는 데만 쓴다 — 값은 함수 안에서 필요한 순간에 꺼낸다 (ctx-at-top-binds-event-only)";
+        : "creator·자원 정의 함수의 맨 위에서 ctx 로 꺼낸 것은 event 의 on·exempt 를 거는 데만 쓴다 — 값은 함수 안에서 필요한 순간에 꺼낸다 (ctx-at-top-binds-event-only)";
     }),
   },
 };
@@ -197,14 +204,6 @@ export default tseslint.config(
     files: ["src/app/**/*.{ts,tsx}"],
     rules: {
       "no-restricted-imports": ["error", { patterns: [ROOT_ALIAS, ...VIEW_FOLDER_SURFACE] }],
-    },
-  },
-  {
-    // 라우트 폴더의 index.ts 는 화면 모듈의 공개 표면이라 자식 뷰 폴더를 짚을 수 있다 (frontend-module-layout §8).
-    // 자식 뷰 폴더의 index.tsx 는 확장자가 달라 이 블록에 걸리지 않는다
-    files: ["src/app/**/index.ts"],
-    rules: {
-      "no-restricted-imports": ["error", { patterns: [ROOT_ALIAS] }],
     },
   },
   {

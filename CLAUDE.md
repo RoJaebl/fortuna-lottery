@@ -122,7 +122,7 @@ pnpm --filter @fortuna-lottery/web exec vitest run <path>   # 파일 하나
   독립 라이브러리 다섯·영역 다섯·규약 층·전파 규칙·주소는 [frontend-store](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/frontend-store.md>)가,
   여러 presenter 가 함께 쓰는 공통 상태(`_state/`)는 [frontend-shared-state](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/frontend-shared-state.md>)가 정한다.
   **이 저장소는 store 2단계에서 그 가운데 `framework` 층·컨테이너·영역·전파 규칙·주소를 걷어내고 자원·event store 로 바꿨다.**
-  vault 문서는 아직 그 앞의 꼴을 적는다. 지금의 꼴은 아래 「이 저장소가 정한 것」이 적는다.
+  vault 문서는 아직 그 앞의 꼴을 적는다. 지금의 꼴은 아래 [이 저장소가 정한 것 — vault 골조가 답하지 않는 자리](#이-저장소가-정한-것--vault-골조가-답하지-않는-자리)가 적는다.
 - 타입 부류(와이어 모델 · 도메인 원형 · 표시 모델 · 값 객체 · 파생 조회 모델)는
   [model-vocabulary](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/model-vocabulary.md>)가 정한다.
   옛 저장소의 모델 타입 표(`use*ViewModel` = presenter, `*Entity`, `*VO`, `*ReadModel`, 2-tier 엄격도)는
@@ -152,7 +152,8 @@ ESLint 가 거는 모양 규칙은 이렇다.
   key 는 문자열 그대로 쓰고(`state-key-literal`), 폴더를 따르며(`state-key-matches-folder`), 자기·조상 폴더의 key 만
   꺼낸다(`state-key-within-scope`). 화면에서 `useStore` 를 부르는 것은 presenter 뿐이고(`state-only-in-presenter`),
   등록은 정의 파일만 한다(`state-registers-in-state-folder`).
-- creator 맨 위에서 `ctx(…)` 를 부르면 그 결과로 `.on`·`.exempt` 만 부른다(`ctx-at-top-binds-event-only`, ctx 를 이름으로 알아보는 근사다).
+- creator 맨 위와 그 자리의 `createResource`·`createEvent` 정의 함수 맨 위는 store 를 짓는 순간 한 번 돈다. 거기서 `ctx(…)` 를
+  부르면 그 결과로 `.on`·`.exempt` 만 부른다(`ctx-at-top-binds-event-only`, ctx 를 이름으로 알아보는 근사다). 조회·바꾸기 함수 안은 맨 위가 아니다.
 
 둘 다 `pnpm check` 에 들어 있으므로 위반은 곧 검증 실패다. `"sideEffects": false` 는 store 등록(import 부수효과)을 지우므로 `pnpm lint:side-effects` 가 막는다.
 
