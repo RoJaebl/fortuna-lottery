@@ -18,6 +18,6 @@ describe("createContainer", () => {
   it("두 번 지은 컨테이너는 서로 다른 캐시를 쥔다", () => {
     const c1 = createContainer("test");
     const c2 = createContainer("test");
-    expect(c1.resolve("cache.picks.list")).not.toBe(c2.resolve("cache.picks.list"));
+    expect(c1.resolve("cache.statistics.get")).not.toBe(c2.resolve("cache.statistics.get"));
   });
 });

@@ -28,7 +28,7 @@ export function describeWithUsage(): string {
     }
     if (/\.presenter\.tsx?$/.test(file)) {
       const name = basename(file).replace(/\.presenter\.tsx?$/, "");
-      for (const [, key] of text.matchAll(/useSharedState\(\s*"([^"]+)"/g)) {
+      for (const [, key] of text.matchAll(/(?:useSharedState|useStore)\(\s*"([^"]+)"/g)) {
         users.set(key!, [...new Set([...(users.get(key!) ?? []), name])].sort());
       }
     }

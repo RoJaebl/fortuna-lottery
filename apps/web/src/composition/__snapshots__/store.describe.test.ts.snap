@@ -2,6 +2,18 @@
 
 exports[`store > store 에 등록된 전부 1`] = `
 "[state]
+api.home.PicksCard.picks = {}
+  바꾸는 함수: fetch, getData, invalidate, remove, save, setData
+  정의: app/(home)/PicksCard/_action/picks.state.ts
+  쓰는 곳: PicksCard
+api.home.ResultsCard.check = {}
+  바꾸는 함수: fetch, getData, invalidate, setData
+  정의: app/(home)/ResultsCard/_action/check.state.ts
+  쓰는 곳: ResultsCard
+event.home.PicksCard.changed = {}
+  바꾸는 함수: emit, exempt, on, record
+  정의: app/(home)/PicksCard/_action/picks.event.state.ts
+  쓰는 곳: 없다
 infra.http = {"client":{}}
   바꾸는 함수: 
   정의: infrastructure/http/http.state.ts
@@ -17,23 +29,13 @@ state.home.generatorOpen = {"open":false}
 [cache]
 cache.hypothesis.popularity
 cache.lotterietus.status
-cache.picks.list
-cache.results.check
 cache.statistics.get
 [http]
 http.generator.generate
 http.hypothesis.evaluate
 http.hypothesis.generate
-http.picks.delete
-http.picks.save
 http.simulation.backtest
 [event]
-event.picks.removed (from: tab)
-  낡게 한다: cache.picks.list (from: tab)
-  일부러 낡게 하지 않는다: cache.results.check — 결과는 사람이 「당첨 대조」를 눌러 받는다
-event.picks.saved (from: tab)
-  낡게 한다: cache.picks.list (from: tab)
-  일부러 낡게 하지 않는다: cache.results.check — 결과는 사람이 「당첨 대조」를 눌러 받는다
 [route]
 route.home.index"
 `;

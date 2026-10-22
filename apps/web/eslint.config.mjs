@@ -305,6 +305,12 @@ export default tseslint.config(
       ],
     },
   },
+  {
+    // presenter 는 새 store 의 useStore(@fortuna-lottery/store/react)로 꺼낸다 — 이름으로만 잡는 STORE_OUTSIDE_ACTION 을 뺀다.
+    // 옛 store 를 걷어낼 때 STORE_OUTSIDE_ACTION 과 함께 지운다
+    files: PRESENTER_FILES,
+    rules: { "no-restricted-syntax": ["error", VIEWMODEL_SPREAD, STORE_REGISTER_NESTED, ...PATH_LITERAL] },
+  },
   // store key 검사 — 규칙마다 이름이 달라 서로 덮지 않는다. 글롭은 그 규칙이 울어야 할 자리를 그대로 짚는다.
   // 꺼내기 검사는 화면 쪽 코드에만 건다 — shared/lib·framework 의 시험이 store 를 직접 다뤄도 울지 않는다
   { files: [`${SCREEN}/**/*.{ts,tsx}`], ignores: PRESENTER_FILES, rules: { "store/state-only-in-presenter": "error" } },

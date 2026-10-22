@@ -37,7 +37,9 @@ describe("store", () => {
 
   it("state 절은 key 마다 처음 값·바꾸는 함수·정의·쓰는 곳을 찍는다", () => {
     const lines = describeWithUsage().split("\n");
-    expect(lines.slice(0, 13)).toEqual([
+    // key 가 정렬되어 api.·event. key 가 앞에 온다 — infra.http 부터 state 셋을 본다
+    const at = lines.indexOf('infra.http = {"client":{}}');
+    expect([lines[0], ...lines.slice(at, at + 12)]).toEqual([
       "[state]",
       'infra.http = {"client":{}}',
       "  바꾸는 함수: ",
