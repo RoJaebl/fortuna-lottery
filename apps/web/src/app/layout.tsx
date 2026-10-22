@@ -1,9 +1,7 @@
-import "@composition/routes"; // 서버 컴포넌트 그래프에 주소 등록을 싣는다 (frontend-app-layers §5.5)
 import "@composition/store.gen"; // 서버 컴포넌트 그래프에 store 정의를 싣는다 — 클라이언트 번들은 StoreRegistry 가 싣는다
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
-import { AppContainer } from "./AppContainer";
 import { StoreRegistry } from "./StoreRegistry";
 
 export const metadata: Metadata = {
@@ -16,9 +14,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ko" data-ground="paper">
       <body className="min-h-screen font-sans antialiased">
-        <StoreRegistry>
-          <AppContainer>{children}</AppContainer>
-        </StoreRegistry>
+        <StoreRegistry>{children}</StoreRegistry>
       </body>
     </html>
   );

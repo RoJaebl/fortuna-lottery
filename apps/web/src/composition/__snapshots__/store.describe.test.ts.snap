@@ -37,11 +37,11 @@ api.home.StatisticsPanel.statistics = {}
 event.home.PicksCard.changed = {}
   바꾸는 함수: emit, exempt, on, record
   정의: app/(home)/PicksCard/_action/picks.event.state.ts
-  쓰는 곳: 없다
+  쓰는 곳: api.home.PicksCard.picks, api.home.ResultsCard.check
 infra.http = {"client":{}}
-  바꾸는 함수: 
+  바꾸는 함수: 없다
   정의: infrastructure/http/http.state.ts
-  쓰는 곳: 없다
+  쓰는 곳: api.home.GeneratorCard.generator, api.home.HypothesisLab.assumption, api.home.HypothesisLab.popularity, api.home.LotterietusCard.status, api.home.PicksCard.picks, api.home.ResultsCard.check, api.home.SimulationCard.backtest, api.home.StatisticsPanel.statistics
 state.home.combination = {"numbers":null}
   바꾸는 함수: choose
   정의: app/(home)/_state/combination.state.ts
@@ -50,9 +50,32 @@ state.home.generatorOpen = {"open":false}
   바꾸는 함수: toggle
   정의: app/(home)/_state/generatorOpen.state.ts
   쓰는 곳: Home, LotterietusCard
-[cache]
-[http]
 [event]
-[route]
-route.home.index"
+event.home.PicksCard.changed
+  exempt api.home.ResultsCard.check — 결과는 사람이 「당첨 대조」를 눌러 받는다 — 누르기 전까지 앞선 결과를 그대로 보인다
+[자원]
+api.home.GeneratorCard.generator
+  조회: 없다
+  바꾸기: generate
+api.home.HypothesisLab.assumption
+  조회: 없다
+  바꾸기: evaluate, generate
+api.home.HypothesisLab.popularity
+  조회: 있다
+  바꾸기: 없다
+api.home.LotterietusCard.status
+  조회: 있다
+  바꾸기: 없다
+api.home.PicksCard.picks
+  조회: 있다
+  바꾸기: remove, save
+api.home.ResultsCard.check
+  조회: 있다
+  바꾸기: 없다
+api.home.SimulationCard.backtest
+  조회: 없다
+  바꾸기: backtest
+api.home.StatisticsPanel.statistics
+  조회: 있다
+  바꾸기: 없다"
 `;

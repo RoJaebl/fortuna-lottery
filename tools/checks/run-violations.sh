@@ -9,7 +9,7 @@ BIN="$ROOT/node_modules/dependency-cruiser/bin/dependency-cruiser.mjs"
 bad=0
 
 # 폴더 이름의 `--` 뒤는 같은 규칙의 다른 표본(예: 패키지 이름 꼴 import)이다.
-# 표본 폴더에 tsconfig.json 이 있으면 그 paths 로 패키지 이름·일곱 층 별칭(@app/ 등)을 표본 안의 경로로 푼다.
+# 표본 폴더에 tsconfig.json 이 있으면 그 paths 로 패키지 이름·여섯 층 별칭(@app/ 등)을 표본 안의 경로로 푼다.
 for dir in "$ROOT"/tools/checks/violations/*/; do
   name="$(basename "$dir")"
   rule="${name%%--*}"
@@ -48,16 +48,13 @@ declare -A EXPECT=(
   [viewmodel-spread]='표시 모델을 얕은 전개로 복제하면'
   [view-folder-public-surface]='뷰 폴더 밖에서는 그 폴더의 index 만'
   [no-root-alias]='층 별칭을 쓴다'
-  [hook-resolves-own-key-only]='(hook-resolves-own-key-only)'
   [store-registers-at-top-level]='(store-registers-at-top-level)'
-  [rule-targets-own-cache]='(rule-targets-own-cache)'
-  [no-path-literal]='(no-path-literal)'
   [state-key-within-scope]='(state-key-within-scope)'
   [state-key-matches-folder]='(state-key-matches-folder)'
   [state-key-literal]='(state-key-literal)'
-  [no-renamed-store-import]='(no-renamed-store-import)'
   [state-only-in-presenter]='(state-only-in-presenter)'
   [state-registers-in-state-folder]='(state-registers-in-state-folder)'
+  [ctx-at-top-binds-event-only]='(ctx-at-top-binds-event-only)'
 )
 for dir in "$ROOT"/tools/checks/eslint-violations/*/; do
   name="$(basename "$dir")"

@@ -49,14 +49,14 @@ PARA/MOC 규칙과는 무관하다.
 ```bash
 pnpm install                 # apps/api 의 postinstall 이 prisma generate 를 돈다
 pnpm dev                     # 런처(tools/launch/launch.mjs) — apps/web(next dev, 3000~)과 apps/api(nest build --watch 의 dist, 4000~)를 함께 띄운다
-pnpm check                   # typecheck → lint → lint:deps → lint:side-effects → test → test:tools. 과업 끝의 검증 명령이다
+pnpm check                   # typecheck → lint(ESLint 모양 규칙) → lint:deps(dependency-cruiser) → lint:side-effects → test → test:tools. 과업 끝의 검증 명령이다
 pnpm lint:deps               # dependency-cruiser 로 의존 방향·층 경계를 검사한다
 pnpm check:migration         # 골조 이관 상태를 낸다. 지금은 「옛 구역 파일: 0」
 pnpm build                   # turbo build
 pnpm start                   # 런처 — 빌드 결과로 두 서버를 OS 포트(또는 FORTUNA_WEB_PORT·FORTUNA_API_PORT 부터 빈 포트)에 띄운다
 pnpm --filter @fortuna-lottery/api db:migrate   # prisma migrate dev — 스키마를 고쳤을 때 마이그레이션을 새로 만든다
 pnpm test:tools              # 런처 시험(node --test)
-pnpm --filter @fortuna-lottery/web exec store-gen   # 공통 상태 생성 파일(src/composition/store.gen.ts)을 쓴다. typecheck·lint:deps·vitest 가 먼저 부른다
+pnpm --filter @fortuna-lottery/web exec store-gen   # store 생성 파일(src/composition/store.gen.ts)을 쓴다. typecheck·lint:deps·vitest 가 먼저 부른다
 ```
 
 `apps/api` 는 기동할 때 `apps/api/.env` 를 스스로 싣고(`main.ts` 의 `loadEnvFile`, 이미 있는 환경 변수가
@@ -86,7 +86,7 @@ pnpm --filter @fortuna-lottery/web exec vitest run <path>   # 파일 하나
 ```
 
 경계 검사기 자체가 살아 있는지는 `bash tools/checks/run-violations.sh` 가 규칙마다 위반 표본 하나를
-돌려 확인한다.
+돌려 확인한다. 허용 표본은 합법 코드를 규칙이 잘못 막지 않는지 본다. `pnpm check` 에는 들지 않는다(위반 표본은 실패해야 한다).
 
 ## 배치 — 두 서버
 
@@ -121,6 +121,8 @@ pnpm --filter @fortuna-lottery/web exec vitest run <path>   # 파일 하나
   [frontend-app-layers](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/frontend-app-layers.md>)가,
   독립 라이브러리 다섯·영역 다섯·규약 층·전파 규칙·주소는 [frontend-store](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/frontend-store.md>)가,
   여러 presenter 가 함께 쓰는 공통 상태(`_state/`)는 [frontend-shared-state](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/frontend-shared-state.md>)가 정한다.
+  **이 저장소는 store 2단계에서 그 가운데 `framework` 층·컨테이너·영역·전파 규칙·주소를 걷어내고 자원·event store 로 바꿨다.**
+  vault 문서는 아직 그 앞의 꼴을 적는다. 지금의 꼴은 아래 「이 저장소가 정한 것」이 적는다.
 - 타입 부류(와이어 모델 · 도메인 원형 · 표시 모델 · 값 객체 · 파생 조회 모델)는
   [model-vocabulary](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/model-vocabulary.md>)가 정한다.
   옛 저장소의 모델 타입 표(`use*ViewModel` = presenter, `*Entity`, `*VO`, `*ReadModel`, 2-tier 엄격도)는
@@ -133,21 +135,26 @@ pnpm --filter @fortuna-lottery/web exec vitest run <path>   # 파일 하나
 ```
 packages/contract/   @fortuna-lottery/contract — 도메인별 zod 스키마(와이어 모델의 SSOT). 두 앱이 참조한다
 packages/kernel/     @fortuna-lottery/kernel — 로또 순수 커널(combination · scoring · rng · result · generate). apps/api 만 참조한다
-packages/store/      @fortuna-lottery/store — key 로 등록하는 전역 공통 상태와 타입 생성기(tsserver·Next·CLI). apps/web 만 참조한다
+packages/store/      @fortuna-lottery/store — key 로 등록하는 전역 store(공통 상태·자원·event)와 타입 생성기(tsserver·Next·CLI). apps/web 만 참조한다
 apps/api/            NestJS 응용 서버 — src/modules/<도메인>/, src/composition/CompositionModule.ts, prisma/
-apps/web/            Next.js 화면 앱 — src/app/(home)/, src/framework/, src/composition/, src/infrastructure/, src/shared/{ui,lib}/
+apps/web/            Next.js 화면 앱 — src/app/(home)/, src/composition/, src/infrastructure/, src/shared/{ui,lib}/
 tools/checks/        이관 상태 스크립트와 규칙마다 하나씩 둔 위반 표본
 tools/launch/        런처 — pnpm dev·pnpm start 가 부르고 포트를 고르는 유일한 자리(Node 내장 모듈만 쓴다)
 ```
 
-의존 방향과 층 경계는 루트의 `.dependency-cruiser.cjs` 가, 코드 모양(화면에 상태 없음, 표시 모델 얕은
-전개 금지, 뷰 폴더의 공개 표면, 훅이 자기 key 하나만 꺼내기 `hook-resolves-own-key-only`,
-action 의 store 등록과 `_state/` 파일의 `createStore` 는 파일 최상단에서만 `store-registers-at-top-level`, 전파 규칙은 자기 캐시만 겨냥 `rule-targets-own-cache`,
-`href`·`push`·`replace` 에 경로 리터럴 금지 `no-path-literal`, `@/` 뿌리 별칭 금지 `no-root-alias`,
-`@framework` 에서 제 이름으로만 가져오기 `no-renamed-store-import`, store key(`state.`·`api.`·`event.`·`infra.`)의 자리·범위를 `apps/web/eslint/paths.mjs` 로
-판정하는 `state-key-literal`·`state-key-matches-folder`·`state-key-within-scope`·`state-only-in-presenter`·`state-registers-in-state-folder`)은
-`apps/web/eslint.config.mjs` 가 강제한다. 둘 다 `pnpm check` 에 들어
-있으므로 위반은 곧 검증 실패다. `"sideEffects": false` 는 store 등록(import 부수효과)을 지우므로 `pnpm lint:side-effects` 가 막는다.
+의존 방향과 층 경계는 루트의 `.dependency-cruiser.cjs` 가, 코드 모양은 `apps/web/eslint.config.mjs` 가 강제한다.
+ESLint 가 거는 모양 규칙은 이렇다.
+
+- 화면에 상태 없음(`view-with-state`), 표시 모델 얕은 전개 금지(`viewmodel-spread`), 뷰 폴더의 공개 표면(`view-folder-public-surface`),
+  `@/` 뿌리 별칭 금지(`no-root-alias`).
+- `createStore` 는 파일 최상단에서만 부른다(`store-registers-at-top-level`).
+- store key(`state.`·`api.`·`event.`·`infra.`)의 자리와 범위는 `apps/web/eslint/paths.mjs` 로 판정한다.
+  key 는 문자열 그대로 쓰고(`state-key-literal`), 폴더를 따르며(`state-key-matches-folder`), 자기·조상 폴더의 key 만
+  꺼낸다(`state-key-within-scope`). 화면에서 `useStore` 를 부르는 것은 presenter 뿐이고(`state-only-in-presenter`),
+  등록은 정의 파일만 한다(`state-registers-in-state-folder`).
+- creator 맨 위에서 `ctx(…)` 를 부르면 그 결과로 `.on`·`.exempt` 만 부른다(`ctx-at-top-binds-event-only`, ctx 를 이름으로 알아보는 근사다).
+
+둘 다 `pnpm check` 에 들어 있으므로 위반은 곧 검증 실패다. `"sideEffects": false` 는 store 등록(import 부수효과)을 지우므로 `pnpm lint:side-effects` 가 막는다.
 
 ## 이 저장소가 정한 것 — vault 골조가 답하지 않는 자리
 
@@ -188,32 +195,45 @@ action 의 store 등록과 `_state/` 파일의 `createStore` 는 파일 최상�
   생성기·가정 실험실이 바꾸고 통계·시뮬레이션·내 번호·가정 실험실이 읽는다. 생성기 열림(`state.home.generatorOpen`)은
   회차 카드가 바꾸고 페이지와 회차 카드가 읽는다. 활성 탭은 `Home.presenter.ts` 의 지역 상태이고, `page.tsx` 는
   조립만 한다. 누가 무엇을 읽고 바꾸는지는 store 출력 스냅숏이 적는다.
-- **공통 상태는 `@fortuna-lottery/store` 의 전역 등록부에 있고 공급자가 없다.** 정의는 `_state/` 파일의
-  `createStore("key", (set, get) => …)` 하나이고, 타입은 생성 파일(`src/composition/store.gen.ts`, git 에 넣지 않는다)의
-  `StateTypes` 가 준다. presenter 는 `useSharedState(key, select)` 로 꺼낸다. 시험은 `getStore` 로 값을 미리 정하고
-  `test.setup.ts` 의 `afterEach(resetStores)` 가 되돌린다. 생성 파일은 `apps/web/store.config.ts` 의 `targets`(tsserver·next·cli)가
+- **화면 앱의 상태는 모두 `@fortuna-lottery/store` 의 전역 등록부에 있고 공급자도 컨테이너도 없다.** 정의는 `*.state.ts` 파일의
+  `createStore("key", (set, get, ctx) => …)` 하나다. `ctx(key)` 는 다른 store 의 부르는 순간의 값을 준다(구독은 없다).
+  타입은 생성 파일(`src/composition/store.gen.ts`, git 에 넣지 않는다)의 `StateTypes` 가 준다.
+  presenter 는 `useStore(key)`·`useStore(key, { pick })`·`useStore(key, { omit })`(`@fortuna-lottery/store/react`)로 꺼낸다.
+  - **key 는 접두 넷이고 폴더를 따른다.** `state.`(공통 상태, `_state/`)·`api.`(자원, `_action/`)·`event.`(event, 내는 쪽의
+    `_action/<도메인>.event.state.ts`)는 정의 파일의 폴더 경로를 key 로 쓴다 — `app/(home)/_state/` 는 `state.home.<이름>`,
+    `app/(home)/PicksCard/_action/` 은 `api.home.PicksCard.<이름>`·`event.home.PicksCard.<이름>` 이다. `infra.`(바깥 도구)는 `infrastructure/<이름>/<이름>.state.ts`
+    가 정의하고 key 는 `infra.<이름>` 이다. 자기·조상 폴더의 key 만 꺼내고, event 는 범위 밖에서도, infra 는 어디서나 꺼낸다.
+  - **서버 상태는 자원이다.** `createResource`(`@fortuna-lottery/store/query`)로 짓고, `query` 가 조회 하나이고 나머지 함수가 바꾸기다.
+    presenter 는 `useStore("api.…", { args, pick })` 로 조회 상태(`data`·`status`·`error`·`refetch`)와 바꾸기(`mutate`·`pending`…)를 받는다.
+    store 끼리는 `ctx("api.…")` 의 `fetch`·`getData`·`setData`·`invalidate` 와 바꾸기 함수를 부른다.
+  - **자원 사이는 event 로 잇는다.** `createEvent`(`@fortuna-lottery/store/query`)로 짓는다. 듣는 쪽은 creator 맨 위에서
+    `ctx("event.…").on(ctx.key, …)` 로 반응하거나, `.exempt(ctx.key, 까닭)` 로 일부러 반응하지 않는다는 결정을 남긴다.
+    creator 맨 위에서 `ctx` 를 쓰는 것은 이 자리 하나다(`ctx-at-top-binds-event-only`).
+  - **HTTP 는 `infra.http` 다.** 정의는 `ctx("infra.http").client.get(…)`·`.send(…)` 로 부른다. 시험은
+    `overrideStore("infra.http", () => ({ client: new TestHttpClient() }))` 로 갈아 끼운다. `overrideStore` 는 그 key 에 기대던 store 도 다시 짓는다.
+  - **등록을 싣는 자리는 셋이다.** 서버 쪽 `app/layout.tsx`, 클라이언트 번들의 `"use client"` 경계 `app/StoreRegistry.tsx`, 시험의
+    `test.setup.ts` 가 생성 파일을 불러온다. 생성 파일이 정의 파일을 모두 import 하므로 다른 등록 목록은 없다.
+  - 시험은 `getStore` 로 값을 미리 정하고 `test.setup.ts` 의 `afterEach(resetStores)` 가 덮어쓴 정의와 값을 되돌린다.
+
+  생성 파일은 `apps/web/store.config.ts` 의 `targets`(tsserver·next·cli)가
   쓴다. VS Code 는 「TypeScript: Select TypeScript Version → Use Workspace Version」으로 작업 공간 TypeScript 를 써야 tsserver
   플러그인이 실린다(`.vscode/settings.json` 의 `tsdk` 가 가리킨다). tsserver 는 플러그인을 tsconfig 폴더가 아니라 TypeScript
   곁(`../../..`)에서 찾으므로, 루트 `package.json` 의 devDependencies 에 `@fortuna-lottery/store` 를 두어 루트 `node_modules` 에 놓는다.
   플러그인은 프로젝트가 프로그램을 다시 지은 직후(`updateGraph`) 생성 내용을 다시 짓고, 바뀌었으면 같은 요청 안에서 한 번 더
   짓는다 — 그래서 정의를 고친 바로 그 진단에서 타입이 따라온다. 실제 tsserver 로 이것을 지키는 시험은
   `packages/store/tools/tsserver.test.mjs` 다. VS Code 화면에서 직접 본 확인은 아직 없다.
-- **서버 상태 캐시는 [frontend-module-layout §3.1 캐시 도구 — shared/lib/cache](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/frontend-module-layout.md#31-캐시-도구--sharedlibcache>)
-  그대로다.** `apps/web/src/shared/lib/cache/createServerCache.ts` 가 그것이다.
 - **화면 앱에는 화면 모듈이 하나(`app/(home)/`)뿐이므로 모듈 사이 import 는 없다.** 개정판은 화면 모듈끼리 배럴 import 도 금지한다.
-- **cache·http·event·route 는 아직 옛 store 다(1단계). 엔진은 `shared/lib/store/`, 영역을 꽂은 store 는 `framework/` 에 있다.** 화면 쪽은 `@framework`(`store`·`route`)와
-  `@framework/react`(`StoreProvider`·`useStore`)만 본다. action 파일이 스스로 등록하고, 컨테이너는
-  `composition/createContainer.ts` 가 짓고 `app/AppContainer.tsx` 가 내린다. 시험은 `createContainer('test')` 의 `c.deps.http` 와
-  `c.resolve(key)` 를 쓴다.
-- **엔진의 등록 함수는 `(key, 정의)` 하나뿐이라, event 영역의 `store.invalidates`·`store.unaffected` 는 `framework/index.ts` 가
-  「사건 → 캐시」 key 의 event 정의로 바꿔 넘긴다.** 영역의 출력 꼴(`describe`)은 key 하나가 아니라 영역의 정의 전부를 받아
-  사건 아래에 그 규칙을 단다([보고 문서](<docs/superpowers/reports/2026-10-13-vault-feedback.md>) 17).
-- **규격 코드와 다르게 지킨 것이 셋 있다.** 셋 다 [보고 문서](<docs/superpowers/reports/2026-10-13-vault-feedback.md>)에 올렸다.
+- **규격 코드와 다르게 지킨 것이 둘 있다.** 둘 다 [보고 문서](<docs/superpowers/reports/2026-10-13-vault-feedback.md>)에 올렸다.
   - `FetchHttpClient`(`infrastructure/http`)는 서버 본문의 `{ error }` 문구를 꺼내 예외 메시지로 쓴다. 계약이 도메인 실패를 메시지를 실은 400 으로 정하므로 버리면 화면 문구가 사라진다.
-  - `createServerCache` 의 `invalidate` 는 조건이 `void` 인 캐시도 다시 받도록 `query !== undefined` 대신 `queries.has(key)` 로 가린다.
-  - 조회 훅은 `useSyncExternalStore` 의 셋째 인자로 `readOnServer`(서버 렌더 때는 값 없음)를 넘긴다. 없으면 Next 서버 렌더가 실패한다.
-- **`picks` 의 저장·삭제는 `results` 캐시를 무효화하지 않는다.** 결과 확인은 사람이 「당첨 대조」를 눌러 받는 값이고,
-  누르기 전까지는 앞선 결과를 그대로 보인다(`checkResults.action.ts` 의 `store.unaffected`). 무엇이 무엇을 갱신하는지는 `apps/web/src/composition/__snapshots__/store.describe.test.ts.snap` 에서 읽는다.
+  - 자원의 조회 훅은 `useSyncExternalStore` 의 셋째 인자로 서버 렌더 값(받기 전 값)을 넘긴다. 없으면 Next 서버 렌더가 실패한다.
+- **`picks` 의 저장·삭제는 당첨 대조를 다시 받지 않는다.** 당첨 대조(`api.home.ResultsCard.check`)는 `auto: false` 라 사람이
+  「당첨 대조」를 눌러야 받고, 픽이 바뀌어도 앞선 결과를 그대로 보인다. 탭을 옮겼다 돌아와도 결과는 남는다.
+  이 결정은 `ResultsCard/_action/check.state.ts` 가 `event.home.PicksCard.changed` 에 건 `exempt` 와 그 까닭 문구
+  「결과는 사람이 「당첨 대조」를 눌러 받는다 — 누르기 전까지 앞선 결과를 그대로 보인다」가 적는다.
+- **무엇이 무엇을 바꾸고 누가 무엇을 쓰는지는 출력 스냅숏에서 읽는다.** `apps/web/src/composition/store.describe.test.ts` 가
+  등록된 store 를 모두 지은 뒤 세 절을 남긴다. `[state]` 절은 key 마다 처음 값·바꾸는 함수·정의 자리·쓰는 곳(presenter 이름과
+  `ctx` 로 꺼내는 정의의 key)이고, `[event]` 절은 key 마다 `on`·`exempt` 와 까닭이며, `[자원]` 절은 key 마다 조회 유무와 바꾸기 이름이다.
+  스냅숏은 `apps/web/src/composition/__snapshots__/store.describe.test.ts.snap` 이다.
 - **`turbo.json` 의 `lint` 는 `^build` 에 기댄다.** baseline §3 의 `{}` 보다 엄격한 의도된 이탈이다.
 - **`Entity` 부류는 없다.** 픽은 `picks/domain/model/Pick.model.ts` 의 도메인 원형이다.
 - **도구 판본.** `packageManager` 는 `pnpm@11.18.0` 이고, 설치 때 빌드 스크립트를 허용할 패키지(prisma,

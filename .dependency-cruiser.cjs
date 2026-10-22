@@ -70,7 +70,7 @@ module.exports = {
       comment: '화면 모듈·위젯·묶음 위젯의 안쪽 파일은 그 폴더 밖에서 짚지 않는다. 밖에서는 공개 표면만 본다',
       severity: 'error',
       // $1 은 폴더 하나 — widgets/combined/<이름>, widgets/<이름>, app 가운데 하나다.
-      // app/ 안의 파일끼리는 screen-must-not-reach-screen 이, 조립 루트는 아래 세 벌이 본다
+      // app/ 안의 파일끼리는 screen-must-not-reach-screen 이, 조립 루트는 아래 규칙이 본다
       from: { path: '^apps/web/src/(widgets/combined/[^/]+|widgets/(?!combined/)[^/]+|app)/' },
       to:   { path: `^apps/web/src/(widgets/.+|app/(?!api/|\\(dev\\)/)[^/]+/.+)`,
               // 자기 폴더 안과 남의 공개 표면은 이 규칙이 막지 않는다. 뷰 폴더의 index.tsx 는 공개 표면이 아니다
@@ -79,28 +79,11 @@ module.exports = {
                         '^apps/web/src/widgets/[^/]+/index\\.tsx?$',
                         '^apps/web/src/widgets/combined/[^/]+/index\\.tsx?$'] },
     },
-    // 조립 루트 세 벌 — 화면 모듈과 위젯에 닿는 것은 등록 목록 둘뿐이고, 둘이 짚는 파일도 정해져 있다
     {
       name: 'no-deep-screen-or-widget-import',
-      comment: 'composition/screens.ts 가 화면 모듈과 위젯에서 보는 것은 화면 모듈의 index.ts 와 위젯의 register.ts 뿐이다',
+      comment: '조립 루트는 화면 모듈과 위젯에 닿지 않는다. 생성 파일 store.gen.ts 는 아래 규칙이 좁힌다',
       severity: 'error',
-      from: { path: '^apps/web/src/composition/screens\\.ts$' },
-      to:   { path: '^apps/web/src/(widgets|app)/',
-              pathNot: [`^${APP}/(?!api/|\\(dev\\)/).*/index\\.ts$`,
-                        '^apps/web/src/widgets/(combined/)?[^/]+/register\\.ts$'] },
-    },
-    {
-      name: 'no-deep-screen-or-widget-import',
-      comment: 'composition/routes.ts 가 보는 것은 라우트 폴더의 routes.ts 뿐이다',
-      severity: 'error',
-      from: { path: '^apps/web/src/composition/routes\\.ts$' },
-      to:   { path: '^apps/web/src/(widgets|app)/', pathNot: `^${APP}/(?!api/|\\(dev\\)/).*/routes\\.ts$` },
-    },
-    {
-      name: 'no-deep-screen-or-widget-import',
-      comment: '조립 루트의 나머지 파일은 화면 모듈과 위젯에 닿지 않는다 — screens.ts·routes.ts 를 거친다. 생성 파일 store.gen.ts 는 아래 규칙이 좁힌다',
-      severity: 'error',
-      from: { path: '^apps/web/src/composition/', pathNot: '^apps/web/src/composition/(screens|routes|store\\.gen)\\.ts$' },
+      from: { path: '^apps/web/src/composition/', pathNot: '^apps/web/src/composition/store\\.gen\\.ts$' },
       to:   { path: '^apps/web/src/(widgets|app)/' },
     },
     {
@@ -148,23 +131,6 @@ module.exports = {
       severity: 'error',
       from: { path: '^apps/web/src/shared/' },
       to:   { path: '^apps/web/src/', pathNot: '^apps/web/src/shared/' },
-      // shared/lib 안의 라이브러리 사이 의존은 store → di 하나다. 이 규칙은 그것을 가르지 않고 리뷰가 본다
-    },
-    {
-      name: 'framework-reaches-lib-only',
-      comment: '규약 층은 shared/lib 만 본다. 화면 모듈·위젯·조립 루트·infrastructure 를 모른다',
-      severity: 'error',
-      from: { path: '^apps/web/src/framework/' },
-      to:   { path: '^apps/web/src/', pathNot: '^apps/web/src/(framework|shared/lib)/' },
-    },
-    {
-      name: 'screen-reaches-store-through-framework',
-      comment: '화면 모듈·위젯은 store 를 @framework·@framework/react 로만 쓴다. 영역이 꽂히지 않은 store 와 그 React 묶음, 그 밑의 di·events 를 직접 가져오지 않는다',
-      severity: 'error',
-      // 등록부에 key 를 덧붙이는 declare module '@lib/store' 는 import 가 아니다 — 허용 표본이 그것을 지킨다.
-      // 공통 상태는 이 규칙과 무관하다 — _state/ 파일은 @fortuna-lottery/store 를 직접 가져온다
-      from: { path: `(${ROUTE}|^apps/web/src/widgets/)` },
-      to:   { path: '^apps/web/src/shared/lib/(store(-react)?|di|events)/' },
     },
     {
       name: 'widget-must-not-reach-widget',
@@ -190,25 +156,22 @@ module.exports = {
     },
     {
       name: 'nothing-reaches-composition',
-      comment: '아무도 조립 루트를 import 하지 않는다. 예외는 일곱이다',
+      comment: '아무도 조립 루트를 import 하지 않는다. 예외는 넷이다',
       severity: 'error',
       from: { path: '^apps/web/src/',
               pathNot: ['^apps/web/src/composition/',              // 조립 루트 안의 파일끼리
-                        '^apps/web/src/app/AppContainer\\.tsx$',   // 셸이 createContainer 로 컨테이너를 짓는다
-                        '^apps/web/src/app/layout\\.tsx$',         // 서버 루트가 주소 등록과 store 정의를 싣는다 — 아래 한 벌이 좁힌다
+                        '^apps/web/src/app/layout\\.tsx$',         // 서버 루트가 store 정의를 싣는다 — 아래 한 벌이 좁힌다
                         '^apps/web/src/app/StoreRegistry\\.tsx$',  // 클라이언트 경계가 store 정의를 싣는다 — 아래 한 벌이 좁힌다
-                        '^apps/web/src/(middleware|proxy)\\.ts$',  // middleware 가 주소 등록을 싣는다 — middleware 규칙이 좁힌다
-                        '^apps/web/src/app/\\(dev\\)/',            // 놀이터가 시나리오마다 컨테이너를 짓는다
-                        '^apps/web/src/test\\.setup\\.ts$',        // 시험 기반이 store.gen.ts·screens.ts 를 실어 등록을 일으킨다
-                        '\\.test\\.tsx?$'] },                      // 시험이 createContainer("test") 로 짓는다
+                        '^apps/web/src/test\\.setup\\.ts$',        // 시험 기반이 store.gen.ts 를 실어 등록을 일으킨다
+                        '\\.test\\.tsx?$'] },                      // 출력 스냅숏 시험이 조립 루트에 산다
       to:   { path: '^apps/web/src/composition/' },
     },
     {
       name: 'nothing-reaches-composition',
-      comment: '서버로 남는 루트 layout.tsx 가 조립 루트에서 보는 것은 주소 등록 목록 composition/routes.ts 와 생성 파일 store.gen.ts 다',
+      comment: '서버로 남는 루트 layout.tsx 가 조립 루트에서 보는 것은 생성 파일 store.gen.ts 하나다',
       severity: 'error',
       from: { path: '^apps/web/src/app/layout\\.tsx$' },
-      to:   { path: '^apps/web/src/composition/', pathNot: '^apps/web/src/composition/(routes|store\\.gen)\\.ts$' },
+      to:   { path: '^apps/web/src/composition/', pathNot: '^apps/web/src/composition/store\\.gen\\.ts$' },
     },
     {
       name: 'nothing-reaches-composition',
@@ -226,7 +189,7 @@ module.exports = {
     },
     {
       name: 'screen-sees-infrastructure-types-only',
-      comment: '화면 모듈·위젯은 infrastructure 에서 아무것도 가져오지 않는다. 캐시 도구는 @lib/cache 에 있고, HTTP 포트와 사건 통로는 타입으로도 보지 않는다',
+      comment: '화면 모듈·위젯은 infrastructure 에서 아무것도 가져오지 않는다. HTTP 는 정의 파일이 ctx("infra.http") 로 받고, HTTP 포트는 타입으로도 보지 않는다',
       severity: 'error',
       from: { path: `(${ROUTE}|^apps/web/src/widgets/)`,
               pathNot: ['/playground\\.ts$',                       // 놀이터 표면이 가짜 서버를 값으로 가져온다
@@ -244,7 +207,6 @@ module.exports = {
       name: 'shell-reaches-no-infrastructure',
       comment: 'app/ 뿌리의 셸은 infrastructure 를 보지 않는다. 보는 것은 끝점 갈래(app/api/)다',
       severity: 'error',
-      // 캐시 라이브러리를 들이지 않았으므로 AppContainer.tsx 예외는 없다
       from: { path: `^${APP}/[^/]+$`, pathNot: '\\.test\\.tsx?$' },
       to:   { path: '^apps/web/src/infrastructure/' },
     },
@@ -279,13 +241,11 @@ module.exports = {
     },
     {
       name: 'middleware-sees-infrastructure-lib-routes-only',
-      comment: 'middleware.ts(Next 16 부터 proxy.ts)가 보는 것은 infrastructure·shared/lib·@framework·주소 등록 목록 composition/routes.ts 뿐이다',
+      comment: 'middleware.ts(Next 16 부터 proxy.ts)가 보는 것은 infrastructure·shared/lib 뿐이다',
       severity: 'error',
       from: { path: '^apps/web/src/(middleware|proxy)\\.ts$' },   // 두 이름을 같은 규칙으로 읽는다
       to:   { path: '^apps/web/src/',
-              pathNot: ['^apps/web/src/(infrastructure|shared/lib)/',
-                        '^apps/web/src/framework/index\\.ts$',     // @framework 의 route — @framework/react 는 막힌다
-                        '^apps/web/src/composition/routes\\.ts$'] },
+              pathNot: '^apps/web/src/(infrastructure|shared/lib)/' },
     },
     {
       name: 'domain-model-has-zero-dependencies',
@@ -366,7 +326,7 @@ module.exports = {
     // 골조 이관 전 구역(exclude)은 비었다 — 도메인을 다 옮기고 packages/core·apps/web/src/server·Next 경로 처리기를 지웠다.
     // 이제 모든 파일에 골조 규칙이 걸린다. 옛 구역을 다시 만들지 않는다 — incremental-migration 규칙 3절.
     doNotFollow: { path: 'node_modules' },
-    // 화면 앱의 층 별칭 일곱은 tsconfig.depcruise.json 의 paths 로, 작업 공간 패키지는 package.json 의 exports 로 푼다.
+    // 화면 앱의 층 별칭 여섯은 tsconfig.depcruise.json 의 paths 로, 작업 공간 패키지는 package.json 의 exports 로 푼다.
     // 풀지 못하면 couldNotResolve 로 남아 계약·커널·배럴 규칙이 아무것도 보지 못한다. 계약·커널의 exports 는 dist 를 가리키므로 build 가 먼저다.
     tsConfig: { fileName: 'tsconfig.depcruise.json' },
     tsPreCompilationDeps: true,

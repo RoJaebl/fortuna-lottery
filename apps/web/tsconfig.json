@@ -12,8 +12,6 @@
     "paths": {
       "@app/*": ["./src/app/*"],
       "@widgets/*": ["./src/widgets/*"],
-      "@framework": ["./src/framework"],
-      "@framework/*": ["./src/framework/*"],
       "@composition/*": ["./src/composition/*"],
       "@infrastructure/*": ["./src/infrastructure/*"],
       "@lib/*": ["./src/shared/lib/*"],

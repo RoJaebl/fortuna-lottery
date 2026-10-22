@@ -136,3 +136,7 @@
 - 지금 문구: state 를 규약 층 store 의 영역으로 적고, `store.state(key, 정의)` 와 `useStoreState`, 공급자(`StoreProvider`)를 거치는 모양을 적는다.
 - 문제: 이 저장소는 state 를 독립 패키지 `@fortuna-lottery/store` 로 옮겼다. 공급자가 없고(전역 등록부), 정의는 `createStore("key", …)`, 꺼내기는 `useSharedState`, 타입은 생성기가 쓰는 `StateTypes` 가 준다. 위 두 문서가 아직 옛 모양을 적는다. 16번의 「정의 자체를 등록부 값으로」도 이 변경으로 필요 없어졌다.
 - 제안: frontend-store §2·§3 에서 state 영역을 빼고, frontend-shared-state 를 전역 등록부·타입 생성기 모양으로 고쳐 쓴다. cache·http·event·route 는 아직 옛 store 에 있다(1단계).
+
+## 20. store 2단계 — 옛 store 를 걷어냈다
+
+- store 2단계 — 영역·컨테이너·전파 규칙 파일·route 를 걷어내고 자원·event store 로 바꿨다. vault 골조 문서는 단계가 끝난 뒤 한 번에 고친다.
