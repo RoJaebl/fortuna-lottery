@@ -105,10 +105,13 @@ module.exports = {
     },
     {
       name: 'store-gen-imports-state-only',
-      comment: '생성 파일 composition/store.gen.ts 가 화면 모듈과 위젯에서 보는 것은 정의 파일(_state/·state/ 의 *.state.ts)뿐이다',
+      comment: '생성 파일 composition/store.gen.ts 가 화면 모듈·위젯·infrastructure 에서 보는 것은 정의 파일(_state/·_action/·state/ 의 *.state.ts, infrastructure/ 의 *.state.ts)뿐이다',
       severity: 'error',
       from: { path: '^apps/web/src/composition/store\\.gen\\.ts$' },
-      to:   { path: '^apps/web/src/(app|widgets)/', pathNot: '/(_state|state)/[^/]+\\.state\\.ts$' },
+      // 타입 자리의 import("…") 는 실리지 않는다 — 생성기가 값의 타입을 적으려고 정의 파일 밖의 타입을 짚는다
+      to:   { path: '^apps/web/src/(app|widgets|infrastructure)/',
+              pathNot: ['/(_state|_action|state)/[^/]+\\.state\\.ts$', '^apps/web/src/infrastructure/.+\\.state\\.ts$'],
+              dependencyTypesNot: ['type-import', 'type-only'] },
     },
     // 화면 모듈마다 한 벌 — 자기 파일과 조상 라우트의 소유물 폴더(위로 보기)만 본다
     ...screenModules().map((mod) => ({
@@ -187,24 +190,32 @@ module.exports = {
     },
     {
       name: 'nothing-reaches-composition',
-      comment: '아무도 조립 루트를 import 하지 않는다. 예외는 여섯이다',
+      comment: '아무도 조립 루트를 import 하지 않는다. 예외는 일곱이다',
       severity: 'error',
       from: { path: '^apps/web/src/',
               pathNot: ['^apps/web/src/composition/',              // 조립 루트 안의 파일끼리
                         '^apps/web/src/app/AppContainer\\.tsx$',   // 셸이 createContainer 로 컨테이너를 짓는다
-                        '^apps/web/src/app/layout\\.tsx$',         // 서버 루트가 주소 등록을 싣는다 — 아래 한 벌이 좁힌다
+                        '^apps/web/src/app/layout\\.tsx$',         // 서버 루트가 주소 등록과 store 정의를 싣는다 — 아래 한 벌이 좁힌다
+                        '^apps/web/src/app/StoreRegistry\\.tsx$',  // 클라이언트 경계가 store 정의를 싣는다 — 아래 한 벌이 좁힌다
                         '^apps/web/src/(middleware|proxy)\\.ts$',  // middleware 가 주소 등록을 싣는다 — middleware 규칙이 좁힌다
                         '^apps/web/src/app/\\(dev\\)/',            // 놀이터가 시나리오마다 컨테이너를 짓는다
-                        '^apps/web/src/test\\.setup\\.ts$',        // 시험 기반이 screens.ts 를 실어 state 등록을 일으킨다
+                        '^apps/web/src/test\\.setup\\.ts$',        // 시험 기반이 store.gen.ts·screens.ts 를 실어 등록을 일으킨다
                         '\\.test\\.tsx?$'] },                      // 시험이 createContainer("test") 로 짓는다
       to:   { path: '^apps/web/src/composition/' },
     },
     {
       name: 'nothing-reaches-composition',
-      comment: '서버로 남는 루트 layout.tsx 가 조립 루트에서 보는 것은 주소 등록 목록 composition/routes.ts 하나다',
+      comment: '서버로 남는 루트 layout.tsx 가 조립 루트에서 보는 것은 주소 등록 목록 composition/routes.ts 와 생성 파일 store.gen.ts 다',
       severity: 'error',
       from: { path: '^apps/web/src/app/layout\\.tsx$' },
-      to:   { path: '^apps/web/src/composition/', pathNot: '^apps/web/src/composition/routes\\.ts$' },
+      to:   { path: '^apps/web/src/composition/', pathNot: '^apps/web/src/composition/(routes|store\\.gen)\\.ts$' },
+    },
+    {
+      name: 'nothing-reaches-composition',
+      comment: '클라이언트 경계 StoreRegistry.tsx 가 조립 루트에서 보는 것은 생성 파일 store.gen.ts 하나다',
+      severity: 'error',
+      from: { path: '^apps/web/src/app/StoreRegistry\\.tsx$' },
+      to:   { path: '^apps/web/src/composition/', pathNot: '^apps/web/src/composition/store\\.gen\\.ts$' },
     },
     {
       name: 'infrastructure-reaches-lib-only',
@@ -218,8 +229,16 @@ module.exports = {
       comment: '화면 모듈·위젯은 infrastructure 에서 아무것도 가져오지 않는다. 캐시 도구는 @lib/cache 에 있고, HTTP 포트와 사건 통로는 타입으로도 보지 않는다',
       severity: 'error',
       from: { path: `(${ROUTE}|^apps/web/src/widgets/)`,
-              pathNot: '/playground\\.ts$' },                      // 놀이터 표면이 가짜 서버를 값으로 가져온다
+              pathNot: ['/playground\\.ts$',                       // 놀이터 표면이 가짜 서버를 값으로 가져온다
+                        '\\.test\\.tsx?$'] },                     // 시험은 아래 한 벌이 좁힌다
       to:   { path: '^apps/web/src/infrastructure/' },
+    },
+    {
+      name: 'screen-sees-infrastructure-types-only',
+      comment: '화면 모듈·위젯의 시험이 infrastructure 에서 보는 것은 @infrastructure/http 하나다 — 시험이 TestHttpClient 를 값으로 가져와 HTTP 를 갈아 끼운다',
+      severity: 'error',
+      from: { path: `(${ROUTE}|^apps/web/src/widgets/).*\\.test\\.tsx?$` },
+      to:   { path: '^apps/web/src/infrastructure/', pathNot: '^apps/web/src/infrastructure/http/index\\.ts$' },
     },
     {
       name: 'shell-reaches-no-infrastructure',

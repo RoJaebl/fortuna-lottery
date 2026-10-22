@@ -37,8 +37,12 @@ describe("store", () => {
 
   it("state 절은 key 마다 처음 값·바꾸는 함수·정의·쓰는 곳을 찍는다", () => {
     const lines = describeWithUsage().split("\n");
-    expect(lines.slice(0, 9)).toEqual([
+    expect(lines.slice(0, 13)).toEqual([
       "[state]",
+      'infra.http = {"client":{}}',
+      "  바꾸는 함수: ",
+      "  정의: infrastructure/http/http.state.ts",
+      "  쓰는 곳: 없다",
       'state.home.combination = {"numbers":null}',
       "  바꾸는 함수: choose",
       "  정의: app/(home)/_state/combination.state.ts",

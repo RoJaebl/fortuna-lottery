@@ -144,7 +144,7 @@ tools/launch/        런처 — pnpm dev·pnpm start 가 부르고 포트를 고
 전개 금지, 뷰 폴더의 공개 표면, 훅이 자기 key 하나만 꺼내기 `hook-resolves-own-key-only`,
 action 의 store 등록과 `_state/` 파일의 `createStore` 는 파일 최상단에서만 `store-registers-at-top-level`, 전파 규칙은 자기 캐시만 겨냥 `rule-targets-own-cache`,
 `href`·`push`·`replace` 에 경로 리터럴 금지 `no-path-literal`, `@/` 뿌리 별칭 금지 `no-root-alias`,
-`@framework` 에서 제 이름으로만 가져오기 `no-renamed-store-import`, 공통 상태의 key·자리·범위를 `framework/paths.mjs` 로
+`@framework` 에서 제 이름으로만 가져오기 `no-renamed-store-import`, store key(`state.`·`api.`·`event.`·`infra.`)의 자리·범위를 `apps/web/eslint/paths.mjs` 로
 판정하는 `state-key-literal`·`state-key-matches-folder`·`state-key-within-scope`·`state-only-in-presenter`·`state-registers-in-state-folder`)은
 `apps/web/eslint.config.mjs` 가 강제한다. 둘 다 `pnpm check` 에 들어
 있으므로 위반은 곧 검증 실패다. `"sideEffects": false` 는 store 등록(import 부수효과)을 지우므로 `pnpm lint:side-effects` 가 막는다.

@@ -2,6 +2,10 @@
 
 exports[`store > store 에 등록된 전부 1`] = `
 "[state]
+infra.http = {"client":{}}
+  바꾸는 함수: 
+  정의: infrastructure/http/http.state.ts
+  쓰는 곳: 없다
 state.home.combination = {"numbers":null}
   바꾸는 함수: choose
   정의: app/(home)/_state/combination.state.ts
