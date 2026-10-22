@@ -2,6 +2,22 @@
 
 exports[`store > store 에 등록된 전부 1`] = `
 "[state]
+api.home.GeneratorCard.generator = {}
+  바꾸는 함수: fetch, generate, getData, invalidate, setData
+  정의: app/(home)/GeneratorCard/_action/generator.state.ts
+  쓰는 곳: GeneratorCard
+api.home.HypothesisLab.assumption = {}
+  바꾸는 함수: evaluate, fetch, generate, getData, invalidate, setData
+  정의: app/(home)/HypothesisLab/_action/assumption.state.ts
+  쓰는 곳: HypothesisLab
+api.home.HypothesisLab.popularity = {}
+  바꾸는 함수: fetch, getData, invalidate, setData
+  정의: app/(home)/HypothesisLab/_action/popularity.state.ts
+  쓰는 곳: HypothesisLab
+api.home.LotterietusCard.status = {}
+  바꾸는 함수: fetch, getData, invalidate, setData
+  정의: app/(home)/LotterietusCard/_action/status.state.ts
+  쓰는 곳: LotterietusCard
 api.home.PicksCard.picks = {}
   바꾸는 함수: fetch, getData, invalidate, remove, save, setData
   정의: app/(home)/PicksCard/_action/picks.state.ts
@@ -10,6 +26,14 @@ api.home.ResultsCard.check = {}
   바꾸는 함수: fetch, getData, invalidate, setData
   정의: app/(home)/ResultsCard/_action/check.state.ts
   쓰는 곳: ResultsCard
+api.home.SimulationCard.backtest = {}
+  바꾸는 함수: backtest, fetch, getData, invalidate, setData
+  정의: app/(home)/SimulationCard/_action/backtest.state.ts
+  쓰는 곳: SimulationCard
+api.home.StatisticsPanel.statistics = {}
+  바꾸는 함수: fetch, getData, invalidate, setData
+  정의: app/(home)/StatisticsPanel/_action/statistics.state.ts
+  쓰는 곳: StatisticsPanel
 event.home.PicksCard.changed = {}
   바꾸는 함수: emit, exempt, on, record
   정의: app/(home)/PicksCard/_action/picks.event.state.ts
@@ -27,14 +51,7 @@ state.home.generatorOpen = {"open":false}
   정의: app/(home)/_state/generatorOpen.state.ts
   쓰는 곳: Home, LotterietusCard
 [cache]
-cache.hypothesis.popularity
-cache.lotterietus.status
-cache.statistics.get
 [http]
-http.generator.generate
-http.hypothesis.evaluate
-http.hypothesis.generate
-http.simulation.backtest
 [event]
 [route]
 route.home.index"

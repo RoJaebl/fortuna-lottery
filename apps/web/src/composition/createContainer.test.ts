@@ -14,10 +14,4 @@ describe("createContainer", () => {
   it("fake 환경은 아직 준비되지 않았다는 오류로 실패한다", () => {
     expect(() => createContainer("fake")).toThrow("아직 준비되지 않았다");
   });
-
-  it("두 번 지은 컨테이너는 서로 다른 캐시를 쥔다", () => {
-    const c1 = createContainer("test");
-    const c2 = createContainer("test");
-    expect(c1.resolve("cache.statistics.get")).not.toBe(c2.resolve("cache.statistics.get"));
-  });
 });

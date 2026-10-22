@@ -326,6 +326,15 @@ export default tseslint.config(
     rules: { "no-restricted-syntax": ["error", VIEWMODEL_SPREAD, STORE_OUTSIDE_ACTION, ...PATH_LITERAL] },
   },
   {
+    // 자원 시험은 화면 하나 없이 useStore 로 자원을 직접 꺼내 본다 — 꺼내는 자리 검사 둘을 뺀다.
+    // 옛 store 를 걷어낼 때 STORE_OUTSIDE_ACTION 과 함께 지운다
+    files: [`${SCREEN}/**/_action/*.state.test.{ts,tsx}`],
+    rules: {
+      "no-restricted-syntax": ["error", VIEWMODEL_SPREAD, ...PATH_LITERAL],
+      "store/state-only-in-presenter": "off",
+    },
+  },
+  {
     // 엔진과 규약 층의 시험은 it 안에서 시험용 key 로 등록하고 store 를 직접 다루는 것이 일이다
     files: ["src/{shared/lib,framework}/**/*.test.{ts,tsx}"],
     rules: {
