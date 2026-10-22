@@ -12,14 +12,15 @@ export function usePicksCardPresenter() {
   // 처음 그릴 때(idle)도 아직 받기 전이다
   const loading = status === "idle" || status === "loading";
 
+  // 다른 쪽의 앞선 오류만 지운다 — 진행 중이면 reset 이 pending 과 응답까지 버리므로 건드리지 않는다
   const saveCurrent = () => {
     if (!currentNumbers) return;
-    remove.reset();
+    if (!remove.pending) remove.reset();
     void save.mutate(currentNumbers);
   };
 
   const removePick = (id: string) => {
-    save.reset();
+    if (!save.pending) save.reset();
     void remove.mutate(id);
   };
 

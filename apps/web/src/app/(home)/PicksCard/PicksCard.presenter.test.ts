@@ -1,6 +1,6 @@
-import { renderHook } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { overrideStore } from "@fortuna-lottery/store";
+import { getStore, overrideStore } from "@fortuna-lottery/store";
 import { TestHttpClient } from "@infrastructure/http";
 import { saveButtonLabel, usePicksCardPresenter } from "./PicksCard.presenter";
 
@@ -20,5 +20,19 @@ describe("usePicksCardPresenter", () => {
     const { result } = renderHook(() => usePicksCardPresenter());
     expect(result.current.loading).toBe(true);
     expect(result.current.empty).toBe(false);
+  });
+
+  it("저장이 진행 중일 때 다른 픽을 지워도 저장은 계속 진행 중이다", async () => {
+    const http = new TestHttpClient();
+    http.respond("/api/picks", () => (http.sent.at(-1)!.init.method === "POST" ? new Promise(() => {}) : []));
+    http.respond("/api/picks/x", () => undefined);
+    overrideStore("infra.http", () => ({ client: http }));
+    getStore("state.home.combination").getState().choose([1, 2, 3, 4, 5, 6]);
+    const { result } = renderHook(() => usePicksCardPresenter());
+    act(() => result.current.saveCurrent());
+    expect(result.current.saveLabel).toBe("저장 중…");
+    await act(async () => result.current.removePick("x"));
+    expect(result.current.saveLabel).toBe("저장 중…");
+    expect(result.current.saveDisabled).toBe(true);
   });
 });

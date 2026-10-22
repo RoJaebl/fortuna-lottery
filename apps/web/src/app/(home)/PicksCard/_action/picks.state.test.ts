@@ -54,6 +54,29 @@ describe("api.home.PicksCard.picks", () => {
     expect(heard).not.toHaveBeenCalled();
   });
 
+  it("삭제가 실패해도 그 사이 지운 다른 픽은 돌아오지 않는다", async () => {
+    const { http, picks } = await setup();
+    let fail!: (e: Error) => void;
+    http.respond("/api/picks/a", () => new Promise((_, reject) => (fail = reject)));
+    http.respond("/api/picks/b", () => undefined);
+    const removing = picks.remove("a");
+    await picks.remove("b");
+    fail(new Error("삭제 거절"));
+    await expect(removing).rejects.toThrow("삭제 거절");
+    expect(picks.getData()?.map((p) => p.id)).toEqual(["a"]);
+  });
+
+  it("삭제가 실패해도 그 사이 저장한 픽은 남는다", async () => {
+    const { http, picks } = await setup();
+    let fail!: (e: Error) => void;
+    http.respond("/api/picks/a", () => new Promise((_, reject) => (fail = reject)));
+    const removing = picks.remove("a");
+    await picks.save([1, 2, 3, 4, 5, 6]);
+    fail(new Error("삭제 거절"));
+    await expect(removing).rejects.toThrow("삭제 거절");
+    expect(picks.getData()?.map((p) => p.id)).toEqual(["a", "p1", "b"]);
+  });
+
   it("삭제 경로는 /api/picks/${encodeURIComponent(id)} 의 DELETE 다", async () => {
     const { http, picks, heard } = await setup();
     http.respond("/api/picks/a%20b", () => undefined);

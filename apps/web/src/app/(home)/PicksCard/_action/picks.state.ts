@@ -25,15 +25,16 @@ createStore("api.home.PicksCard.picks", (set, get, ctx) =>
       return created;
     },
 
-    /** 먼저 목록에서 빼고, 실패하면 되돌린다 */
+    /** 먼저 목록에서 빼고, 실패하면 뺀 픽 하나만 제자리에 되돌린다 — 그 사이의 다른 저장·삭제는 그대로 둔다 */
     remove: async (id: string) => {
-      const before = cache.getData();
+      const index = cache.getData()?.findIndex((p) => p.id === id) ?? -1;
+      const removed = index >= 0 ? cache.getData()![index] : undefined;
       cache.setData((prev) => prev?.filter((p) => p.id !== id));
       try {
         await ctx("infra.http").client.send(`/api/picks/${encodeURIComponent(id)}`, { method: "DELETE" });
         ctx("event.home.PicksCard.changed").emit({ kind: "removed" });
       } catch (e) {
-        cache.setData(() => before); // 받기 전(undefined)이었어도 되돌린다 — 값 꼴은 undefined 를 받지 않는다
+        if (removed) cache.setData((prev) => prev && [...prev.slice(0, index), removed, ...prev.slice(index)]);
         throw e;
       }
     },

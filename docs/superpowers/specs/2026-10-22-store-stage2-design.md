@@ -175,14 +175,16 @@ createStore("api.home.PicksCard.picks", (set, get, ctx) =>
       return created;
     },
 
-    remove: async (id: string) => {                                // 낙관적 삭제 — 실패하면 되돌린다
-      const before = cache.getData();
+    remove: async (id: string) => {                                // 낙관적 삭제 — 실패하면 뺀 픽 하나만 제자리에 되돌린다
+      const index = cache.getData()?.findIndex((p) => p.id === id) ?? -1;
+      const removed = index >= 0 ? cache.getData()![index] : undefined;
       cache.setData((prev) => prev?.filter((p) => p.id !== id));
       try {
         await ctx("infra.http").client.send(`/api/picks/${encodeURIComponent(id)}`, { method: "DELETE" });
         ctx("event.home.PicksCard.changed").emit({ kind: "removed" });
       } catch (e) {
-        cache.setData(before);
+        // 목록 전체를 되돌리면 그 사이의 다른 저장·삭제가 사라진다 — 뺀 것만 다시 넣는다
+        if (removed) cache.setData((prev) => prev && [...prev.slice(0, index), removed, ...prev.slice(index)]);
         throw e;
       }
     },
