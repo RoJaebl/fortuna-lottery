@@ -152,6 +152,7 @@ ESLint 가 거는 모양 규칙은 이렇다.
   key 는 문자열 그대로 쓰고(`state-key-literal`), 폴더를 따르며(`state-key-matches-folder`), 자기·조상 폴더의 key 만
   꺼낸다(`state-key-within-scope`). 화면에서 `useStore` 를 부르는 것은 presenter 뿐이고(`state-only-in-presenter`),
   등록은 정의 파일만 한다(`state-registers-in-state-folder`).
+  `@fortuna-lottery/store*` 를 `import * as` 로 가져오지 않는다 — 이름공간으로 부르면 위 key 규칙을 비켜 간다(`no-namespace-store-import`).
 - creator 맨 위와 그 자리의 `createResource`·`createEvent` 정의 함수 맨 위는 store 를 짓는 순간 한 번 돈다. 거기서 `ctx(…)` 를
   부르면 그 결과로 `.on`·`.exempt` 만 부른다(`ctx-at-top-binds-event-only`, ctx 를 이름으로 알아보는 근사다). 조회·바꾸기 함수 안은 맨 위가 아니다.
 

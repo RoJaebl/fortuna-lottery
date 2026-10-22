@@ -30,6 +30,13 @@ const STORE_REGISTER_NESTED = {
     "store 등록은 모듈 최상단에서만 한다 — 함수나 컴포넌트 안에서 하면 불릴 때마다 같은 key 를 다시 등록한다 (store-registers-at-top-level)",
 };
 
+// no-namespace-store-import — 이름공간으로 가져오면 S.useStore(…)·S.createStore(…) 꼴이 되어 store key 검사가 알아보지 못한다
+const STORE_NAMESPACE_IMPORT = {
+  selector: "ImportDeclaration[source.value=/^@fortuna-lottery.store/] > ImportNamespaceSpecifier",
+  message:
+    "@fortuna-lottery/store 는 이름으로 가져온다 — import * as 로 가져오면 store key 규칙을 비켜 간다 (no-namespace-store-import)",
+};
+
 const keyOf = (arg) => (arg?.type === "Literal" && typeof arg.value === "string" ? arg.value : null);
 const isFunction = (node) => /Function/.test(node.type);
 
@@ -195,7 +202,7 @@ export default tseslint.config(
     plugins: { store: STORE_KEYS },
     rules: {
       "no-restricted-imports": ["error", { patterns: [ROOT_ALIAS] }],
-      "no-restricted-syntax": ["error", STORE_REGISTER_NESTED],
+      "no-restricted-syntax": ["error", STORE_REGISTER_NESTED, STORE_NAMESPACE_IMPORT],
       "store/state-key-literal": "error",
     },
   },
@@ -210,14 +217,21 @@ export default tseslint.config(
     // 규칙 이름이 같으면 뒤 블록이 앞 블록을 통째로 덮는다 — 블록마다 걸릴 선택자를 전부 싣는다
     files: [`${SCREEN}/**/*.{ts,tsx}`],
     rules: {
-      "no-restricted-syntax": ["error", VIEWMODEL_SPREAD, STORE_REGISTER_NESTED],
+      "no-restricted-syntax": ["error", VIEWMODEL_SPREAD, STORE_REGISTER_NESTED, STORE_NAMESPACE_IMPORT],
     },
   },
   {
     files: [`${SCREEN}/**/*.tsx`],
     ignores: [`${SCREEN}/**/*.presenter.tsx`], // JSX 를 담은 presenter 는 화면이 아니다
     rules: {
-      "no-restricted-syntax": ["error", VIEW_STATE, VIEW_STATE_MEMBER, VIEWMODEL_SPREAD, STORE_REGISTER_NESTED],
+      "no-restricted-syntax": [
+        "error",
+        VIEW_STATE,
+        VIEW_STATE_MEMBER,
+        VIEWMODEL_SPREAD,
+        STORE_REGISTER_NESTED,
+        STORE_NAMESPACE_IMPORT,
+      ],
     },
   },
   // store key 검사 — 규칙마다 이름이 달라 서로 덮지 않는다. 글롭은 그 규칙이 울어야 할 자리를 그대로 짚는다.
