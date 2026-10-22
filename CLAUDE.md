@@ -199,6 +199,7 @@ ESLint 가 거는 모양 규칙은 이렇다.
 - **화면 앱의 상태는 모두 `@fortuna-lottery/store` 의 전역 등록부에 있고 공급자도 컨테이너도 없다.** 정의는 `*.state.ts` 파일의
   `createStore("key", (set, get, ctx) => …)` 하나다. `ctx(key)` 는 다른 store 의 부르는 순간의 값을 준다(구독은 없다).
   타입은 생성 파일(`src/composition/store.gen.ts`, git 에 넣지 않는다)의 `StateTypes` 가 준다.
+  정의가 돌려주는 값에 쓴 타입은 정의 파일에서 `export` 한다 — 생성 파일이 그 이름을 그대로 적으므로, 내보내지 않으면 원인을 가리키지 않는 tsc 오류가 난다.
   presenter 는 `useStore(key)`·`useStore(key, { pick })`·`useStore(key, { omit })`(`@fortuna-lottery/store/react`)로 꺼낸다.
   - **key 는 접두 넷이고 폴더를 따른다.** `state.`(공통 상태, `_state/`)·`api.`(자원, `_action/`)·`event.`(event, 내는 쪽의
     `_action/<도메인>.event.state.ts`)는 정의 파일의 폴더 경로를 key 로 쓴다 — `app/(home)/_state/` 는 `state.home.<이름>`,
