@@ -9,7 +9,7 @@ createStore("api.home.PicksCard.picks", (set, get, ctx) =>
   createResource((cache: Cache<void, PickViewModel[]>) => ({
     query: async () => PickViewModel.fromMany(picksListResponse(await ctx("infra.http").client.get("/api/picks"))),
 
-    /** 응답으로 받은 픽을 목록 맨 앞에 더한다 */
+    /** 응답으로 받은 픽을 목록 맨 앞에 더한다 — 아직 목록을 받지 못했으면 더할 자리가 없으므로 목록을 다시 받는다 */
     async save(numbers: readonly number[]) {
       const created = PickViewModel.from(
         picksCreateResponse(
@@ -20,7 +20,9 @@ createStore("api.home.PicksCard.picks", (set, get, ctx) =>
           }),
         ),
       );
-      cache.setData((prev) => [created, ...(prev ?? [])]);
+      // 받는 중인 첫 목록 위에 setData 하면 그 응답이 버려져 목록이 저장한 픽 하나만 남는다
+      if (cache.getData() === undefined) await cache.invalidate();
+      else cache.setData((prev) => [created, ...(prev ?? [])]);
       ctx("event.home.PicksCard.changed").emit({ kind: "saved" });
       return created;
     },
@@ -34,7 +36,11 @@ createStore("api.home.PicksCard.picks", (set, get, ctx) =>
         await ctx("infra.http").client.send(`/api/picks/${encodeURIComponent(id)}`, { method: "DELETE" });
         ctx("event.home.PicksCard.changed").emit({ kind: "removed" });
       } catch (e) {
-        if (removed) cache.setData((prev) => prev && [...prev.slice(0, index), removed, ...prev.slice(index)]);
+        // 그 사이 다시 받은 목록에 이미 있으면 한 번 더 넣지 않는다
+        if (removed)
+          cache.setData((prev) =>
+            prev && !prev.some((p) => p.id === id) ? [...prev.slice(0, index), removed, ...prev.slice(index)] : prev,
+          );
         throw e;
       }
     },

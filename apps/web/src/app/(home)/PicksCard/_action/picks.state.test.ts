@@ -77,6 +77,34 @@ describe("api.home.PicksCard.picks", () => {
     expect(picks.getData()?.map((p) => p.id)).toEqual(["a", "p1", "b"]);
   });
 
+  it("처음 목록을 받는 중에 저장이 끝나면 목록을 다시 받아 서버의 픽을 모두 보인다", async () => {
+    const http = new TestHttpClient();
+    overrideStore("infra.http", () => ({ client: http }));
+    let firstList!: (v: unknown) => void;
+    let gets = 0;
+    http.respond("/api/picks", () => {
+      if (http.sent.at(-1)!.init.method === "POST") return wire("p1");
+      return ++gets === 1 ? new Promise((resolve) => (firstList = resolve)) : [wire("p1"), wire("a"), wire("b")];
+    });
+    const picks = getStore("api.home.PicksCard.picks").getState();
+    const listing = picks.fetch().catch(() => undefined);
+    await picks.save([1, 2, 3, 4, 5, 6]);
+    firstList([wire("a"), wire("b")]);
+    await listing;
+    expect(picks.getData()?.map((p) => p.id)).toEqual(["p1", "a", "b"]);
+  });
+
+  it("삭제가 실패해도 그 사이 다시 받은 목록에 이미 있으면 한 번 더 넣지 않는다", async () => {
+    const { http, picks } = await setup();
+    let fail!: (e: Error) => void;
+    http.respond("/api/picks/a", () => new Promise((_, reject) => (fail = reject)));
+    const removing = picks.remove("a");
+    await picks.invalidate();
+    fail(new Error("삭제 거절"));
+    await expect(removing).rejects.toThrow("삭제 거절");
+    expect(picks.getData()?.map((p) => p.id)).toEqual(["a", "b"]);
+  });
+
   it("삭제 경로는 /api/picks/${encodeURIComponent(id)} 의 DELETE 다", async () => {
     const { http, picks, heard } = await setup();
     http.respond("/api/picks/a%20b", () => undefined);
