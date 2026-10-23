@@ -57,6 +57,7 @@ declare -A EXPECT=(
   [ctx-at-top-binds-event-only]='(ctx-at-top-binds-event-only)'
   [no-namespace-store-import]='(no-namespace-store-import)'
   [style-tools-through-lib]='(style-tools-through-lib)'
+  [styles-owned-by-its-screen]='styles-owned-by-its-screen)'
 )
 for dir in "$ROOT"/tools/checks/eslint-violations/*/; do
   name="$(basename "$dir")"

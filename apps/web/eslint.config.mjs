@@ -156,6 +156,37 @@ const STORE_KEYS = {
   },
 };
 
+// styles-owned-by-its-screen — X.styles.ts 는 화면 X 만 가져온다: 같은 폴더의 X.tsx, 폴더 X 의 index.tsx, 같은 폴더의 X.styles.test.ts.
+// 다른 화면이 쓰면 소비자를 세어 공통 조상으로 올린다 (fractal-view-promotion §3). 상대 경로 ./X.styles 꼴만 알아본다
+const STYLE_OWNERS = {
+  rules: {
+    "styles-owned-by-its-screen": {
+      meta: { type: "problem", schema: [] },
+      create(context) {
+        const parts = context.filename.split(/[\\/]/);
+        const base = parts.at(-1);
+        const folder = parts.at(-2);
+        return {
+          ImportDeclaration(node) {
+            const hit = /^(?:(\.\/)|.*\/)([^/]+)\.styles(?:\.js)?$/.exec(node.source.value);
+            if (!hit) return;
+            const name = hit[2];
+            const owner =
+              hit[1] !== undefined &&
+              (base === `${name}.tsx` || base === `${name}.styles.test.ts` || (base === "index.tsx" && folder === name));
+            if (!owner) {
+              context.report({
+                node,
+                message: `${name}.styles.ts 는 화면 ${name} 만 쓴다 — 다른 화면이 쓰면 소비자를 세어 공통 조상으로 올린다 (fractal-view-promotion §3, styles-owned-by-its-screen)`,
+              });
+            }
+          },
+        };
+      },
+    },
+  },
+};
+
 // no-root-alias
 const ROOT_ALIAS = {
   regex: "^@/",
@@ -206,11 +237,12 @@ export default tseslint.config(
   {
     files: ["src/**/*.{ts,tsx}"],
     languageOptions: { parser: tseslint.parser },
-    plugins: { store: STORE_KEYS },
+    plugins: { store: STORE_KEYS, style: STYLE_OWNERS },
     rules: {
       "no-restricted-imports": ["error", { patterns: [ROOT_ALIAS, STYLE_TOOLS] }],
       "no-restricted-syntax": ["error", STORE_REGISTER_NESTED, STORE_NAMESPACE_IMPORT],
       "store/state-key-literal": "error",
+      "style/styles-owned-by-its-screen": "error",
     },
   },
   {
