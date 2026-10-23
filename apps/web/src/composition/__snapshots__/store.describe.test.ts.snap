@@ -46,10 +46,6 @@ state.home.combination = {"numbers":null}
   바꾸는 함수: choose
   정의: app/(home)/_state/combination.state.ts
   쓰는 곳: GeneratorCard, HypothesisLab, PicksCard, SimulationCard, StatisticsPanel
-state.home.generatorOpen = {"open":false}
-  바꾸는 함수: toggle
-  정의: app/(home)/_state/generatorOpen.state.ts
-  쓰는 곳: Home, LotterietusCard
 [event]
 event.home.PicksCard.changed
   exempt api.home.ResultsCard.check — 결과는 사람이 「당첨 대조」를 눌러 받는다 — 누르기 전까지 앞선 결과를 그대로 보인다

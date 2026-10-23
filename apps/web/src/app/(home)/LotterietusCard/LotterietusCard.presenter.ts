@@ -12,13 +12,7 @@ export function formatRemaining(ms: number): string {
   return days > 0 ? `D-${days} ${h}:${m}:${s}` : `${h}:${m}:${s}`;
 }
 
-/** 생성기 CTA 문구 — 생성기가 펼쳐져 있는지라는 바깥 값을 보므로 조정자에 둔다 */
-export function ctaLabel(generatorOpen: boolean): string {
-  return generatorOpen ? "생성기 닫기" : "번호 생성하기";
-}
-
 export function useLotterietusCardPresenter() {
-  const { open: generatorOpen, toggle: toggleGenerator } = useStore("state.home.generatorOpen", { pick: ["open", "toggle"] });
   const { data: status = null, status: fetchStatus, error } = useStore("api.home.LotterietusCard.status");
   // 처음 그릴 때(idle)도 아직 받기 전이다
   const loading = fetchStatus === "idle" || fetchStatus === "loading";
@@ -36,8 +30,5 @@ export function useLotterietusCardPresenter() {
     status,
     error,
     remaining: status ? formatRemaining(status.nextDrawAt.getTime() - now) : null,
-    ctaLabel: ctaLabel(generatorOpen),
-    generatorOpen,
-    toggleGenerator,
   };
 }

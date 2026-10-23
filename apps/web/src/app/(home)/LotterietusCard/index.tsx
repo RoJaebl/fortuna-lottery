@@ -2,50 +2,42 @@
 import { Ball } from "@ui/Ball";
 import { useLotterietusCardPresenter } from "./LotterietusCard.presenter";
 
-/** 홈 최상단 Hero — 최근 회차와 다음 추첨 카운트다운을 동등한 비중으로 보여주고 생성기 CTA를 제공 */
+/** 화면 최상단 띠 — 최근 회차, 다음 추첨까지 남은 시간, 실제 당첨 확률을 한 줄에 보인다 */
 export function LotterietusCard() {
-  const { loading, status, error, remaining, ctaLabel, generatorOpen, toggleGenerator } =
-    useLotterietusCardPresenter();
+  const { loading, status, error, remaining } = useLotterietusCardPresenter();
 
   return (
-    <section className="rounded-panel border border-line bg-panel p-6 sm:p-8">
+    <section
+      aria-label="회차 정보"
+      className="flex flex-wrap items-center gap-x-6 gap-y-2 border-b border-line bg-panel px-4 py-2 sm:px-6"
+    >
       {error ? <p className="text-small text-danger">{error}</p> : null}
 
       {status ? (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-          <div>
-            <p className="text-micro text-muted">
-              최근 회차 · 제{status.round}회 · {status.drawDate} 추첨
-            </p>
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              {status.numbers.map((n) => (
-                <Ball key={n} n={n} size="lg" />
-              ))}
-              <span className="mx-1 text-muted">+</span>
-              <Ball n={status.bonus} size="md" />
-            </div>
+        <>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-micro text-muted">
+              제{status.round}회 · {status.drawDate}
+            </span>
+            {status.numbers.map((n) => (
+              <Ball key={n} n={n} size="sm" />
+            ))}
+            <span className="text-muted">+</span>
+            <Ball n={status.bonus} size="sm" />
           </div>
 
-          <div className="sm:border-l sm:border-line sm:pl-6">
-            <p className="text-micro text-muted">
-              다음 추첨까지 · 제{status.nextRound}회 · 매주 토요일 20:35
-            </p>
-            <p className="mt-3 text-display font-bold tabular-nums text-text">{remaining ?? "…"}</p>
-          </div>
-        </div>
+          <p className="text-micro text-muted">
+            제{status.nextRound}회까지{" "}
+            <span className="text-small font-semibold tabular-nums text-text">{remaining ?? "…"}</span>
+          </p>
+        </>
       ) : loading ? (
-        <p className="text-small text-muted">불러오는 중…</p>
+        <p className="text-micro text-muted">불러오는 중…</p>
       ) : null}
 
-      <button
-        type="button"
-        onClick={toggleGenerator}
-        aria-expanded={generatorOpen}
-        className="mt-6 w-full rounded-card bg-strong px-6 py-3 text-body font-semibold text-on-strong transition-colors hover:opacity-90 sm:w-auto"
-      >
-        {ctaLabel}
-      </button>
+      <p className="text-micro text-muted sm:ml-auto">
+        당첨 확률 <span className="text-small font-semibold tabular-nums text-text">1/8,145,060</span>
+      </p>
     </section>
   );
 }
-

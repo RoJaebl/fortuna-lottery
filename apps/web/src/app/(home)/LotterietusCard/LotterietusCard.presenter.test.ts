@@ -2,17 +2,16 @@ import { renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { getStore, overrideStore, resetStores } from "@fortuna-lottery/store";
 import { TestHttpClient } from "@infrastructure/http";
-import { ctaLabel, formatRemaining, useLotterietusCardPresenter } from "./LotterietusCard.presenter";
+import { formatRemaining, useLotterietusCardPresenter } from "./LotterietusCard.presenter";
 import { LotterietusViewModel } from "./_model/Lotterietus.viewmodel";
 
-/** 회차 응답은 오지 않는다 — 조합과 생성기 열림을 미리 정한다 */
-function withState(numbers: number[] | null = null, generatorOpen = false) {
+/** 회차 응답은 오지 않는다 — 조합을 미리 정한다 */
+function withState(numbers: number[] | null = null) {
   resetStores(); // 시험 하나 안에서도 부를 때마다 처음 값에서 시작한다 — 공통 상태는 모듈에 하나뿐이다
   const http = new TestHttpClient();
   http.respond("/api/lotterietus", () => new Promise(() => {}));
   overrideStore("infra.http", () => ({ client: http }));
   if (numbers) getStore("state.home.combination").getState().choose(numbers);
-  if (generatorOpen) getStore("state.home.generatorOpen").getState().toggle();
 }
 
 describe("formatRemaining (카운트다운 presenter)", () => {
@@ -54,19 +53,5 @@ describe("useLotterietusCardPresenter", () => {
     void resource.invalidate(); // 다시 받는 중 — 응답은 오지 않는다
     const { result } = renderHook(() => useLotterietusCardPresenter());
     expect(result.current.loading).toBe(false);
-  });
-
-  it("ctaLabel — 생성기가 열려 있는지에 따라", () => {
-    withState(null, true);
-    expect(renderHook(() => useLotterietusCardPresenter()).result.current.ctaLabel).toBe("생성기 닫기");
-    withState();
-    expect(renderHook(() => useLotterietusCardPresenter()).result.current.ctaLabel).toBe("번호 생성하기");
-  });
-});
-
-describe("ctaLabel", () => {
-  it("열려 있으면 닫기, 아니면 생성하기", () => {
-    expect(ctaLabel(true)).toBe("생성기 닫기");
-    expect(ctaLabel(false)).toBe("번호 생성하기");
   });
 });

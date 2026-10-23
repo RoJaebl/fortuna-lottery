@@ -4,6 +4,12 @@ import { getStore, resetStores } from "@fortuna-lottery/store";
 import { useHomePresenter } from "./Home.presenter";
 
 describe("useHomePresenter", () => {
+  it("처음 고른 메뉴는 작업실이다", () => {
+    const { result } = renderHook(() => useHomePresenter());
+    expect(result.current.menu.items).toEqual([{ key: "workroom", label: "작업실" }]);
+    expect(result.current.menu.active).toBe("workroom");
+  });
+
   it("탭 목록 끝이 가정 실험실이다", () => {
     const { result } = renderHook(() => useHomePresenter());
     expect(result.current.tabs.items.at(-1)).toEqual({ key: "hypothesis", label: "가정 실험실" });
@@ -14,13 +20,6 @@ describe("useHomePresenter", () => {
     expect(result.current.tabs.active).toBe("statistics");
     act(() => result.current.tabs.onChange("results"));
     expect(result.current.tabs.active).toBe("results");
-  });
-
-  it("회차 카드가 공통 상태의 생성기 열림을 뒤집으면 페이지가 따라 펼친다", () => {
-    const { result } = renderHook(() => useHomePresenter());
-    expect(result.current.isGeneratorOpen).toBe(false);
-    act(() => getStore("state.home.generatorOpen").getState().toggle());
-    expect(result.current.isGeneratorOpen).toBe(true);
   });
 
   it("resetStores 뒤에는 공통 상태가 처음 값이다", () => {
