@@ -51,5 +51,3 @@ export function StatisticsPanel() {
   );
 }
 
-export type { StatisticsModel } from "./_model/Statistics.model";
-export type { StatisticsViewModel } from "./_model/Statistics.viewmodel";

@@ -61,8 +61,3 @@ export function ResultsCard() {
   );
 }
 
-export type { ResultsCheckModel } from "./_model/ResultsCheck.model";
-export type { ResultsDrawModel } from "./_model/ResultsDraw.model";
-export type { ResultsDrawViewModel } from "./_model/ResultsDraw.viewmodel";
-export type { ResultsCheckItemModel } from "./_model/ResultsCheckItem.model";
-export type { ResultsCheckItemViewModel } from "./_model/ResultsCheckItem.viewmodel";

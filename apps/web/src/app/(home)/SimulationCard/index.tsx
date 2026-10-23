@@ -47,5 +47,3 @@ export function SimulationCard() {
   );
 }
 
-export type { SimulationResultModel } from "./_model/SimulationResult.model";
-export type { SimulationResultViewModel } from "./_model/SimulationResult.viewmodel";

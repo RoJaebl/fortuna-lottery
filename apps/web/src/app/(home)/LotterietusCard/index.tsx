@@ -49,5 +49,3 @@ export function LotterietusCard() {
   );
 }
 
-export type { LotterietusModel } from "./_model/Lotterietus.model";
-export type { LotterietusViewModel } from "./_model/Lotterietus.viewmodel";
