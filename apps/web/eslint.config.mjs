@@ -157,7 +157,8 @@ const STORE_KEYS = {
 };
 
 // styles-owned-by-its-screen — X.styles.ts 는 화면 X 만 가져온다: 같은 폴더의 X.tsx, 폴더 X 의 index.tsx, 같은 폴더의 X.styles.test.ts.
-// 다른 화면이 쓰면 소비자를 세어 공통 조상으로 올린다 (fractal-view-promotion §3). 상대 경로 ./X.styles 꼴만 알아본다
+// 다른 화면이 쓰면 소비자를 세어 공통 조상으로 올린다 (fractal-view-promotion §3 소유물의 자리). 상대 경로 ./X.styles 꼴만 알아본다
+// 정적 import 선언만 본다 — 재내보내기(export … from)와 동적 import() 는 검사하지 않는다.
 const STYLE_OWNERS = {
   rules: {
     "styles-owned-by-its-screen": {
@@ -177,7 +178,7 @@ const STYLE_OWNERS = {
             if (!owner) {
               context.report({
                 node,
-                message: `${name}.styles.ts 는 화면 ${name} 만 쓴다 — 다른 화면이 쓰면 소비자를 세어 공통 조상으로 올린다 (fractal-view-promotion §3, styles-owned-by-its-screen)`,
+                message: `${name}.styles.ts 는 화면 ${name} 만 쓴다 — 다른 화면이 쓰면 소비자를 세어 공통 조상으로 올린다 (fractal-view-promotion §3 소유물의 자리, styles-owned-by-its-screen)`,
               });
             }
           },

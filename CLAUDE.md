@@ -33,7 +33,7 @@ PARA/MOC 규칙과는 무관하다.
 - 실제 코드/설정 상태와 문서 내용이 어긋난 것을 발견하면, 작업을 계속하기 전에 문서를 최신 상태로
   갱신한다.
 
-현재 문서: `design-system.md` (컬러 토큰), `launcher-ports.md` (런처 · 포트 · 환경 이름).
+현재 문서: `design-system.md` (컬러 토큰 · 서식 규칙), `launcher-ports.md` (런처 · 포트 · 환경 이름).
 
 ## superpowers 스킬 워크플로 — 계획/스펙 문서 선(先) 커밋
 
@@ -244,7 +244,7 @@ ESLint 가 거는 모양 규칙은 이렇다.
 - **서식 도구는 editor 저장소와 같은 셋(`clsx`·`tailwind-merge`·`tailwind-variants`)이다.** 다른 점은 `tv` 를 `shared/lib/style/tv.ts` 의
   `createTV({ twMergeConfig })` 로 내어 토큰 이름을 `tv` 안에도 알리는 것이다. 조건으로 갈리는 서식은 화면 곁 `<화면>.styles.ts` 에 두고
   ([fractal-view-promotion §3 소유물의 자리 — 소비자를 세어 정한다](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/fractal-view-promotion.md#3-소유물의-자리--소비자를-세어-정한다>)가 승격 기준을 정한다),
-  규칙은 `.claude/context/design-system.md` 의 「규칙」 절이 갖는다.
+  규칙은 [`.claude/context/design-system.md` 의 「규칙」 절](<.claude/context/design-system.md#규칙>)이 갖는다.
 - **도구 판본.** `packageManager` 는 `pnpm@11.18.0` 이고, 설치 때 빌드 스크립트를 허용할 패키지(prisma,
   엔진, esbuild, sharp)를 `pnpm-workspace.yaml` 의 `allowBuilds` 에 둔다. NestJS 는 12 이고, `apps/api` 는
   계약 패키지가 `import` 조건만 내보내므로 ESM 이다.
