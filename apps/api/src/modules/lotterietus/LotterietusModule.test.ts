@@ -16,7 +16,7 @@ import { LotterietusModule } from "./LotterietusModule.js";
 // 조립 루트가 전역으로 내줄 CONFIG 는 여기서 가짜를 꽂는다 — 수집 스케줄러는 끈다(원격을 부르지 않는다)
 @Global()
 @Module({
-  providers: [{ provide: CONFIG, useValue: { port: 0, schedulerEnabled: false } satisfies ApiConfig }],
+  providers: [{ provide: CONFIG, useValue: { port: 0, strictPort: false, schedulerEnabled: false } satisfies ApiConfig }],
   exports: [CONFIG],
 })
 class FakeConfigModule {}

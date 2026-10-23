@@ -27,6 +27,7 @@ Thumbs.db
 .idea/
 .vscode/*
 !.vscode/extensions.json
+!.vscode/settings.json
 
 # Test / coverage
 coverage/
@@ -41,3 +42,7 @@ test-results/
 
 # Claude Code personal overrides (not shared with the team)
 .claude/settings.local.json
+
+# Local SQLite (apps/api/prisma/fortuna.db — 런처가 마이그레이션과 시드로 만든다)
+*.db
+*.db-journal

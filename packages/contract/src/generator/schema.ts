@@ -6,9 +6,7 @@ export const GeneratorGenerateRequestSchema = z.object({
   fixedNumbers: z.array(z.number()).optional(),
   excludedNumbers: z.array(z.number()).optional(),
 });
-export type GeneratorGenerateRequest = z.infer<typeof GeneratorGenerateRequestSchema>;
 
 export const GeneratorGenerateResponseSchema = z.object({
   numbers: combinationSchema,
 });
-export type GeneratorGenerateResponse = z.infer<typeof GeneratorGenerateResponseSchema>;

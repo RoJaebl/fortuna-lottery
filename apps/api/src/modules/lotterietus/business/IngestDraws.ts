@@ -1,6 +1,8 @@
-import { Inject, Injectable, Optional } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { DRAW_SOURCE, type DrawSourcePort } from "../domain/port/DrawSourcePort.js";
 import { DRAW_WRITER, type DrawWriterPort } from "../domain/port/DrawWriterPort.js";
+import { LOGGER, type LoggerPort } from "../domain/port/LoggerPort.js";
+import { SLEEP, type SleepPort } from "../domain/port/SleepPort.js";
 
 /**
  * 한 번에 앞서가 볼 폭.
@@ -9,15 +11,8 @@ import { DRAW_WRITER, type DrawWriterPort } from "../domain/port/DrawWriterPort.
  */
 const PROBE_AHEAD = 6;
 
-export interface IngestDrawsOptions {
-  /** 요청 간 대기 — 원격 차단 방지. 테스트에서 주입한다 */
-  sleep?: (ms: number) => Promise<void>;
-  requestDelayMs?: number;
-  logger?: (message: string) => void;
-}
-
-/** 모듈 파일이 로그 출력 자리를 꽂는 토큰 — 없으면 기본값(1초 간격, 로그 없음)으로 돈다 */
-export const INGEST_DRAWS_OPTIONS = Symbol("IngestDrawsOptions");
+/** 원격 요청 사이의 대기 — 원격 차단 방지 */
+export const INGEST_REQUEST_DELAY_MS = 1000;
 
 export interface IngestDrawsResult {
   /** 사이클 시작 시점의 최대 회차 */
@@ -30,8 +25,6 @@ export interface IngestDrawsResult {
   requestCount: number;
 }
 
-const defaultSleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
-
 /**
  * 수집 catch-up 사이클 1회 — 백필과 정기 수집이 같은 경로를 탄다.
  *
@@ -41,19 +34,12 @@ const defaultSleep = (ms: number) => new Promise<void>((resolve) => setTimeout(r
  */
 @Injectable()
 export class IngestDraws {
-  private readonly sleep: (ms: number) => Promise<void>;
-  private readonly requestDelayMs: number;
-  private readonly logger: (message: string) => void;
-
   constructor(
     @Inject(DRAW_SOURCE) private readonly source: DrawSourcePort,
     @Inject(DRAW_WRITER) private readonly writer: DrawWriterPort,
-    @Optional() @Inject(INGEST_DRAWS_OPTIONS) options: IngestDrawsOptions = {},
-  ) {
-    this.sleep = options.sleep ?? defaultSleep;
-    this.requestDelayMs = options.requestDelayMs ?? 1000;
-    this.logger = options.logger ?? (() => {});
-  }
+    @Inject(LOGGER) private readonly logger: LoggerPort,
+    @Inject(SLEEP) private readonly sleep: SleepPort,
+  ) {}
 
   async execute(): Promise<IngestDrawsResult> {
     const startRound = await this.writer.getMaxRound();
@@ -94,7 +80,7 @@ export class IngestDraws {
         break;
       }
 
-      await this.sleep(this.requestDelayMs);
+      await this.sleep(INGEST_REQUEST_DELAY_MS);
     }
 
     return { startRound, latestRound: maxRound, ingestedCount, requestCount };

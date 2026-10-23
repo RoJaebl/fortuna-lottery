@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { Draw } from "../domain/model/Draw.model.js";
 import type { DrawSourcePort } from "../domain/port/DrawSourcePort.js";
 import type { DrawWriterPort } from "../domain/port/DrawWriterPort.js";
-import { IngestDraws } from "./IngestDraws.js";
+import { INGEST_REQUEST_DELAY_MS, IngestDraws } from "./IngestDraws.js";
 
 const makeDraw = (round: number): Draw => ({
   round,
@@ -64,12 +64,13 @@ const fakeWriter = (initialMax = 0) => {
 };
 
 const noSleep = async () => {};
+const noLog = () => {};
 
 describe("ingestDraws (수집 catch-up 사이클)", () => {
   it("빈 DB에서 1회차부터 최신 회차까지 빠짐없이 저장한다", async () => {
     const source = fakeSource(12);
     const writer = fakeWriter(0);
-    const ingest = new IngestDraws(source.port, writer.port, { sleep: noSleep });
+    const ingest = new IngestDraws(source.port, writer.port, noLog, noSleep);
 
     const result = await ingest.execute();
 
@@ -82,7 +83,7 @@ describe("ingestDraws (수집 catch-up 사이클)", () => {
   it("이미 저장된 회차 다음부터 이어서 수집한다 (중단 후 재개)", async () => {
     const source = fakeSource(12);
     const writer = fakeWriter(10);
-    const ingest = new IngestDraws(source.port, writer.port, { sleep: noSleep });
+    const ingest = new IngestDraws(source.port, writer.port, noLog, noSleep);
 
     const result = await ingest.execute();
 
@@ -94,7 +95,7 @@ describe("ingestDraws (수집 catch-up 사이클)", () => {
   it("이미 최신이면 아무것도 저장하지 않고 점프 폭을 줄이다 종료한다", async () => {
     const source = fakeSource(12);
     const writer = fakeWriter(12);
-    const ingest = new IngestDraws(source.port, writer.port, { sleep: noSleep });
+    const ingest = new IngestDraws(source.port, writer.port, noLog, noSleep);
 
     const result = await ingest.execute();
 
@@ -107,7 +108,7 @@ describe("ingestDraws (수집 catch-up 사이클)", () => {
   it("배치에 성공하면 점프 폭이 다시 최대로 리셋된다", async () => {
     const source = fakeSource(30);
     const writer = fakeWriter(0);
-    const ingest = new IngestDraws(source.port, writer.port, { sleep: noSleep });
+    const ingest = new IngestDraws(source.port, writer.port, noLog, noSleep);
 
     await ingest.execute();
 
@@ -119,23 +120,20 @@ describe("ingestDraws (수집 catch-up 사이클)", () => {
     const sleep = vi.fn(async () => {});
     const source = fakeSource(12);
     const writer = fakeWriter(12);
-    const ingest = new IngestDraws(source.port, writer.port, {
-      sleep,
-      requestDelayMs: 1500,
-    });
+    const ingest = new IngestDraws(source.port, writer.port, noLog, sleep);
 
     await ingest.execute();
 
     expect(source.calls).toHaveLength(3);
     expect(sleep).toHaveBeenCalledTimes(2);
-    expect(sleep).toHaveBeenCalledWith(1500);
+    expect(sleep).toHaveBeenCalledWith(INGEST_REQUEST_DELAY_MS);
   });
 
   it("응답 창이 저장분과 이어지지 않으면 저장하지 않고 폭을 줄인다 (구멍 방지)", async () => {
     // 원격이 [R, R+9] 창으로 바뀐 상황 — 순진하게 저장하면 앞쪽 회차가 통째로 빈다
     const source = forwardWindowSource(20);
     const writer = fakeWriter(0);
-    const ingest = new IngestDraws(source.port, writer.port, { sleep: noSleep });
+    const ingest = new IngestDraws(source.port, writer.port, noLog, noSleep);
 
     const result = await ingest.execute();
 
@@ -153,7 +151,7 @@ describe("ingestDraws (수집 catch-up 사이클)", () => {
     };
     const writer = fakeWriter(0);
     const logger = vi.fn();
-    const ingest = new IngestDraws(source, writer.port, { sleep: noSleep, logger });
+    const ingest = new IngestDraws(source, writer.port, logger, noSleep);
 
     const result = await ingest.execute();
 

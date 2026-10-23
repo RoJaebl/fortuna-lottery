@@ -21,16 +21,17 @@
         "^build"
       ]
     },
-    "dev": {
-      "dependsOn": [
-        "^build"
-      ],
-      "cache": false,
-      "persistent": true
-    },
     "typecheck": {
       "dependsOn": [
         "^build"
+      ]
+    },
+    "@fortuna-lottery/web#typecheck": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "src/composition/store.gen.ts"
       ]
     }
   }

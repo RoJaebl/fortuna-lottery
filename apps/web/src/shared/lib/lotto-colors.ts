@@ -1,6 +1,8 @@
 // 실제 로또 공 색상 규칙 (설계 문서: 공 색은 바꾸지 않는다)
 // 1–10 노랑 · 11–20 파랑 · 21–30 빨강 · 31–40 회색 · 41–45 초록
 
+import { zoneIndexOf } from "./lotto-rules";
+
 export interface BallColor {
   bg: string;
   text: string;
@@ -16,6 +18,5 @@ const COLORS: BallColor[] = [
 
 /** 번호(1~45) → 공 색상 (순수 함수) */
 export function ballColor(n: number): BallColor {
-  const zone = Math.min(4, Math.max(0, Math.floor((n - 1) / 10)));
-  return COLORS[zone] as BallColor;
+  return COLORS[zoneIndexOf(n)] as BallColor;
 }

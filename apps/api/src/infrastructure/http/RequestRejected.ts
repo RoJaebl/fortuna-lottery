@@ -9,6 +9,9 @@ export const MALFORMED_REQUEST = "잘못된 요청 형식입니다";
 /** 요청이 거절됐다 — 도메인 규칙(facade)이나 요청 스키마(parseRequest)가 올린다. 전송을 모른다 */
 export class RequestRejected extends Error {}
 
+/** 찾는 자원이 없다 — facade 가 올린다. 전송을 모른다 */
+export class ResourceNotFound extends Error {}
+
 /**
  * 거절을 400 { error } 로 옮긴다 — 옛 Next 처리기가 내던 본문 모양 그대로다.
  * BadRequestException 은 이 앱에서 Express 어댑터가 깨진 JSON 본문(SyntaxError)·경로 인코딩(URIError)을
@@ -19,5 +22,13 @@ export class RequestRejectedFilter implements ExceptionFilter {
   catch(exception: RequestRejected | BadRequestException, host: ArgumentsHost): void {
     const error = exception instanceof RequestRejected ? exception.message : MALFORMED_REQUEST;
     host.switchToHttp().getResponse<JsonResponse>().status(400).json({ error });
+  }
+}
+
+/** 없음을 404 { error } 로 옮긴다 */
+@Catch(ResourceNotFound)
+export class ResourceNotFoundFilter implements ExceptionFilter {
+  catch(exception: ResourceNotFound, host: ArgumentsHost): void {
+    host.switchToHttp().getResponse<JsonResponse>().status(404).json({ error: exception.message });
   }
 }

@@ -9,7 +9,7 @@ BIN="$ROOT/node_modules/dependency-cruiser/bin/dependency-cruiser.mjs"
 bad=0
 
 # 폴더 이름의 `--` 뒤는 같은 규칙의 다른 표본(예: 패키지 이름 꼴 import)이다.
-# 표본 폴더에 tsconfig.json 이 있으면 그 paths 로 패키지 이름·@/ 별칭을 표본 안의 경로로 푼다.
+# 표본 폴더에 tsconfig.json 이 있으면 그 paths 로 패키지 이름·여섯 층 별칭(@app/ 등)을 표본 안의 경로로 푼다.
 for dir in "$ROOT"/tools/checks/violations/*/; do
   name="$(basename "$dir")"
   rule="${name%%--*}"
@@ -47,17 +47,51 @@ declare -A EXPECT=(
   [view-with-state]='화면은 상태를 갖지 않는다'
   [viewmodel-spread]='표시 모델을 얕은 전개로 복제하면'
   [view-folder-public-surface]='뷰 폴더 밖에서는 그 폴더의 index 만'
+  [no-root-alias]='층 별칭을 쓴다'
+  [store-registers-at-top-level]='(store-registers-at-top-level)'
+  [state-key-within-scope]='(state-key-within-scope)'
+  [state-key-matches-folder]='(state-key-matches-folder)'
+  [state-key-literal]='(state-key-literal)'
+  [state-only-in-presenter]='(state-only-in-presenter)'
+  [state-registers-in-state-folder]='(state-registers-in-state-folder)'
+  [ctx-at-top-binds-event-only]='(ctx-at-top-binds-event-only)'
+  [no-namespace-store-import]='(no-namespace-store-import)'
+  [style-tools-through-lib]='(style-tools-through-lib)'
+  [styles-owned-by-its-screen]='styles-owned-by-its-screen)'
 )
 for dir in "$ROOT"/tools/checks/eslint-violations/*/; do
-  rule="$(basename "$dir")"
+  name="$(basename "$dir")"
+  rule="${name%%--*}"
   out="$(cd "$dir/apps/web" && node "$ESLINT" -c "$ROOT/tools/checks/eslint-violations.config.mjs" src 2>&1)"
   if [[ -n "${EXPECT[$rule]:-}" ]] && grep -q "${EXPECT[$rule]}" <<<"$out"; then
-    echo "OK   $rule (eslint)"
+    echo "OK   $name (eslint)"
     grep "error" <<<"$out" | sed 's/^/       /'
   else
-    echo "FAIL $rule (eslint) — 표본이 이 규칙에 걸리지 않았다"
+    echo "FAIL $name (eslint) — 표본이 이 규칙에 걸리지 않았다"
     bad=1
   fi
 done
+
+# ESLint 허용 표본 — 합법 코드를 규칙이 잘못 막지 않는지 확인한다. 오류가 0 건이어야 한다.
+for dir in "$ROOT"/tools/checks/eslint-allowed/*/; do
+  name="$(basename "$dir")"
+  out="$(cd "$dir/apps/web" && node "$ESLINT" -c "$ROOT/tools/checks/eslint-violations.config.mjs" src 2>&1)"
+  if grep -q "error" <<<"$out"; then
+    echo "FAIL $name (eslint) — 허용 표본이 규칙에 걸렸다"
+    grep "error" <<<"$out" | sed 's/^/       /'
+    bad=1
+  else
+    echo "OK   $name (eslint, allowed)"
+  fi
+done
+
+# package.json 표본 — "sideEffects": false 를 막는 검사가 표본에서 실제로 우는지 확인한다.
+out="$(node "$ROOT/tools/checks/no-side-effects-false.mjs" "$ROOT/tools/checks/package-violations/no-side-effects-false/apps/web/package.json" 2>&1)"
+if grep -q "error no-side-effects-false:" <<<"$out"; then
+  echo "OK   no-side-effects-false (package)"
+else
+  echo "FAIL no-side-effects-false (package) — 표본에서 울지 않았다"
+  bad=1
+fi
 
 exit $bad

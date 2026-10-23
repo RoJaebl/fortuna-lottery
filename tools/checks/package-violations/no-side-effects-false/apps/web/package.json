@@ -1,0 +1,5 @@
+{
+  "//": "사례: 화면 앱 package.json 에 sideEffects false 를 둔다 — 번들러가 값을 가져오지 않는 import 를 떨어뜨려 store 등록이 사라진다.",
+  "name": "sample-web",
+  "sideEffects": false
+}

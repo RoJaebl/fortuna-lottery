@@ -1,5 +1,5 @@
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -17,7 +17,7 @@ model Draw {
   n5      Int
   n6      Int
   bonus   Int
-  drawnAt DateTime @map("drawn_at") @db.Date
+  drawnAt DateTime @map("drawn_at")
 
   @@map("draws")
 }

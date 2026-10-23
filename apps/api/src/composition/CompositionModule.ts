@@ -16,6 +16,11 @@ import {
   type CurrentUserPort as ResultsCurrentUserPort,
 } from "../modules/results/domain/port/CurrentUserPort.js";
 import {
+  DRAW_HISTORY as HYPOTHESIS_DRAW_HISTORY,
+  type DrawHistoryPort as HypothesisDrawHistoryPort,
+} from "../modules/hypothesis/domain/port/DrawHistoryPort.js";
+import { HypothesisModule } from "../modules/hypothesis/HypothesisModule.js";
+import {
   DRAW_HISTORY as RESULTS_DRAW_HISTORY,
   type DrawHistoryPort as ResultsDrawHistoryPort,
 } from "../modules/results/domain/port/DrawHistoryPort.js";
@@ -46,6 +51,7 @@ import { StatisticsModule } from "../modules/statistics/StatisticsModule.js";
     StatisticsModule,
     SimulationModule,
     ResultsModule,
+    HypothesisModule,
   ],
   providers: [
     // 설정은 여기서 한 번 읽어 전역으로 내준다 — 모듈이 CONFIG 를 다시 선언하지 않는다
@@ -57,6 +63,7 @@ import { StatisticsModule } from "../modules/statistics/StatisticsModule.js";
     { provide: STATISTICS_DRAW_HISTORY, useExisting: LotterietusFacade satisfies Type<StatisticsDrawHistoryPort> },
     { provide: SIMULATION_DRAW_HISTORY, useExisting: LotterietusFacade satisfies Type<SimulationDrawHistoryPort> },
     { provide: RESULTS_DRAW_HISTORY, useExisting: LotterietusFacade satisfies Type<ResultsDrawHistoryPort> },
+    { provide: HYPOTHESIS_DRAW_HISTORY, useExisting: LotterietusFacade satisfies Type<HypothesisDrawHistoryPort> },
     // results 가 대조할 픽은 picks 가 준다 — 저장한 바로 그 저장소를 읽는다
     { provide: PICK_SOURCE, useExisting: PicksFacade satisfies Type<PickSourcePort> },
   ],
@@ -67,6 +74,7 @@ import { StatisticsModule } from "../modules/statistics/StatisticsModule.js";
     STATISTICS_DRAW_HISTORY,
     SIMULATION_DRAW_HISTORY,
     RESULTS_DRAW_HISTORY,
+    HYPOTHESIS_DRAW_HISTORY,
     PICK_SOURCE,
   ],
 })

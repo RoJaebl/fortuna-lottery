@@ -1,6 +1,8 @@
+import "@composition/store.gen"; // 서버 컴포넌트 그래프에 store 정의를 싣는다 — 클라이언트 번들은 StoreRegistry 가 싣는다
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
+import { StoreRegistry } from "./StoreRegistry";
 
 export const metadata: Metadata = {
   title: "로또랩 — 사기 전에, 데이터로 확인하세요",
@@ -10,8 +12,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="ko">
-      <body className="min-h-screen font-sans antialiased">{children}</body>
+    <html lang="ko" data-ground="paper">
+      <body className="min-h-screen font-sans antialiased">
+        <StoreRegistry>{children}</StoreRegistry>
+      </body>
     </html>
   );
 }

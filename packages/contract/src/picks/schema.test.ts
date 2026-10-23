@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { PicksItemSchema, PicksListResponseSchema, PicksSaveRequestSchema } from "./schema.js";
+import { PicksDeleteResponseSchema, PicksItemSchema, PicksListResponseSchema, PicksCreateRequestSchema } from "./schema.js";
 
-const save = (numbers: number[]) => PicksSaveRequestSchema.safeParse({ numbers }).success;
+const save = (numbers: number[]) => PicksCreateRequestSchema.safeParse({ numbers }).success;
 const item = (numbers: number[]) =>
   PicksItemSchema.safeParse({ id: "a", numbers, createdAt: "2026-01-01T00:00:00Z" }).success;
 
 describe.each([
-  ["PicksSaveRequestSchema", save],
+  ["PicksCreateRequestSchema", save],
   ["PicksItemSchema", item],
 ])("%s", (_name, parse) => {
   it("유효한 조합을 통과시킨다", () => {
@@ -29,5 +29,13 @@ describe("PicksListResponseSchema", () => {
     const one = (numbers: number[]) => ({ id: "a", numbers, createdAt: "2026-01-01T00:00:00Z" });
     expect(PicksListResponseSchema.safeParse([one([1, 2, 3, 4, 5, 6])]).success).toBe(true);
     expect(PicksListResponseSchema.safeParse([one([1, 2, 3, 4, 5, 46])]).success).toBe(false);
+  });
+});
+
+describe("PicksDeleteResponseSchema", () => {
+  it("{ deleted: true } 만 통과시킨다", () => {
+    expect(PicksDeleteResponseSchema.safeParse({ deleted: true }).success).toBe(true);
+    expect(PicksDeleteResponseSchema.safeParse({ deleted: false }).success).toBe(false);
+    expect(PicksDeleteResponseSchema.safeParse({}).success).toBe(false);
   });
 });

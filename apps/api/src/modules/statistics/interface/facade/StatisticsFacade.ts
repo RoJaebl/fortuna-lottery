@@ -1,10 +1,10 @@
 import { Inject, Injectable } from "@nestjs/common";
-import type { StatisticsGetResponse } from "@fortuna-lottery/contract/statistics";
+import type { StatisticsReadResponse } from "@fortuna-lottery/contract/statistics";
 import { GetStatistics } from "../../business/GetStatistics.js";
 import type { Statistics } from "../../domain/model/Statistics.model.js";
 
 /** 도메인 원형을 계약 모양으로 옮긴다 — 읽기 전용 배열을 가변 복사본으로 */
-const toResponse = (s: Statistics): StatisticsGetResponse => ({
+const toResponse = (s: Statistics): StatisticsReadResponse => ({
   totalDraws: s.totalDraws,
   latestRound: s.latestRound,
   frequency: [...s.frequency],
@@ -22,7 +22,7 @@ const toResponse = (s: Statistics): StatisticsGetResponse => ({
 export class StatisticsFacade {
   constructor(@Inject(GetStatistics) private readonly getStatistics: GetStatistics) {}
 
-  async get(): Promise<StatisticsGetResponse> {
+  async get(): Promise<StatisticsReadResponse> {
     return toResponse(await this.getStatistics.execute());
   }
 }

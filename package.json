@@ -3,16 +3,20 @@
   "private": true,
   "packageManager": "pnpm@11.18.0",
   "scripts": {
-    "dev": "turbo dev",
+    "dev": "node tools/launch/launch.mjs dev",
+    "start": "node tools/launch/launch.mjs start",
     "build": "turbo run build",
     "test": "turbo run test",
+    "test:tools": "node --test \"tools/launch/*.test.mjs\"",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
-    "lint:deps": "depcruise apps packages --config .dependency-cruiser.cjs",
-    "check": "pnpm typecheck && pnpm lint && pnpm lint:deps && pnpm test",
+    "lint:deps": "pnpm --filter @fortuna-lottery/web exec store-gen && depcruise apps packages --config .dependency-cruiser.cjs",
+    "lint:side-effects": "node tools/checks/no-side-effects-false.mjs apps/web/package.json",
+    "check": "pnpm typecheck && pnpm lint && pnpm lint:deps && pnpm lint:side-effects && pnpm test && pnpm test:tools",
     "check:migration": "bash tools/checks/migration-status.sh"
   },
   "devDependencies": {
+    "@fortuna-lottery/store": "workspace:*",
     "dependency-cruiser": "^18.4.0",
     "turbo": "^2.5.0"
   }

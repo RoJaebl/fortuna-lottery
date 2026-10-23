@@ -1,5 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
-import type { PicksSaveRequest } from "@fortuna-lottery/contract/picks";
+import type { PicksCreateRequest } from "@fortuna-lottery/contract/picks";
 import { createCombination, err, ok, type Result } from "@fortuna-lottery/kernel";
 import type { Pick } from "../domain/model/Pick.model.js";
 import { CLOCK, type ClockPort } from "../domain/port/ClockPort.js";
@@ -15,7 +15,7 @@ export class SavePick {
     @Inject(CLOCK) private readonly clock: ClockPort,
   ) {}
 
-  async execute(userId: string, request: PicksSaveRequest): Promise<Result<Pick>> {
+  async execute(userId: string, request: PicksCreateRequest): Promise<Result<Pick>> {
     if (!userId) return err("사용자 식별자가 없습니다");
     const combination = createCombination(request.numbers);
     if (!combination.ok) return combination;

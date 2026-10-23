@@ -9,7 +9,7 @@
 않는다는 원칙을 명시적으로 지킨다: 로또 추첨은 매 회차 독립 사건이며 과거 통계는 미래 당첨 확률을
 높이지 못한다 — 핫/콜드·확률 관련 화면은 모두 이 사실을 명시해야 한다. 몰입감 있는 UX(다음 추첨
 카운트다운, 희귀도 배지, "타임머신" 백테스트)는 이 정직한 통계 위에 얹히는 것이며, 이 정직함이
-곧 후속 구독 전환의 신뢰 기반이다.
+곧 후속 구독 전환의 신뢰 기반이다. 가정 기반 기능은 가정 확률을 보여 줄 수 있다. 그때는 언제나 실제 확률 1/8,145,060 과 그 가정의 과거 적중률을 함께 적는다.
 
 설계 문서는 둘이다.
 
@@ -33,7 +33,7 @@ PARA/MOC 규칙과는 무관하다.
 - 실제 코드/설정 상태와 문서 내용이 어긋난 것을 발견하면, 작업을 계속하기 전에 문서를 최신 상태로
   갱신한다.
 
-현재 문서: `design-system.md` (컬러 토큰).
+현재 문서: `design-system.md` (컬러 토큰 · 서식 규칙), `launcher-ports.md` (런처 · 포트 · 환경 이름).
 
 ## superpowers 스킬 워크플로 — 계획/스펙 문서 선(先) 커밋
 
@@ -48,22 +48,34 @@ PARA/MOC 규칙과는 무관하다.
 
 ```bash
 pnpm install                 # apps/api 의 postinstall 이 prisma generate 를 돈다
-docker compose up -d         # 로컬 Postgres (docker-compose.yml)
-pnpm --filter @fortuna-lottery/api db:migrate   # prisma migrate dev — draws 테이블을 만든다
-pnpm dev                     # turbo dev — apps/web(next dev, :3000)과 apps/api(nest --watch, :4000)를 함께 띄운다
-pnpm check                   # typecheck → lint → lint:deps → test. 과업 끝의 검증 명령이다
+pnpm dev                     # 런처(tools/launch/launch.mjs) — apps/web(next dev, 3000~)과 apps/api(nest build --watch 의 dist, 4000~)를 함께 띄운다
+pnpm check                   # typecheck → lint(ESLint 모양 규칙) → lint:deps(dependency-cruiser) → lint:side-effects → test → test:tools. 과업 끝의 검증 명령이다
 pnpm lint:deps               # dependency-cruiser 로 의존 방향·층 경계를 검사한다
 pnpm check:migration         # 골조 이관 상태를 낸다. 지금은 「옛 구역 파일: 0」
 pnpm build                   # turbo build
+pnpm start                   # 런처 — 빌드 결과로 두 서버를 OS 포트(또는 FORTUNA_WEB_PORT·FORTUNA_API_PORT 부터 빈 포트)에 띄운다
+pnpm --filter @fortuna-lottery/api db:migrate   # prisma migrate dev — 스키마를 고쳤을 때 마이그레이션을 새로 만든다
+pnpm test:tools              # 런처 시험(node --test)
+pnpm --filter @fortuna-lottery/web exec store-gen   # store 생성 파일(src/composition/store.gen.ts)을 쓴다. typecheck·lint:deps·vitest 가 먼저 부른다
 ```
 
 `apps/api` 는 기동할 때 `apps/api/.env` 를 스스로 싣고(`main.ts` 의 `loadEnvFile`, 이미 있는 환경 변수가
 이긴다) 거기서 `DATABASE_URL` 과 `SCHEDULER_ENABLED` 를 읽는다. 값의 모양은 루트의 `.env.example` 에 있다.
-`SCHEDULER_ENABLED` 를 적지 않으면 회차 수집 스케줄러는 `dev` 스크립트(watch 로 자주 재시작한다)에서
-꺼지고 `start` 에서 켜져 동행복권 원격을 부른다. 적으면 그 값이 이긴다 — `dev` 에서 수집하려면 `true`,
-`start` 에서 끄려면 `false`.
-`apps/web` 은 `API_ORIGIN`(기본값 `http://localhost:4000`)으로 `apps/api` 의 주소를 받는다. 이 값은
-`next build` 때 굳는다 — `rewrites` 가 빌드 때 평가되므로, 바꾸려면 그 값으로 다시 빌드한다.
+DB 는 SQLite 파일이고 Docker 는 쓰지 않는다. `DATABASE_URL` 이 없으면 `file:./fortuna.db`(schema.prisma 기준이라
+`apps/api/prisma/fortuna.db`, 저장소에서 추적하지 않는다)를 쓴다. 런처는 `pnpm dev`·`pnpm start` 모두에서 서버를 띄우기 전에
+`prisma migrate deploy` 와 `prisma db execute --file prisma/seed.sql` 을 돈다. 시드는 회차 1~1245 의 `INSERT OR IGNORE`
+라 몇 번 넣어도 같고, 그 뒤 회차는 `pnpm start` 의 스케줄러가 채운다.
+`SCHEDULER_ENABLED` 를 적지 않으면 회차 수집 스케줄러는 `pnpm dev`(서버를 자주 다시 띄운다)에서 꺼지고
+`pnpm start` 에서 켜져 동행복권 원격을 부른다. 적으면 그 값이 이긴다 — `dev` 에서 수집하려면 `true`,
+`start` 에서 끄려면 `false`. 이 기본값은 런처가 서버에 넘기는 `FORTUNA_MODE`(`dev`/`start`)가 정하고, 런처 없이
+띄우면 `npm_lifecycle_event` 로 가린다. `FORTUNA_STRICT_PORT=1` 이면 `apps/api` 는 받은 `PORT` 를 옮기지 않고,
+쥐여 있으면 5 번 시도(약 4 초)한 뒤 `EADDRINUSE` 로 죽는다.
+포트를 고르는 자리는 런처 하나다 — 사람 셸의 `PORT`·`HOST` 는 자식에 넘기지 않는다. `pnpm dev` 는 `FORTUNA_DEV_WEB_PORT`·
+`FORTUNA_DEV_API_PORT` 를 적으면 그 번호에 그대로 서고, `pnpm start` 는 `FORTUNA_WEB_PORT`·`FORTUNA_API_PORT` 를 적으면 그 번호부터
+피해 간다(`../editor` 의 dev-ports 와 같은 방식).
+환경 이름 표와 근거는 `.claude/context/launcher-ports.md` 가 갖는다.
+`apps/web` 은 `API_ORIGIN`(기본값 `http://127.0.0.1:4000`)으로 `apps/api` 의 주소를 받는다. 이 값은
+요청마다 실행 때 읽으므로 빌드 때 굳지 않는다 — 바꾸려면 프로세스를 다시 띄우면 된다.
 
 특정 패키지만 빠르게 돌릴 때는 turbo 를 거치지 않는다.
 
@@ -74,14 +86,14 @@ pnpm --filter @fortuna-lottery/web exec vitest run <path>   # 파일 하나
 ```
 
 경계 검사기 자체가 살아 있는지는 `bash tools/checks/run-violations.sh` 가 규칙마다 위반 표본 하나를
-돌려 확인한다.
+돌려 확인한다. 허용 표본은 합법 코드를 규칙이 잘못 막지 않는지 본다. `pnpm check` 에는 들지 않는다(위반 표본은 실패해야 한다).
 
 ## 배치 — 두 서버
 
 이 저장소는 vault 개발 골조를 따르고, 배치는 **두 서버**다
 ([architecture-baseline §1 배치를 먼저 고른다](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/architecture-baseline.md#1-배치를-먼저-고른다>)).
-화면 앱 `apps/web`(Next.js, 포트 3000)과 응용 서버 `apps/api`(NestJS, 포트 4000, 전역 접두 `/api`)가 각자
-프로세스를 갖는다.
+화면 앱 `apps/web`(Next.js, `pnpm dev` 에서 포트 3000~)과 응용 서버 `apps/api`(NestJS, 4000~, 전역 접두 `/api`)가 각자
+프로세스를 갖는다. 포트는 런처가 골라 넘긴다.
 
 이렇게 고른 까닭은 둘이다. 화면과 서버의 경계가 프로세스 단위로 물리적으로 잘려 경계 검사기에 덜
 기대게 되고, vault 골조가 화면 모듈과 서버 모듈을 따로 정의하므로 번역 없이 그대로 맞는다. 수집
@@ -95,20 +107,26 @@ pnpm --filter @fortuna-lottery/web exec vitest run <path>   # 파일 하나
 
 ## 아키텍처 — vault 골조를 가리킨다
 
-구조의 규칙은 이 파일이 아니라 vault 의 골조 문서 여덟 장이 소유한다. 이 기기에서는
+구조의 규칙은 이 파일이 아니라 vault 의 골조 문서 열 장이 소유한다(`architecture/` 폴더의 일곱 장과 `frontend/` 폴더의 세 장). 이 기기에서는
 `C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/` 에서 읽는다(그 사본은
 고치지 않는다). 먼저 [architecture-baseline](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/architecture-baseline.md>)을
 열면 어느 작업에 어느 장을 읽는지 알려 준다.
 
 - 서버 모듈의 네 계층(`interface/{api,facade}` · `business` · `context` · `domain/{model,port,adapter}`)과
   조립 루트는 [backend-module-layout](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/backend-module-layout.md>)이 정한다.
-- 화면 모듈의 네 역할(화면 · 표시 조정자 · action · 변환기)과 파일 이름은
-  [frontend-module-layout](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend-module-layout.md>)이,
-  뷰 폴더 승격과 소유물의 깊이는 [fractal-view-promotion](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/fractal-view-promotion.md>)이 정한다.
+- 화면 모듈의 네 역할(화면 · presenter · action · 변환기)과 파일 이름은
+  [frontend-module-layout](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/frontend-module-layout.md>)이,
+  뷰 폴더 승격과 소유물의 깊이는 [fractal-view-promotion](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/fractal-view-promotion.md>)이 정한다.
+- 화면 앱 전체의 층과 조립(`app` · `widgets` · `framework` · `composition` · `infrastructure` · `shared`, 일곱 층 별칭, 컨테이너)은
+  [frontend-app-layers](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/frontend-app-layers.md>)가,
+  독립 라이브러리 다섯·영역 다섯·규약 층·전파 규칙·주소는 [frontend-store](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/frontend-store.md>)가,
+  여러 presenter 가 함께 쓰는 공통 상태(`_state/`)는 [frontend-shared-state](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/frontend-shared-state.md>)가 정한다.
+  **이 저장소는 store 2단계에서 그 가운데 `framework` 층·컨테이너·영역·전파 규칙·주소를 걷어내고 자원·event store 로 바꿨다.**
+  vault 문서는 아직 그 앞의 꼴을 적는다. 지금의 꼴은 아래 [이 저장소가 정한 것 — vault 골조가 답하지 않는 자리](#이-저장소가-정한-것--vault-골조가-답하지-않는-자리)가 적는다.
 - 타입 부류(와이어 모델 · 도메인 원형 · 표시 모델 · 값 객체 · 파생 조회 모델)는
   [model-vocabulary](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/model-vocabulary.md>)가 정한다.
   옛 저장소의 모델 타입 표(`use*ViewModel` = presenter, `*Entity`, `*VO`, `*ReadModel`, 2-tier 엄격도)는
-  버렸다. 지금 `*.viewmodel.ts` 는 표시 모델 클래스이고, 조정자는 `*.presenter.ts` 의 `use*Presenter` 다.
+  버렸다. 지금 `*.viewmodel.ts` 는 표시 모델 클래스이고, presenter 는 `*.presenter.ts` 의 `use*Presenter` 다.
 - 계약 패키지의 스키마와 이름은 [wire-contract](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/wire-contract.md>)가,
   의존 규칙과 모양 규칙은 [boundary-enforcement](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/boundary-enforcement.md>)가 정한다.
 
@@ -116,56 +134,118 @@ pnpm --filter @fortuna-lottery/web exec vitest run <path>   # 파일 하나
 
 ```
 packages/contract/   @fortuna-lottery/contract — 도메인별 zod 스키마(와이어 모델의 SSOT). 두 앱이 참조한다
-packages/kernel/     @fortuna-lottery/kernel — 로또 순수 커널(combination · scoring · rng · result). apps/api 만 참조한다
+packages/kernel/     @fortuna-lottery/kernel — 로또 순수 커널(combination · scoring · rng · result · generate). apps/api 만 참조한다
+packages/store/      @fortuna-lottery/store — key 로 등록하는 전역 store(공통 상태·자원·event)와 타입 생성기(tsserver·Next·CLI). apps/web 만 참조한다
 apps/api/            NestJS 응용 서버 — src/modules/<도메인>/, src/composition/CompositionModule.ts, prisma/
-apps/web/            Next.js 화면 앱 — src/app/(셸), src/modules/<도메인>/, src/shared/{ui,lib}/
+apps/web/            Next.js 화면 앱 — src/app/(home)/, src/composition/, src/infrastructure/, src/shared/{ui,lib}/
 tools/checks/        이관 상태 스크립트와 규칙마다 하나씩 둔 위반 표본
+tools/launch/        런처 — pnpm dev·pnpm start 가 부르고 포트를 고르는 유일한 자리(Node 내장 모듈만 쓴다)
 ```
 
-의존 방향과 층 경계는 루트의 `.dependency-cruiser.cjs` 가, 코드 모양(화면에 상태 없음, 표시 모델 얕은
-전개 금지, 뷰 폴더의 공개 표면)은 `apps/web/eslint.config.mjs` 가 강제한다. 둘 다 `pnpm check` 에 들어
-있으므로 위반은 곧 검증 실패다.
+의존 방향과 층 경계는 루트의 `.dependency-cruiser.cjs` 가, 코드 모양은 `apps/web/eslint.config.mjs` 가 강제한다.
+ESLint 가 거는 모양 규칙은 이렇다.
+
+- 화면에 상태 없음(`view-with-state`), 표시 모델 얕은 전개 금지(`viewmodel-spread`), 뷰 폴더의 공개 표면(`view-folder-public-surface`),
+  `@/` 뿌리 별칭 금지(`no-root-alias`).
+- `tailwind-variants`·`tailwind-merge` 는 `shared/lib/style/{cn,tv}.ts` 만 직접 가져오고(`style-tools-through-lib`),
+  `X.styles` 는 폴더 `X` 의 `index.tsx` 와 같은 폴더의 `X.styles.test.ts` 만 가져오고, `X.styles.ts` 는 폴더 `X` 안에만 선다(`styles-owned-by-its-screen`).
+- `createStore` 는 파일 최상단에서만 부른다(`store-registers-at-top-level`).
+- store key(`state.`·`api.`·`event.`·`infra.`)의 자리와 범위는 `apps/web/eslint/paths.mjs` 로 판정한다.
+  key 는 문자열 그대로 쓰고(`state-key-literal`), 폴더를 따르며(`state-key-matches-folder`), 자기·조상 폴더의 key 만
+  꺼낸다(`state-key-within-scope`). 화면에서 `useStore` 를 부르는 것은 presenter 뿐이고(`state-only-in-presenter`),
+  등록은 정의 파일만 한다(`state-registers-in-state-folder`).
+  `@fortuna-lottery/store*` 를 `import * as` 로 가져오지 않는다 — 이름공간으로 부르면 위 key 규칙을 비켜 간다(`no-namespace-store-import`).
+- creator 맨 위와 그 자리의 `createResource`·`createEvent` 정의 함수 맨 위는 store 를 짓는 순간 한 번 돈다. 거기서 `ctx(…)` 를
+  부르면 그 결과로 `.on`·`.exempt` 만 부른다(`ctx-at-top-binds-event-only`, ctx 를 이름으로 알아보는 근사다). 조회·바꾸기 함수 안은 맨 위가 아니다.
+
+둘 다 `pnpm check` 에 들어 있으므로 위반은 곧 검증 실패다. `"sideEffects": false` 는 store 등록(import 부수효과)을 지우므로 `pnpm lint:side-effects` 가 막는다.
 
 ## 이 저장소가 정한 것 — vault 골조가 답하지 않는 자리
 
 아래는 골조 문서가 규정하지 않아 이 저장소가 정한 것이다. 바꾸려면 여기와 코드를 함께 고친다.
 
-- **브라우저는 여전히 `apps/web` 의 `/api/*` 를 부른다.** `apps/web/next.config.ts` 의 `rewrites()` 가
-  `fallback` 단계에서 `/api/:path*` 를 `${API_ORIGIN}/api/:path*` 로 넘긴다. Next 경로 처리기는 남아 있지
-  않다. 플랫폼 기능 한 줄로 끝나고 CORS 를 열 필요가 없다.
+- **브라우저는 여전히 `apps/web` 의 `/api/*` 를 부른다.** `apps/web/src/app/api/[...path]/route.ts` 의 Next
+  경로 처리기가 `infrastructure/apiProxy.ts` 의 `proxyToApi` 로 요청(메서드·헤더·본문·쿼리)을 `${API_ORIGIN}/api/...`
+  로 그대로 넘긴다. 주소는 요청마다 읽는다(기본값 `http://127.0.0.1:4000`). 응용 서버에 닿지 않으면 503
+  `{ "error": "서버에 닿지 않습니다" }` 를 돌려주고 로그는 5 초에 한 줄만 남긴다. CORS 를 열 필요가 없다.
 - **로또 순수 커널은 `packages/kernel` 에 둔다.** 여러 서버 모듈이 함께 쓰므로 모듈 하나에 두면
   `no-cross-module-import` 에 걸린다. `apps/web` 은 커널을 참조하지 않는다(`web-must-not-reach-kernel`).
+- **조합 뽑기 `generate` 는 `packages/kernel` 에 둔다.** generator 와 hypothesis 가 함께 쓰므로 모듈 하나에 두면 `no-cross-module-import` 에 걸린다.
 - **서버의 `domain/model/` 은 의존이 없다.** 커널은 `business/`(필요하면 어댑터)에서만 런타임으로 쓴다.
   커널 타입이 필요한 순수 계산은 `business/` 에 둔다. `domain/port/` 는 커널 타입을 `import type` 으로만
-  가져올 수 있다. `domain-model-has-zero-dependencies` 는 `*.test.ts` 를 세지 않는다.
+  가져올 수 있다. `domain-model-has-zero-dependencies` 는 `*.test.ts` 를 세지 않는다 — boundary-enforcement §3 의 표준이다.
 - **계약 스키마는 모양 검사만 담는다.** 배열 길이 6, 정수, 1~45 범위까지다. 중복 없음은 도메인 규칙이라
   커널의 `createCombination` 이 지키고, `business/` 가 그 실패를 400 으로 바꾼다. 그래서 모양이 틀린
   요청은 「잘못된 요청 형식입니다」, 중복 번호는 도메인 메시지로 400 을 받는다. 화면의 변환기는
-  `unknown` 을 계약 타입으로 좁히기만 하고 zod 로 다시 검증하지 않는다(서버가 검증하고 화면은 번역한다).
+  계약 타입을 받아 번역만 한다 — 검증은 서버가 한다(zod 로 다시 검증하지 않는다).
 - **모듈 사이의 포트는 모듈마다 따로 선언하고, `CompositionModule` 이 `useExisting` 으로 상대 facade 를
   꽂는다.** 예를 들어 `picks` 와 `results` 는 각자 `CurrentUserPort` 를 갖고, 둘 다 `IdentityFacade` 를 받는다.
   모듈 등록도 `CompositionModule` 이 하고, `app.module` 은 그것만 import 한다.
 - **`context/` 는 입력을 모으는 일이 무거운 모듈에만 둔다.** 지금은 `results` 만 갖는다(`ResultsCheckContext`).
-- **수집 스케줄러는 `lotterietus/interface/api/LotterietusIngestScheduler.ts` 다.** 옛 워커처럼 「다음 추첨 +
+- **수집 스케줄러는 `lotterietus/interface/schedule/LotterietusIngestScheduler.ts` 다.** 옛 워커처럼 「다음 추첨 +
   10분, 실패하면 5분 뒤」로 `setTimeout` 을 걸고, 종료 때 타이머를 지운다. 고정 cron 으로는 이 동작을
-  옮길 수 없어 `@nestjs/schedule` 을 쓰지 않는다. 켜고 끄는 값은 모듈 공급자로 주입한 boolean 이다.
+  옮길 수 없어 `@nestjs/schedule` 을 쓰지 않는다. `interface/schedule/` 은 골조에 HTTP 가 아닌 들어오는 자리의
+  폴더가 없어 정했고, 의존 규칙은 `interface/api` 와 같다(`api-imports-no-module`). 설정(`CONFIG`)의
+  `schedulerEnabled` 를 직접 읽어 켠다 — 골조는 설정을 `interface/facade/` 만 보게 하지만 스케줄러도 본다.
+- **컨트롤러는 `apps/api/src/infrastructure/http/parseRequest` 를 쓴다.** 계약 스키마로 요청 모양을 검사하는
+  공용 도구다. backend-module-layout §2 표는 `interface/api` 가 `infrastructure/` 를 보게 하지 않지만 이 저장소는
+  보게 한다(의도한 이탈).
+- **`business-must-not-reach-adapter` 는 이 저장소가 더한 규칙이다.** `business/`·`context/` 는 `domain/adapter` 를
+  가져오지 못한다. 시험 파일도 예외가 아니다 — `picks` 의 `business/` 시험은 공용 `business/fakePickRepository.test-helper.ts`(포트를 구현하고 어댑터는 가져오지 않는다)를 쓴다.
+- **vault 골조 문서에 올릴 어긋남은 [보고 문서](<docs/superpowers/reports/2026-10-13-vault-feedback.md>)에 모았다.**
 - **모듈 시험은 모듈 뿌리에 둔다.** `modules/<도메인>/<도메인>Module.test.ts` 가 그 모듈 하나를 띄우고
   `configureApp` 으로 실제 접두를 건 뒤 HTTP 로 부른다. 유스케이스 시험은 `business/` 의 파일 옆에 둔다.
-- **셸의 조정자는 `apps/web/src/app/Home.presenter.ts` 다.** 모듈 사이에 오가는 상태 셋(현재 조합,
-  생성기 열림, 활성 탭)만 갖고, `page.tsx` 는 조립과 입력 묶음 전개만 한다. 화면 상태 금지 ESLint 규칙이
-  `app/` 의 `.tsx` 에도 걸린다.
-- **서버 상태 캐시는 다시 받는 동안과 실패했을 때 앞선 값을 지킨다.** `apps/web/src/shared/lib/serverCache.ts`
-  는 [frontend-module-layout §3.1 캐시 도구 — 전역 공용부에 하나](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend-module-layout.md#31-캐시-도구--전역-공용부에-하나>)의
-  모양을 따르되, 무효화한 뒤 새 값이 올 때까지 앞선 값을 비우지 않는다. 옛 화면이 저장·삭제·재확인 때
-  목록을 비우지 않았으므로 그 동작을 지킨 것이다.
-- **변환기 파일 이름은 `<유스케이스>.mapper.ts` 다.** 예: `generateCombination.mapper.ts`.
-  [frontend-module-layout §10 파일 이름 — 역할을 점 접미로 적는다](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend-module-layout.md#10-파일-이름--역할을-점-접미로-적는다>)를
-  따른다.
-- **`no-deep-module-import` 는 다른 모듈의 배럴(`modules/<다른>/index.ts(x)`)을 허용한다.**
-  [frontend-module-layout §8 공개 표면 — 배럴이 내보내는 것](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend-module-layout.md>)이
-  모듈 간 소통을 배럴로만 하라고 하므로 배럴 import 는 합법이다. boundary-enforcement §3 의 설정 문구는
-  `.+` 가 배럴까지 잡아 이와 어긋난다 — vault 에 보고할 것. `tools/checks/allowed/` 표본이 이를 지킨다.
+- **자식 뷰가 함께 쓰는 상태 둘은 `app/(home)/_state/` 의 공통 상태다.** 현재 조합(`state.home.combination`)은
+  생성기·가정 실험실이 바꾸고 통계·시뮬레이션·내 번호·가정 실험실이 읽는다. 생성기 열림(`state.home.generatorOpen`)은
+  회차 카드가 바꾸고 페이지와 회차 카드가 읽는다. 활성 탭은 `Home.presenter.ts` 의 지역 상태이고, `page.tsx` 는
+  조립만 한다. 누가 무엇을 읽고 바꾸는지는 store 출력 스냅숏이 적는다.
+- **화면 앱의 상태는 모두 `@fortuna-lottery/store` 의 전역 등록부에 있고 공급자도 컨테이너도 없다.** 정의는 `*.state.ts` 파일의
+  `createStore("key", (set, get, ctx) => …)` 하나다. `ctx(key)` 는 다른 store 의 부르는 순간의 값을 준다(구독은 없다).
+  타입은 생성 파일(`src/composition/store.gen.ts`, git 에 넣지 않는다)의 `StateTypes` 가 준다.
+  정의가 돌려주는 값에 쓴 타입은 정의 파일에서 `export` 한다 — 생성 파일이 그 이름을 그대로 적으므로, 내보내지 않으면 원인을 가리키지 않는 tsc 오류가 난다.
+  presenter 는 `useStore(key)`·`useStore(key, { pick })`·`useStore(key, { omit })`(`@fortuna-lottery/store/react`)로 꺼낸다.
+  - **key 는 접두 넷이고 폴더를 따른다.** `state.`(공통 상태, `_state/`)·`api.`(자원, `_action/`)·`event.`(event, 내는 쪽의
+    `_action/<도메인>.event.state.ts`)는 정의 파일의 폴더 경로를 key 로 쓴다 — `app/(home)/_state/` 는 `state.home.<이름>`,
+    `app/(home)/PicksCard/_action/` 은 `api.home.PicksCard.<이름>`·`event.home.PicksCard.<이름>` 이다. `infra.`(바깥 도구)는 `infrastructure/<이름>/<이름>.state.ts`
+    가 정의하고 key 는 `infra.<이름>` 이다. 자기·조상 폴더의 key 만 꺼내고, event 는 범위 밖에서도, infra 는 어디서나 꺼낸다.
+  - **서버 상태는 자원이다.** `createResource`(`@fortuna-lottery/store/query`)로 짓고, `query` 가 조회 하나이고 나머지 함수가 바꾸기다.
+    presenter 는 `useStore("api.…", { args, pick })` 로 조회 상태(`data`·`status`·`error`·`refetch`)와 바꾸기(`mutate`·`pending`…)를 받는다.
+    store 끼리는 `ctx("api.…")` 의 `fetch`·`getData`·`setData`·`invalidate` 와 바꾸기 함수를 부른다.
+  - **자원 사이는 event 로 잇는다.** `createEvent`(`@fortuna-lottery/store/query`)로 짓는다. 듣는 쪽은 creator 맨 위에서
+    `ctx("event.…").on(ctx.key, …)` 로 반응하거나, `.exempt(ctx.key, 까닭)` 로 일부러 반응하지 않는다는 결정을 남긴다.
+    creator 맨 위에서 `ctx` 를 쓰는 것은 이 자리 하나다(`ctx-at-top-binds-event-only`).
+  - **HTTP 는 `infra.http` 다.** 정의는 `ctx("infra.http").client.get(…)`·`.send(…)` 로 부른다. 시험은
+    `overrideStore("infra.http", () => ({ client: new TestHttpClient() }))` 로 갈아 끼운다. `overrideStore` 는 그 key 에 기대던 store 도 다시 짓는다.
+  - **등록을 싣는 자리는 셋이다.** 서버 쪽 `app/layout.tsx`, 클라이언트 번들의 `"use client"` 경계 `app/StoreRegistry.tsx`, 시험의
+    `test.setup.ts` 가 생성 파일을 불러온다. 생성 파일이 정의 파일을 모두 import 하므로 다른 등록 목록은 없다.
+  - 시험은 `getStore` 로 값을 미리 정하고 `test.setup.ts` 의 `afterEach(resetStores)` 가 덮어쓴 정의와 값을 되돌린다.
+
+  생성 파일은 `apps/web/store.config.ts` 의 `targets`(tsserver·next·cli)가
+  쓴다. VS Code 는 「TypeScript: Select TypeScript Version → Use Workspace Version」으로 작업 공간 TypeScript 를 써야 tsserver
+  플러그인이 실린다(`.vscode/settings.json` 의 `tsdk` 가 가리킨다). tsserver 는 플러그인을 tsconfig 폴더가 아니라 TypeScript
+  곁(`../../..`)에서 찾으므로, 루트 `package.json` 의 devDependencies 에 `@fortuna-lottery/store` 를 두어 루트 `node_modules` 에 놓는다.
+  플러그인은 프로젝트가 프로그램을 다시 지은 직후(`updateGraph`) 생성 내용을 다시 짓고, 바뀌었으면 같은 요청 안에서 한 번 더
+  짓는다 — 그래서 정의를 고친 바로 그 진단에서 타입이 따라온다. 실제 tsserver 로 이것을 지키는 시험은
+  `packages/store/tools/tsserver.test.mjs` 다. VS Code 화면에서 직접 본 확인은 아직 없다.
+- **화면 앱에는 화면 모듈이 하나(`app/(home)/`)뿐이므로 모듈 사이 import 는 없다.** 개정판은 화면 모듈끼리 배럴 import 도 금지한다.
+- **규격 코드와 다르게 지킨 것이 둘 있다.** 둘 다 [보고 문서](<docs/superpowers/reports/2026-10-13-vault-feedback.md>)에 올렸다.
+  - `FetchHttpClient`(`infrastructure/http`)는 서버 본문의 `{ error }` 문구를 꺼내 예외 메시지로 쓴다. 계약이 도메인 실패를 메시지를 실은 400 으로 정하므로 버리면 화면 문구가 사라진다.
+  - 자원의 조회 훅은 `useSyncExternalStore` 의 셋째 인자로 서버 렌더 값(받기 전 값)을 넘긴다. 없으면 Next 서버 렌더가 실패한다.
+- **`picks` 의 저장·삭제는 당첨 대조를 다시 받지 않는다.** 당첨 대조(`api.home.ResultsCard.check`)는 `auto: false` 라 사람이
+  「당첨 대조」를 눌러야 받고, 픽이 바뀌어도 앞선 결과를 그대로 보인다. 탭을 옮겼다 돌아와도 결과는 남는다.
+  이 결정은 `ResultsCard/_action/check.state.ts` 가 `event.home.PicksCard.changed` 에 건 `exempt` 와 그 까닭 문구
+  「결과는 사람이 「당첨 대조」를 눌러 받는다 — 누르기 전까지 앞선 결과를 그대로 보인다」가 적는다.
+- **무엇이 무엇을 바꾸고 누가 무엇을 쓰는지는 출력 스냅숏에서 읽는다.** `apps/web/src/composition/store.describe.test.ts` 가
+  등록된 store 를 모두 지은 뒤 세 절을 남긴다. `[state]` 절은 key 마다 처음 값·바꾸는 함수·정의 자리·쓰는 곳(presenter 이름과
+  `ctx` 로 꺼내는 정의의 key)이고, `[event]` 절은 key 마다 `on`·`exempt` 와 까닭이며, `[자원]` 절은 key 마다 조회 유무와 바꾸기 이름이다.
+  스냅숏은 `apps/web/src/composition/__snapshots__/store.describe.test.ts.snap` 이다.
+- **서식을 가진 뷰와 `shared/ui` 부품은 폴더로 승격한다.** `<Name>/index.tsx` · `<Name>.styles.ts` · `<Name>.styles.test.ts` 가 한 폴더에 서고, 화면 시험은 `<폴더>.test.tsx` 다(예: `Card/Card.test.tsx`, `index.test.tsx` 가 아니다). vault 골조는 이 규칙을 개정 중이고(vault 브랜치 `styles-folder+`), 그 개정이 `dev` 에 들어가기 전까지 이 저장소가 먼저 따른다.
+- **`turbo.json` 의 `lint` 는 `^build` 에 기댄다.** baseline §3 의 `{}` 보다 엄격한 의도된 이탈이다.
 - **`Entity` 부류는 없다.** 픽은 `picks/domain/model/Pick.model.ts` 의 도메인 원형이다.
+- **서식 도구는 editor 저장소와 같은 셋(`clsx`·`tailwind-merge`·`tailwind-variants`)이다.** 다른 점은 `tv` 를 `shared/lib/style/tv.ts` 의
+  `createTV({ twMergeConfig })` 로 내어 토큰 이름을 `tv` 안에도 알리는 것이다. 조건으로 갈리는 서식은 뷰 폴더 안의 `<폴더>.styles.ts` 에 두고
+  ([fractal-view-promotion §3 소유물의 자리 — 소비자를 세어 정한다](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/fractal-view-promotion.md#3-소유물의-자리--소비자를-세어-정한다>)가 승격 기준을 정한다),
+  규칙은 [`.claude/context/design-system.md` 의 「규칙」 절](<.claude/context/design-system.md#규칙>)이 갖는다.
 - **도구 판본.** `packageManager` 는 `pnpm@11.18.0` 이고, 설치 때 빌드 스크립트를 허용할 패키지(prisma,
   엔진, esbuild, sharp)를 `pnpm-workspace.yaml` 의 `allowBuilds` 에 둔다. NestJS 는 12 이고, `apps/api` 는
   계약 패키지가 `import` 조건만 내보내므로 ESM 이다.
@@ -179,21 +259,24 @@ tools/checks/        이관 상태 스크립트와 규칙마다 하나씩 둔 �
 
 ## MVP 현황
 
-`apps/api` 가 수집과 조회를 모두 한다. 회차 데이터는 `lotterietus` 모듈의 `PrismaDrawDataAdapter` 가 PostgreSQL 에서
+`apps/api` 가 수집과 조회를 모두 한다. 회차 데이터는 `lotterietus` 모듈의 `PrismaDrawDataAdapter` 가 SQLite 에서
 읽고, 같은 모듈의 `LotterietusIngestScheduler` 가 동행복권 비공식 엔드포인트를 매주 추첨 이후 수집해
-채운다. DB 에는 실제 당첨 데이터가 회차 1부터 빈틈없이 들어 있다.
+채운다. 새 DB 는 시드(`apps/api/prisma/seed.sql`)로 회차 1~1245 를 받고, 그 뒤 회차는 스케줄러가 잇는다.
 
 픽은 `picks` 모듈의 `PickRepositoryPort` 뒤에 있는 `InMemoryPickRepository`(서버 프로세스 메모리, 실제
 DB 아님)에 저장된다. `apps/api` 를 다시 띄우면 사라진다. 나중에 Supabase 로 바꿔도 어댑터만 바뀐다.
 인증은 아직 없다(게스트 전용). Supabase Auth 와 로그인 게이팅은 v1 문서 기준 후속 단계다.
 
+`hypothesis` 모듈(가정 실험실)은 `POST /api/hypothesis/{evaluate,generate,popularity}` 를 낸다. 과거 회차로 가정 적중률·백테스트를 계산하고, 화면의 「가정 실험실」 탭이 이를 보인다.
+
 ## TDD
 
 도메인 계산과 유스케이스는 테스트 우선(Red → Green → Refactor)으로 작성한다. 커널과 `business/` 의 계산을
 순수 함수로 유지하는 이유가 바로 이것이다. 구현 전에 대상 파일 옆에 `*.test.ts` 를 먼저 쓴다.
+계약 스키마를 고쳤는데 화면 변환기 시험이 하나도 깨지지 않았다면 변환기가 스키마를 반영하지 않는다는 회귀 신호다 — 자동 검사가 아니라 사람이 지키는 방어선이다(wire-contract §6).
 커널은 `packages/kernel/src/*.test.ts`, 서버 유스케이스는 `apps/api/src/modules/<도메인>/business/*.test.ts`,
-계약은 `packages/contract/src/<도메인>/schema.test.ts`, 화면의 표시 조정자·표시 모델은
-`apps/web/src/modules/**/*.presenter.test.ts` 와 `*.viewmodel.test.ts` 가 본보기다.
+계약은 `packages/contract/src/<도메인>/schema.test.ts`, 화면의 presenter·표시 모델은
+`apps/web/src/app/**/*.presenter.test.ts` 와 `*.viewmodel.test.ts` 가 본보기다.
 
 ## git 분기 전략 — vault 공통 정책을 따른다
 
