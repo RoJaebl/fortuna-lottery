@@ -195,10 +195,11 @@ ESLint 가 거는 모양 규칙은 이렇다.
 - **vault 골조 문서에 올릴 어긋남은 [보고 문서](<docs/superpowers/reports/2026-10-13-vault-feedback.md>)에 모았다.**
 - **모듈 시험은 모듈 뿌리에 둔다.** `modules/<도메인>/<도메인>Module.test.ts` 가 그 모듈 하나를 띄우고
   `configureApp` 으로 실제 접두를 건 뒤 HTTP 로 부른다. 유스케이스 시험은 `business/` 의 파일 옆에 둔다.
-- **자식 뷰가 함께 쓰는 상태 둘은 `app/(home)/_state/` 의 공통 상태다.** 현재 조합(`state.home.combination`)은
-  생성기·가정 실험실이 바꾸고 통계·시뮬레이션·내 번호·가정 실험실이 읽는다. 생성기 열림(`state.home.generatorOpen`)은
-  회차 카드가 바꾸고 페이지와 회차 카드가 읽는다. 활성 탭은 `Home.presenter.ts` 의 지역 상태이고, `page.tsx` 는
-  조립만 한다. 누가 무엇을 읽고 바꾸는지는 store 출력 스냅숏이 적는다.
+- **화면은 상단 띠 · 왼쪽 메뉴 패널 · 오른쪽 콘텐츠로 선다.** 상단 띠(`LotterietusCard`)는 최근 회차, 다음 추첨까지 남은 시간,
+  실제 당첨 확률 1/8,145,060 을 보인다. 메뉴는 지금 `작업실` 하나이고, 작업실은 생성기를 늘 펼쳐 두고 그 아래 탭 다섯(통계·시뮬레이션·
+  내 번호·결과 확인·가정 실험실)을 보인다. 고른 메뉴와 활성 탭은 `Home.presenter.ts` 의 지역 상태이고, `page.tsx` 는 조립만 한다.
+- **자식 뷰가 함께 쓰는 상태는 `app/(home)/_state/` 의 공통 상태 하나다.** 현재 조합(`state.home.combination`)은
+  생성기·가정 실험실이 바꾸고 통계·시뮬레이션·내 번호·가정 실험실이 읽는다. 누가 무엇을 읽고 바꾸는지는 store 출력 스냅숏이 적는다.
 - **화면 앱의 상태는 모두 `@fortuna-lottery/store` 의 전역 등록부에 있고 공급자도 컨테이너도 없다.** 정의는 `*.state.ts` 파일의
   `createStore("key", (set, get, ctx) => …)` 하나다. `ctx(key)` 는 다른 store 의 부르는 순간의 값을 준다(구독은 없다).
   타입은 생성 파일(`src/composition/store.gen.ts`, git 에 넣지 않는다)의 `StateTypes` 가 준다.

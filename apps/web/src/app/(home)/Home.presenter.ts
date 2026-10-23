@@ -1,10 +1,13 @@
 import { useState } from "react";
-import { useStore } from "@fortuna-lottery/store/react";
 import type { TabItem, TabsProps } from "@ui/Tabs";
 
+export type HomeMenuKey = "workroom";
 export type HomeTabKey = "statistics" | "simulation" | "picks" | "results" | "hypothesis";
 
-/** 각 카드의 기존 title을 탭 라벨로 그대로 사용 (설계 문서 §3) */
+/** 왼쪽 패널의 메뉴 — 지금은 작업실 하나다 */
+const MENU: readonly TabItem<HomeMenuKey>[] = [{ key: "workroom", label: "작업실" }];
+
+/** 작업실 안의 탭 — 각 카드의 기존 title을 탭 라벨로 그대로 사용 (설계 문서 §3) */
 const TABS: readonly TabItem<HomeTabKey>[] = [
   { key: "statistics", label: "통계" },
   { key: "simulation", label: "시뮬레이션" },
@@ -14,19 +17,21 @@ const TABS: readonly TabItem<HomeTabKey>[] = [
 ];
 
 /**
- * 페이지의 presenter — 활성 탭은 이 화면 안의 지역 상태다. 자식이 함께 쓰는 현재 조합·생성기 열림은
- * _state/ 의 공통 상태이고, 이 presenter 는 생성기를 펼칠지만 읽는다 (frontend-shared-state §1)
+ * 페이지의 presenter — 고른 메뉴와 작업실의 활성 탭은 이 화면 안의 지역 상태다.
+ * 자식이 함께 쓰는 현재 조합은 _state/ 의 공통 상태다 (frontend-shared-state §1)
  */
 export function useHomePresenter() {
-  const { open: isGeneratorOpen } = useStore("state.home.generatorOpen", { pick: ["open"] });
+  const [activeMenu, setActiveMenu] = useState<HomeMenuKey>("workroom");
   const [activeTab, setActiveTab] = useState<HomeTabKey>("statistics");
+
+  const menu = { items: MENU, active: activeMenu, onChange: setActiveMenu };
 
   const tabs: TabsProps<HomeTabKey> = {
     items: TABS,
     active: activeTab,
     onChange: setActiveTab,
-    label: "주요 화면",
+    label: "작업실 화면",
   };
 
-  return { isGeneratorOpen, tabs };
+  return { menu, tabs };
 }

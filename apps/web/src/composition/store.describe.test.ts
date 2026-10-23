@@ -102,15 +102,11 @@ describe("store", () => {
   it("state 절은 key 마다 처음 값·바꾸는 함수·정의·쓰는 곳을 찍는다", () => {
     const lines = describeStores().split("\n");
     const at = lines.indexOf("state.home.combination = {\"numbers\":null}");
-    expect(lines.slice(at, at + 8)).toEqual([
+    expect(lines.slice(at, at + 4)).toEqual([
       'state.home.combination = {"numbers":null}',
       "  바꾸는 함수: choose",
       "  정의: app/(home)/_state/combination.state.ts",
       "  쓰는 곳: GeneratorCard, HypothesisLab, PicksCard, SimulationCard, StatisticsPanel",
-      'state.home.generatorOpen = {"open":false}',
-      "  바꾸는 함수: toggle",
-      "  정의: app/(home)/_state/generatorOpen.state.ts",
-      "  쓰는 곳: Home, LotterietusCard",
     ]);
   });
 });
