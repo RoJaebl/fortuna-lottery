@@ -8,7 +8,6 @@ export default defineConfig({
     alias: {
       "@app": path.resolve(__dirname, "src/app"),
       "@widgets": path.resolve(__dirname, "src/widgets"),
-      "@framework": path.resolve(__dirname, "src/framework"),
       "@composition": path.resolve(__dirname, "src/composition"),
       "@infrastructure": path.resolve(__dirname, "src/infrastructure"),
       "@lib": path.resolve(__dirname, "src/shared/lib"),
@@ -18,7 +17,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "jsdom",
-    include: ["src/**/*.test.{ts,tsx}"],
+    include: ["src/**/*.test.{ts,tsx}", "eslint/**/*.test.ts"],
     globalSetup: ["./vitest.store-gen.ts"],
     setupFiles: ["./src/test.setup.ts"],
   },

@@ -1,11 +1,10 @@
 // 모든 표현은 과거 데이터의 사실만 말한다 (정직성 원칙).
 import { useState } from "react";
-import { useSharedState } from "@fortuna-lottery/store/react";
+import { useStore } from "@fortuna-lottery/store/react";
 import { LOW_MAX } from "@lib/lotto-rules";
 import type { TabItem } from "@ui/tabs";
 import type { StatisticsModel } from "./_model/Statistics.model";
 import type { DistBar } from "./_model/Statistics.viewmodel";
-import { useGetStatisticsAction } from "./_action/getStatistics.action";
 import type { FrequencyHeatmapProps } from "./FrequencyHeatmap";
 import type { HotColdBoardProps } from "./HotColdBoard";
 import type { NumberFrequencyBarsProps } from "./NumberFrequencyBars";
@@ -116,8 +115,10 @@ function highlightBars(bars: DistBar[], highlight: number | null): PatternBar[] 
 }
 
 export function useStatisticsPanelPresenter() {
-  const myNumbers = useSharedState("state.home.combination", (s) => s.numbers); // 분포 위 내 위치 마커에 쓴다
-  const { loading, stats, error } = useGetStatisticsAction();
+  const { numbers: myNumbers } = useStore("state.home.combination", { pick: ["numbers"] }); // 분포 위 내 위치 마커에 쓴다
+  const { data: stats, status, error } = useStore("api.home.StatisticsPanel.statistics");
+  // 처음 그릴 때(idle)도 아직 받기 전이다
+  const loading = status === "idle" || status === "loading";
   const [activeStatView, setActiveStatView] = useState<StatView>("probability");
 
   const tabs = { items: STAT_VIEWS, active: activeStatView, onChange: setActiveStatView };

@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { useSharedState } from "@fortuna-lottery/store/react";
+import { useStore } from "@fortuna-lottery/store/react";
 import type { GeneratorMode } from "./_model/GeneratorMode.model";
-import { useGenerateCombinationAction } from "./_action/generateCombination.action";
 
 const ALL_NUMBERS = Array.from({ length: 45 }, (_, i) => i + 1);
 
@@ -42,15 +41,16 @@ export function generateButtonLabel(busy: boolean): string {
 }
 
 export function useGeneratorCardPresenter() {
-  const choose = useSharedState("state.home.combination", (s) => s.choose);
+  const { choose } = useStore("state.home.combination", { pick: ["choose"] });
   const [mode, setMode] = useState<GeneratorMode>("auto");
   const [selected, setSelected] = useState<number[]>([]);
-  const action = useGenerateCombinationAction();
+  const { generate: generator } = useStore("api.home.GeneratorCard.generator");
 
   const changeMode = (next: GeneratorMode) => {
     setMode(next);
     setSelected([]);
-    action.clearError();
+    // 앞선 오류만 지운다 — 오류가 없으면 앞선 결과를 그대로 두고, 진행 중이면 reset 이 응답까지 버리므로 건드리지 않는다
+    if (generator.error && !generator.pending) generator.reset();
   };
 
   const toggleNumber = (n: number) => {
@@ -62,7 +62,7 @@ export function useGeneratorCardPresenter() {
   };
 
   const generate = async () => {
-    const generated = await action.run(mode, selected);
+    const generated = await generator.mutate(mode, selected);
     if (generated) choose(generated.numbers);
   };
 
@@ -70,13 +70,13 @@ export function useGeneratorCardPresenter() {
     modeItems: modeItemsOf(mode),
     numberItems: numberItemsOf(selected),
     showNumberGrid: mode !== "auto",
-    result: action.result?.numbers ?? null,
-    error: action.error,
+    result: generator.data?.numbers ?? null,
+    error: generator.error,
     changeMode,
     toggleNumber,
     generate,
-    generateDisabled: !canGenerate(mode, selected.length) || action.pending,
-    generateLabel: generateButtonLabel(action.pending),
+    generateDisabled: !canGenerate(mode, selected.length) || generator.pending,
+    generateLabel: generateButtonLabel(generator.pending),
     hint: modeHint(mode, selected.length),
   };
 }

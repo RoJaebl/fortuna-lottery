@@ -1,5 +1,4 @@
-import { useSharedState } from "@fortuna-lottery/store/react";
-import { useBacktestCombinationAction } from "./_action/backtestCombination.action";
+import { useStore } from "@fortuna-lottery/store/react";
 
 /** 실행 버튼 문구 — 진행 중인가와 대입할 조합이 있는가 둘을 보므로 조정자에 둔다 */
 export function runButtonLabel(busy: boolean, hasNumbers: boolean): string {
@@ -8,19 +7,19 @@ export function runButtonLabel(busy: boolean, hasNumbers: boolean): string {
 }
 
 export function useSimulationCardPresenter() {
-  const numbers = useSharedState("state.home.combination", (s) => s.numbers);
-  const action = useBacktestCombinationAction();
+  const { numbers } = useStore("state.home.combination", { pick: ["numbers"] });
+  const { backtest } = useStore("api.home.SimulationCard.backtest");
 
   const run = () => {
     if (!numbers) return;
-    void action.run(numbers);
+    void backtest.mutate(numbers);
   };
 
   return {
-    result: action.result,
-    error: action.error,
-    runLabel: runButtonLabel(action.pending, numbers !== null),
-    runDisabled: !numbers || action.pending,
+    result: backtest.data ?? null,
+    error: backtest.error,
+    runLabel: runButtonLabel(backtest.pending, numbers !== null),
+    runDisabled: !numbers || backtest.pending,
     run,
   };
 }

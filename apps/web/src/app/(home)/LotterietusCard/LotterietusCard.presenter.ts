@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSharedState } from "@fortuna-lottery/store/react";
-import { useGetLotterietusStatusAction } from "./_action/getLotterietusStatus.action";
+import { useStore } from "@fortuna-lottery/store/react";
 
 /** 남은 시간(ms) → "D-3 12:34:56" — 지금 시각에 따라 바뀌므로 표시 모델이 아니라 조정자에 둔다 */
 export function formatRemaining(ms: number): string {
@@ -19,9 +18,10 @@ export function ctaLabel(generatorOpen: boolean): string {
 }
 
 export function useLotterietusCardPresenter() {
-  const generatorOpen = useSharedState("state.home.generatorOpen", (s) => s.open);
-  const toggleGenerator = useSharedState("state.home.generatorOpen", (s) => s.toggle);
-  const { loading, status, error } = useGetLotterietusStatusAction();
+  const { open: generatorOpen, toggle: toggleGenerator } = useStore("state.home.generatorOpen", { pick: ["open", "toggle"] });
+  const { data: status = null, status: fetchStatus, error } = useStore("api.home.LotterietusCard.status");
+  // 처음 그릴 때(idle)도 아직 받기 전이다
+  const loading = fetchStatus === "idle" || fetchStatus === "loading";
   const [now, setNow] = useState(() => Date.now());
 
   // 카운트다운의 1초 틱 — 상호작용 상태이므로 조정자가 갖는다
