@@ -48,5 +48,5 @@ emerald-600(`#059669`)은 흰 글자 대비 3.77 로 4.5 에 못 미쳐 한 단 
 - **도메인 예외: 로또 공 색.** `ballColor()`(`lotto-colors.ts`)의 노랑·파랑·빨강·회색·초록은 실제 공 색
   규칙이며 토큰으로 바꾸지 않고 어떤 이유로도 바꾸지 않는다.
 - **조건으로 갈리는 서식은 뷰 폴더 안의 `<폴더>.styles.ts` 에 `tv`(`@lib/style/tv`)로 정의한다.** 부모가 내린 `className` 을 합칠 때만 `cn`(`@lib/style/cn`)을 쓴다.
-- **공용 서식 부품은 두 번째 화면이 같은 서식을 쓸 때 공통 조상으로 올린다.** 화면 모듈을 넘으면 `shared/ui` 다. 서식 파일은 같은 폴더의 `index.tsx` 와 `.styles.test.ts` 만 가져오고, `X.styles.ts` 는 폴더 `X` 안에만 선다(`styles-owned-by-its-screen`).
+- **공용 서식 부품은 두 번째 화면이 같은 서식을 쓸 때 공통 조상으로 올린다.** 화면 모듈을 넘으면 `shared/ui` 다. `shared/ui` 부품도 뷰와 같이 폴더다 — `<Name>/index.tsx` · `<Name>.styles.ts` · `<Name>.styles.test.ts`. 서식 파일은 같은 폴더의 `index.tsx` 와 `.styles.test.ts` 만 가져오고, `X.styles.ts` 는 폴더 `X` 안에만 선다(`styles-owned-by-its-screen`).
 - **`@theme inline` 에 글자 크기·모서리 토큰을 더하면 `shared/lib/style/cn.ts` 의 `twMergeConfig` 에도 더한다.** 안 그러면 글자 크기가 같은 자리의 글자 색에 지워지고, 모서리는 둘 다 남는다.

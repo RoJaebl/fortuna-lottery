@@ -243,7 +243,7 @@ ESLint 가 거는 모양 규칙은 이렇다.
 - **`turbo.json` 의 `lint` 는 `^build` 에 기댄다.** baseline §3 의 `{}` 보다 엄격한 의도된 이탈이다.
 - **`Entity` 부류는 없다.** 픽은 `picks/domain/model/Pick.model.ts` 의 도메인 원형이다.
 - **서식 도구는 editor 저장소와 같은 셋(`clsx`·`tailwind-merge`·`tailwind-variants`)이다.** 다른 점은 `tv` 를 `shared/lib/style/tv.ts` 의
-  `createTV({ twMergeConfig })` 로 내어 토큰 이름을 `tv` 안에도 알리는 것이다. 조건으로 갈리는 서식은 화면 곁 `<화면>.styles.ts` 에 두고
+  `createTV({ twMergeConfig })` 로 내어 토큰 이름을 `tv` 안에도 알리는 것이다. 조건으로 갈리는 서식은 뷰 폴더 안의 `<폴더>.styles.ts` 에 두고
   ([fractal-view-promotion §3 소유물의 자리 — 소비자를 세어 정한다](<C:/Users/hnpark/orca/workspaces/vaults/global/docs/context/architecture/frontend/fractal-view-promotion.md#3-소유물의-자리--소비자를-세어-정한다>)가 승격 기준을 정한다),
   규칙은 [`.claude/context/design-system.md` 의 「규칙」 절](<.claude/context/design-system.md#규칙>)이 갖는다.
 - **도구 판본.** `packageManager` 는 `pnpm@11.18.0` 이고, 설치 때 빌드 스크립트를 허용할 패키지(prisma,
