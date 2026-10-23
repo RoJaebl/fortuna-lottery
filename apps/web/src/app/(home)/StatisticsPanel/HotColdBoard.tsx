@@ -1,6 +1,6 @@
 "use client";
-import { Ball } from "@ui/ball";
-import { Card } from "@ui/card";
+import { Ball } from "@ui/Ball";
+import { Card } from "@ui/Card";
 
 export interface HotColdBoardProps {
   /** 각 목록의 상위 개수 — 「TOP 8」 */

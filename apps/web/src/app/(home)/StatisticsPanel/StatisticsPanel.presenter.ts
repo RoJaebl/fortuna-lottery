@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useStore } from "@fortuna-lottery/store/react";
 import { LOW_MAX } from "@lib/lotto-rules";
-import type { TabItem } from "@ui/tabs";
+import type { TabItem } from "@ui/Tabs";
 import type { StatisticsModel } from "./_model/Statistics.model";
 import type { DistBar } from "./_model/Statistics.viewmodel";
 import type { FrequencyHeatmapProps } from "./FrequencyHeatmap";

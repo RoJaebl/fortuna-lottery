@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { render } from "@testing-library/react";
-import { Card } from "./card";
+import { Card } from ".";
 
 describe("Card", () => {
   it("부모가 내린 안쪽 여백이 기본 여백을 이긴다", () => {

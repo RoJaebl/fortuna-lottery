@@ -1,7 +1,7 @@
 "use client";
 import { Fragment } from "react";
-import { Ball } from "@ui/ball";
-import { Card } from "@ui/card";
+import { Ball } from "@ui/Ball";
+import { Card } from "@ui/Card";
 import { useResultsCardPresenter } from "./ResultsCard.presenter";
 import { resultsCard } from "./ResultsCard.styles";
 

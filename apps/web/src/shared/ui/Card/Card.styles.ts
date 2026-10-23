@@ -1,4 +1,4 @@
-import { tv } from "../lib/style/tv";
+import { tv } from "../../lib/style/tv";
 
 export const card = tv({
   slots: {

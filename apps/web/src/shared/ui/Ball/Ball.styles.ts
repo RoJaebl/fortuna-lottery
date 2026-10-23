@@ -1,4 +1,4 @@
-import { tv } from "../lib/style/tv";
+import { tv } from "../../lib/style/tv";
 
 export const ball = tv({
   base: "inline-flex items-center justify-center rounded-full font-bold tabular-nums select-none",

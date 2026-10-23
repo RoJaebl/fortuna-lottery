@@ -9,7 +9,7 @@ import { PicksCard } from "./PicksCard";
 import { ResultsCard } from "./ResultsCard";
 import { SimulationCard } from "./SimulationCard";
 import { StatisticsPanel } from "./StatisticsPanel";
-import { Tabs } from "@ui/tabs";
+import { Tabs } from "@ui/Tabs";
 import { useHomePresenter, type HomeTabKey } from "./Home.presenter";
 
 const PANELS: Record<HomeTabKey, ReactNode> = {
