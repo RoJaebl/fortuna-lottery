@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { tabs } from "./tabs.styles";
+import { tabs } from "./Tabs.styles";
 
 const set = (cls: string) => new Set(cls.split(" ").filter(Boolean));
 

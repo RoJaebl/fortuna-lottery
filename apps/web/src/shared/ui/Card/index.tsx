@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import { cn } from "../lib/style/cn";
-import { card } from "./card.styles";
+import { cn } from "../../lib/style/cn";
+import { card } from "./Card.styles";
 
 interface CardProps {
   title: string;

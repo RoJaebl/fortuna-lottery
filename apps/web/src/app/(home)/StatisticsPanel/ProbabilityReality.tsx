@@ -1,5 +1,5 @@
 "use client";
-import { Card } from "@ui/card";
+import { Card } from "@ui/Card";
 import type { StatisticsViewModel } from "./_model/Statistics.viewmodel";
 
 export interface ProbabilityRealityProps {

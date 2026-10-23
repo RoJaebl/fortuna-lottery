@@ -1,4 +1,4 @@
-import { tv } from "../lib/style/tv";
+import { tv } from "../../lib/style/tv";
 
 /** underline = 최상단 내비게이션(밑줄), chip = 패널 내부 서브탭(칩, 모바일은 한 줄 가로 스크롤) */
 export const tabs = tv({

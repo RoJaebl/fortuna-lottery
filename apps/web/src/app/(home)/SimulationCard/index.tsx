@@ -1,5 +1,5 @@
 "use client";
-import { Card } from "@ui/card";
+import { Card } from "@ui/Card";
 import { useSimulationCardPresenter } from "./SimulationCard.presenter";
 import { simulationCard } from "./SimulationCard.styles";
 

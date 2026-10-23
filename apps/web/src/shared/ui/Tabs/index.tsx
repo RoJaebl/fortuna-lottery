@@ -1,6 +1,6 @@
 "use client";
 
-import { tabs } from "./tabs.styles";
+import { tabs } from "./Tabs.styles";
 
 export interface TabItem<K extends string> {
   key: K;

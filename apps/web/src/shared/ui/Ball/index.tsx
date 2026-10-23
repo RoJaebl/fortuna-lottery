@@ -1,5 +1,5 @@
-import { ballColor } from "../lib/lotto-colors";
-import { ball } from "./ball.styles";
+import { ballColor } from "../../lib/lotto-colors";
+import { ball } from "./Ball.styles";
 
 interface BallProps {
   n: number;

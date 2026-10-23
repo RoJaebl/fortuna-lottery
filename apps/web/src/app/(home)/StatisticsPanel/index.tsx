@@ -1,5 +1,5 @@
 "use client";
-import { Tabs } from "@ui/tabs";
+import { Tabs } from "@ui/Tabs";
 import { FrequencyHeatmap } from "./FrequencyHeatmap";
 import { HotColdBoard } from "./HotColdBoard";
 import { NumberFrequencyBars } from "./NumberFrequencyBars";

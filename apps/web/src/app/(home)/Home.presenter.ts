@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useStore } from "@fortuna-lottery/store/react";
-import type { TabItem, TabsProps } from "@ui/tabs";
+import type { TabItem, TabsProps } from "@ui/Tabs";
 
 export type HomeTabKey = "statistics" | "simulation" | "picks" | "results" | "hypothesis";
 

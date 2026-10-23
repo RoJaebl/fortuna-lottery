@@ -1,7 +1,7 @@
 "use client";
 import { LOW_MAX } from "@lib/lotto-rules";
-import { Card } from "@ui/card";
-import type { DistBar } from "./_model/Statistics.viewmodel";
+import { Card } from "@ui/Card";
+import type { DistBar } from "../_model/Statistics.viewmodel";
 import { patternDistribution } from "./PatternDistribution.styles";
 
 const s = patternDistribution();

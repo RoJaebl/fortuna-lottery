@@ -156,9 +156,13 @@ const STORE_KEYS = {
   },
 };
 
-// styles-owned-by-its-screen — X.styles.ts 는 화면 X 만 가져온다: 같은 폴더의 X.tsx, 폴더 X 의 index.tsx, 같은 폴더의 X.styles.test.ts.
-// 다른 화면이 쓰면 소비자를 세어 공통 조상으로 올린다 (fractal-view-promotion §3 소유물의 자리). 상대 경로 ./X.styles 꼴만 알아본다
+// styles-owned-by-its-screen — 서식의 주인은 폴더가 정한다. 판정이 둘이다.
+// (1) X.styles 를 가져올 수 있는 파일은 폴더 X 의 index.tsx 와 같은 폴더의 X.styles.test.ts 뿐이다. 다른 화면이 쓰면 소비자를 세어
+//     공통 조상으로 올린다 (fractal-view-promotion §3 소유물의 자리). 상대 경로 ./X.styles 꼴만 알아본다.
+// (2) 파일 이름이 X.styles.ts 이면 그 파일이 선 폴더의 이름이 X 여야 한다 — 서식을 가진 뷰는 폴더로 승격한다.
 // 정적 import 선언만 본다 — 재내보내기(export … from)와 동적 import() 는 검사하지 않는다.
+// vault 골조가 이 규칙을 개정 중이다(vault 브랜치 styles-folder+, docs/superpowers/plans/2026-10-23-styles-promote-view.md).
+// 개정이 dev 에 들어가기 전까지 이 저장소가 먼저 따른다.
 const STYLE_OWNERS = {
   rules: {
     "styles-owned-by-its-screen": {
@@ -168,17 +172,26 @@ const STYLE_OWNERS = {
         const base = parts.at(-1);
         const folder = parts.at(-2);
         return {
+          Program(node) {
+            const own = /^(.+)\.styles\.ts$/.exec(base);
+            if (own && own[1] !== folder) {
+              context.report({
+                node,
+                message: `서식 파일 ${base} 는 폴더 ${own[1]} 안에 둔다 — 서식을 가진 뷰는 폴더로 승격한다 (styles-owned-by-its-screen)`,
+              });
+            }
+          },
           ImportDeclaration(node) {
             const hit = /^(?:(\.\/)|.*\/)([^/]+)\.styles(?:\.js)?$/.exec(node.source.value);
             if (!hit) return;
             const name = hit[2];
             const owner =
               hit[1] !== undefined &&
-              (base === `${name}.tsx` || base === `${name}.styles.test.ts` || (base === "index.tsx" && folder === name));
+              ((base === "index.tsx" && folder === name) || base === `${name}.styles.test.ts`);
             if (!owner) {
               context.report({
                 node,
-                message: `${name}.styles.ts 는 화면 ${name} 만 쓴다 — 다른 화면이 쓰면 소비자를 세어 공통 조상으로 올린다 (fractal-view-promotion §3 소유물의 자리, styles-owned-by-its-screen)`,
+                message: `${name}.styles.ts 는 폴더 ${name} 의 index.tsx 와 ${name}.styles.test.ts 만 쓴다 — 다른 화면이 쓰면 소비자를 세어 공통 조상으로 올린다 (fractal-view-promotion §3 소유물의 자리, styles-owned-by-its-screen)`,
               });
             }
           },

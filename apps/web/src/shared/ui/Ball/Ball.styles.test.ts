@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ball } from "./ball.styles";
+import { ball } from "./Ball.styles";
 
 const set = (cls: string) => new Set(cls.split(" ").filter(Boolean));
 const BASE = "inline-flex items-center justify-center rounded-full font-bold tabular-nums select-none";

@@ -1,6 +1,6 @@
 "use client";
-import { Ball } from "@ui/ball";
-import { Card } from "@ui/card";
+import { Ball } from "@ui/Ball";
+import { Card } from "@ui/Card";
 import type { StatisticsViewModel } from "./_model/Statistics.viewmodel";
 
 export interface TopPairsListProps {

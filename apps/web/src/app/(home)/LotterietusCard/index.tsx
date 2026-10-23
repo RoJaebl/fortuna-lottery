@@ -1,5 +1,5 @@
 "use client";
-import { Ball } from "@ui/ball";
+import { Ball } from "@ui/Ball";
 import { useLotterietusCardPresenter } from "./LotterietusCard.presenter";
 
 /** 홈 최상단 Hero — 최근 회차와 다음 추첨 카운트다운을 동등한 비중으로 보여주고 생성기 CTA를 제공 */
