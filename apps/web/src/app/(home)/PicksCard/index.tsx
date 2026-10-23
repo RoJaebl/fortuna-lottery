@@ -53,5 +53,3 @@ export function PicksCard() {
   );
 }
 
-export type { PickModel } from "./_model/Pick.model";
-export type { PickViewModel } from "./_model/Pick.viewmodel";

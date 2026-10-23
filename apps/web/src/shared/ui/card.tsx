@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import { cn } from "../lib/style/cn";
+import { card } from "./card.styles";
 
 interface CardProps {
   title: string;
@@ -9,19 +11,16 @@ interface CardProps {
   className?: string;
 }
 
-export function Card({ title, subtitle, footnote, children, className = "" }: CardProps) {
+export function Card({ title, subtitle, footnote, children, className }: CardProps) {
+  const s = card();
   return (
-    <section className={`rounded-card border border-line bg-panel p-5 ${className}`}>
-      <header className="mb-4">
-        <h2 className="text-body font-semibold text-text">{title}</h2>
-        {subtitle ? <p className="mt-1 text-micro text-muted">{subtitle}</p> : null}
+    <section className={cn(s.root(), className)}>
+      <header className={s.header()}>
+        <h2 className={s.title()}>{title}</h2>
+        {subtitle ? <p className={s.subtitle()}>{subtitle}</p> : null}
       </header>
       {children}
-      {footnote ? (
-        <p className="mt-4 border-t border-line pt-2 text-micro leading-relaxed text-warn">
-          ⚠ {footnote}
-        </p>
-      ) : null}
+      {footnote ? <p className={s.footnote()}>⚠ {footnote}</p> : null}
     </section>
   );
 }

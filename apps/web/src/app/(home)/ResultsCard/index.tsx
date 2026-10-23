@@ -3,6 +3,9 @@ import { Fragment } from "react";
 import { Ball } from "@ui/ball";
 import { Card } from "@ui/card";
 import { useResultsCardPresenter } from "./ResultsCard.presenter";
+import { resultsCard } from "./ResultsCard.styles";
+
+const s = resultsCard();
 
 export function ResultsCard() {
   const card = useResultsCardPresenter();
@@ -44,11 +47,7 @@ export function ResultsCard() {
                       <Ball key={n} n={n} size="sm" ring={matched} dimmed={!matched} />
                     ))}
                   </div>
-                  <span
-                    className={`shrink-0 text-micro font-semibold ${
-                      item.isWin ? "text-warn" : "text-muted"
-                    }`}
-                  >
+                  <span className={s.resultLabel({ win: item.isWin })}>
                     {item.resultLabel}
                   </span>
                 </li>
@@ -61,8 +60,3 @@ export function ResultsCard() {
   );
 }
 
-export type { ResultsCheckModel } from "./_model/ResultsCheck.model";
-export type { ResultsDrawModel } from "./_model/ResultsDraw.model";
-export type { ResultsDrawViewModel } from "./_model/ResultsDraw.viewmodel";
-export type { ResultsCheckItemModel } from "./_model/ResultsCheckItem.model";
-export type { ResultsCheckItemViewModel } from "./_model/ResultsCheckItem.viewmodel";

@@ -129,6 +129,3 @@ export function HypothesisLab() {
   );
 }
 
-export type { AssumptionModel, EvaluationModel } from "./_model/Evaluation.model";
-export type { EvaluationViewModel } from "./_model/Evaluation.viewmodel";
-export type { PopularityPattern, PopularityViewModel } from "./_model/Popularity.viewmodel";

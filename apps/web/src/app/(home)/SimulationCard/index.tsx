@@ -1,6 +1,9 @@
 "use client";
 import { Card } from "@ui/card";
 import { useSimulationCardPresenter } from "./SimulationCard.presenter";
+import { simulationCard } from "./SimulationCard.styles";
+
+const s = simulationCard();
 
 export function SimulationCard() {
   const card = useSimulationCardPresenter();
@@ -30,11 +33,7 @@ export function SimulationCard() {
               {card.result.rankRows.map(({ rank, label, count, emphasized }) => (
                 <li
                   key={rank}
-                  className={`rounded-box px-3 py-2 text-small font-semibold ${
-                    emphasized
-                      ? "border border-warn text-warn"
-                      : "bg-said text-text"
-                  }`}
+                  className={s.rankChip({ emphasized })}
                 >
                   {label} × {count.toLocaleString()}
                 </li>
@@ -47,5 +46,3 @@ export function SimulationCard() {
   );
 }
 
-export type { SimulationResultModel } from "./_model/SimulationResult.model";
-export type { SimulationResultViewModel } from "./_model/SimulationResult.viewmodel";

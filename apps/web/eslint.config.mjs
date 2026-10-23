@@ -156,10 +156,49 @@ const STORE_KEYS = {
   },
 };
 
+// styles-owned-by-its-screen — X.styles.ts 는 화면 X 만 가져온다: 같은 폴더의 X.tsx, 폴더 X 의 index.tsx, 같은 폴더의 X.styles.test.ts.
+// 다른 화면이 쓰면 소비자를 세어 공통 조상으로 올린다 (fractal-view-promotion §3 소유물의 자리). 상대 경로 ./X.styles 꼴만 알아본다
+// 정적 import 선언만 본다 — 재내보내기(export … from)와 동적 import() 는 검사하지 않는다.
+const STYLE_OWNERS = {
+  rules: {
+    "styles-owned-by-its-screen": {
+      meta: { type: "problem", schema: [] },
+      create(context) {
+        const parts = context.filename.split(/[\\/]/);
+        const base = parts.at(-1);
+        const folder = parts.at(-2);
+        return {
+          ImportDeclaration(node) {
+            const hit = /^(?:(\.\/)|.*\/)([^/]+)\.styles(?:\.js)?$/.exec(node.source.value);
+            if (!hit) return;
+            const name = hit[2];
+            const owner =
+              hit[1] !== undefined &&
+              (base === `${name}.tsx` || base === `${name}.styles.test.ts` || (base === "index.tsx" && folder === name));
+            if (!owner) {
+              context.report({
+                node,
+                message: `${name}.styles.ts 는 화면 ${name} 만 쓴다 — 다른 화면이 쓰면 소비자를 세어 공통 조상으로 올린다 (fractal-view-promotion §3 소유물의 자리, styles-owned-by-its-screen)`,
+              });
+            }
+          },
+        };
+      },
+    },
+  },
+};
+
 // no-root-alias
 const ROOT_ALIAS = {
   regex: "^@/",
   message: "층 별칭을 쓴다 (frontend-app-layers §3 층 별칭)",
+};
+
+// style-tools-through-lib — tailwind-variants·tailwind-merge 는 shared/lib/style/{cn,tv}.ts 만 직접 가져온다.
+// 이 저장소의 토큰 이름을 아는 합치기가 그쪽뿐이라, 다른 곳에서 가져오면 토큰끼리 부딪혀도 합쳐지지 않는다.
+const STYLE_TOOLS = {
+  group: ["tailwind-variants", "tailwind-variants/*", "tailwind-merge", "tailwind-merge/*"],
+  message: "@lib/style/tv·@lib/style/cn 을 쓴다 — 이 저장소의 토큰 이름을 아는 합치기는 그쪽뿐이다 (style-tools-through-lib)",
 };
 
 // 뷰 폴더(PascalCase)는 index 만 공개한다 — 폴더 이름 뒤에 경로가 더 붙으면 그 안쪽을 짚은 것이다(fractal-view-promotion §6).
@@ -199,19 +238,25 @@ export default tseslint.config(
   {
     files: ["src/**/*.{ts,tsx}"],
     languageOptions: { parser: tseslint.parser },
-    plugins: { store: STORE_KEYS },
+    plugins: { store: STORE_KEYS, style: STYLE_OWNERS },
     rules: {
-      "no-restricted-imports": ["error", { patterns: [ROOT_ALIAS] }],
+      "no-restricted-imports": ["error", { patterns: [ROOT_ALIAS, STYLE_TOOLS] }],
       "no-restricted-syntax": ["error", STORE_REGISTER_NESTED, STORE_NAMESPACE_IMPORT],
       "store/state-key-literal": "error",
+      "style/styles-owned-by-its-screen": "error",
     },
   },
   {
     // 규칙 이름이 같으면 뒤 블록이 앞 블록을 통째로 덮는다 — ROOT_ALIAS 를 함께 싣는다
     files: ["src/app/**/*.{ts,tsx}"],
     rules: {
-      "no-restricted-imports": ["error", { patterns: [ROOT_ALIAS, ...VIEW_FOLDER_SURFACE] }],
+      "no-restricted-imports": ["error", { patterns: [ROOT_ALIAS, STYLE_TOOLS, ...VIEW_FOLDER_SURFACE] }],
     },
+  },
+  {
+    // 두 도구 파일만 라이브러리를 직접 가져온다 — 규칙 이름이 같으므로 ROOT_ALIAS 는 다시 싣는다
+    files: ["src/shared/lib/style/{cn,tv}.ts"],
+    rules: { "no-restricted-imports": ["error", { patterns: [ROOT_ALIAS] }] },
   },
   {
     // 규칙 이름이 같으면 뒤 블록이 앞 블록을 통째로 덮는다 — 블록마다 걸릴 선택자를 전부 싣는다

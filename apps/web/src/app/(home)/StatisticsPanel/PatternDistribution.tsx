@@ -2,6 +2,9 @@
 import { LOW_MAX } from "@lib/lotto-rules";
 import { Card } from "@ui/card";
 import type { DistBar } from "./_model/Statistics.viewmodel";
+import { patternDistribution } from "./PatternDistribution.styles";
+
+const s = patternDistribution();
 
 /** 분포 막대 하나 — 내 조합이 놓인 막대면 highlighted */
 export interface PatternBar extends DistBar {
@@ -23,10 +26,10 @@ function DistBars({ bars }: { bars: PatternBar[] }) {
         <div key={label} className="flex flex-1 flex-col items-center gap-1">
           <span className="text-nano tabular-nums text-muted">{`${percent}%`}</span>
           <div
-            className={`w-full rounded-t ${highlighted ? "bg-warn" : "bg-accent/70"}`}
+            className={s.bar({ highlighted })}
             style={{ height: `${heightPx}px` }}
           />
-          <span className={`text-nano ${highlighted ? "font-bold text-warn" : "text-muted"}`}>
+          <span className={s.barLabel({ highlighted })}>
             {label}
           </span>
         </div>
