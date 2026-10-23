@@ -162,6 +162,13 @@ const ROOT_ALIAS = {
   message: "층 별칭을 쓴다 (frontend-app-layers §3 층 별칭)",
 };
 
+// style-tools-through-lib — tailwind-variants·tailwind-merge 는 shared/lib/style/{cn,tv}.ts 만 직접 가져온다.
+// 이 저장소의 토큰 이름을 아는 합치기가 그쪽뿐이라, 다른 곳에서 가져오면 토큰끼리 부딪혀도 합쳐지지 않는다.
+const STYLE_TOOLS = {
+  group: ["tailwind-variants", "tailwind-variants/*", "tailwind-merge"],
+  message: "@lib/style/tv·@lib/style/cn 을 쓴다 — 이 저장소의 토큰 이름을 아는 합치기는 그쪽뿐이다 (style-tools-through-lib)",
+};
+
 // 뷰 폴더(PascalCase)는 index 만 공개한다 — 폴더 이름 뒤에 경로가 더 붙으면 그 안쪽을 짚은 것이다(fractal-view-promotion §6).
 // 화면 모듈 사이 봉쇄는 dependency-cruiser 의 screen-must-not-reach-screen 이 맡는다.
 const VIEW_FOLDER_SURFACE = [
@@ -201,7 +208,7 @@ export default tseslint.config(
     languageOptions: { parser: tseslint.parser },
     plugins: { store: STORE_KEYS },
     rules: {
-      "no-restricted-imports": ["error", { patterns: [ROOT_ALIAS] }],
+      "no-restricted-imports": ["error", { patterns: [ROOT_ALIAS, STYLE_TOOLS] }],
       "no-restricted-syntax": ["error", STORE_REGISTER_NESTED, STORE_NAMESPACE_IMPORT],
       "store/state-key-literal": "error",
     },
@@ -210,8 +217,13 @@ export default tseslint.config(
     // 규칙 이름이 같으면 뒤 블록이 앞 블록을 통째로 덮는다 — ROOT_ALIAS 를 함께 싣는다
     files: ["src/app/**/*.{ts,tsx}"],
     rules: {
-      "no-restricted-imports": ["error", { patterns: [ROOT_ALIAS, ...VIEW_FOLDER_SURFACE] }],
+      "no-restricted-imports": ["error", { patterns: [ROOT_ALIAS, STYLE_TOOLS, ...VIEW_FOLDER_SURFACE] }],
     },
+  },
+  {
+    // 두 도구 파일만 라이브러리를 직접 가져온다 — 규칙 이름이 같으므로 ROOT_ALIAS 는 다시 싣는다
+    files: ["src/shared/lib/style/{cn,tv}.ts"],
+    rules: { "no-restricted-imports": ["error", { patterns: [ROOT_ALIAS] }] },
   },
   {
     // 규칙 이름이 같으면 뒤 블록이 앞 블록을 통째로 덮는다 — 블록마다 걸릴 선택자를 전부 싣는다
