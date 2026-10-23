@@ -3,6 +3,9 @@ import { Fragment } from "react";
 import { Ball } from "@ui/ball";
 import { Card } from "@ui/card";
 import { useResultsCardPresenter } from "./ResultsCard.presenter";
+import { resultsCard } from "./ResultsCard.styles";
+
+const s = resultsCard();
 
 export function ResultsCard() {
   const card = useResultsCardPresenter();
@@ -44,11 +47,7 @@ export function ResultsCard() {
                       <Ball key={n} n={n} size="sm" ring={matched} dimmed={!matched} />
                     ))}
                   </div>
-                  <span
-                    className={`shrink-0 text-micro font-semibold ${
-                      item.isWin ? "text-warn" : "text-muted"
-                    }`}
-                  >
+                  <span className={s.resultLabel({ win: item.isWin })}>
                     {item.resultLabel}
                   </span>
                 </li>

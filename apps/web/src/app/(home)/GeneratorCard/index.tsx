@@ -2,6 +2,9 @@
 import { Ball } from "@ui/ball";
 import { Card } from "@ui/card";
 import { useGeneratorCardPresenter } from "./GeneratorCard.presenter";
+import { generatorCard } from "./GeneratorCard.styles";
+
+const s = generatorCard();
 
 export function GeneratorCard() {
   const card = useGeneratorCardPresenter();
@@ -14,11 +17,7 @@ export function GeneratorCard() {
             key={key}
             type="button"
             onClick={() => card.changeMode(key)}
-            className={`rounded-box px-3 py-2 text-small font-medium transition-colors ${
-              active
-                ? "bg-accent text-on-strong"
-                : "bg-said text-text hover:bg-inset"
-            }`}
+            className={s.modeButton({ active })}
           >
             {label}
           </button>
@@ -32,11 +31,7 @@ export function GeneratorCard() {
               key={n}
               type="button"
               onClick={() => card.toggleNumber(n)}
-              className={`rounded-button py-1 text-micro font-semibold tabular-nums transition-colors ${
-                selected
-                  ? "bg-accent text-on-strong"
-                  : "bg-said text-muted hover:bg-inset"
-              }`}
+              className={s.numberButton({ selected })}
             >
               {n}
             </button>
