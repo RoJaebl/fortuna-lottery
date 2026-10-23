@@ -239,7 +239,7 @@ ESLint 가 거는 모양 규칙은 이렇다.
   등록된 store 를 모두 지은 뒤 세 절을 남긴다. `[state]` 절은 key 마다 처음 값·바꾸는 함수·정의 자리·쓰는 곳(presenter 이름과
   `ctx` 로 꺼내는 정의의 key)이고, `[event]` 절은 key 마다 `on`·`exempt` 와 까닭이며, `[자원]` 절은 key 마다 조회 유무와 바꾸기 이름이다.
   스냅숏은 `apps/web/src/composition/__snapshots__/store.describe.test.ts.snap` 이다.
-- **서식을 가진 뷰와 `shared/ui` 부품은 폴더로 승격한다.** `<Name>/index.tsx` · `<Name>.styles.ts` · `<Name>.styles.test.ts` 가 한 폴더에 선다. vault 골조는 이 규칙을 개정 중이고(vault 브랜치 `styles-folder+`), 그 개정이 `dev` 에 들어가기 전까지 이 저장소가 먼저 따른다.
+- **서식을 가진 뷰와 `shared/ui` 부품은 폴더로 승격한다.** `<Name>/index.tsx` · `<Name>.styles.ts` · `<Name>.styles.test.ts` 가 한 폴더에 서고, 화면 시험은 `<폴더>.test.tsx` 다(예: `Card/Card.test.tsx`, `index.test.tsx` 가 아니다). vault 골조는 이 규칙을 개정 중이고(vault 브랜치 `styles-folder+`), 그 개정이 `dev` 에 들어가기 전까지 이 저장소가 먼저 따른다.
 - **`turbo.json` 의 `lint` 는 `^build` 에 기댄다.** baseline §3 의 `{}` 보다 엄격한 의도된 이탈이다.
 - **`Entity` 부류는 없다.** 픽은 `picks/domain/model/Pick.model.ts` 의 도메인 원형이다.
 - **서식 도구는 editor 저장소와 같은 셋(`clsx`·`tailwind-merge`·`tailwind-variants`)이다.** 다른 점은 `tv` 를 `shared/lib/style/tv.ts` 의
