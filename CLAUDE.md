@@ -289,8 +289,6 @@ DB 아님)에 저장된다. `apps/api` 를 다시 띄우면 사라진다. 나중
 `implement/{주제}` 워크트리에서 하고 끝나면 폴더·로컬·원격 브랜치를 모두 지운다 / 모든 브랜치는
 원격 추적 브랜치를 가진다.
 
-**이 저장소의 예외:** 워크트리는 Orca 네이티브로 만들고, 이름은 `--name` 으로 넘긴다
-(`orca worktree create --name <이름>`). 이름을 위치 인자로 주면 `Unknown command` 로 거절된다.
 `dev` 는 2026-08-26 부터 `origin/dev` 를 추적하므로 따로 연결할 필요가 없다.
 
 ## Known quirks
@@ -299,8 +297,6 @@ DB 아님)에 저장된다. `apps/api` 를 다시 띄우면 사라진다. 나중
   동기화 vault 안에 있어 vault 루트가 문서화한 손상 패턴을 겪었다. `.worktrees/`의 고아 폴더
   2건(`implement.orphaned-20260730`, `-20260801`)과 관리 폴더 1건(`.git/worktrees/implement1`)이
   실제 흔적이었다. **셋 다 2026-08-26에 제거했고 지금은 워크트리 잔재가 없다.**
-  **위험 자체는 그대로이므로 완화책은 유효하다** — 브랜치/워크트리 작업은 raw
-  `git worktree add` 대신 Orca 네이티브 생성(`EnterWorktree` 또는 `orca worktree create --name <이름>`)을 쓴다.
 - **`implement1`이 내던 커밋 오류는 사라졌다.** 커밋할 때마다 붙던
   `error: failed to delete '.git/worktrees/implement1': Permission denied`가 그것이다(커밋 자체는
   늘 성공했으므로 실패로 오인하지 않는다). **`git worktree prune`으로는 끝까지 안 지워졌고,
