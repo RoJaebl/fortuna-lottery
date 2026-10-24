@@ -1,10 +1,10 @@
-import { renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 import { getStore, overrideStore } from "@fortuna-lottery/store";
 import { TestHttpClient } from "@infrastructure/http";
 import { StatisticsModel } from "./_model/Statistics.model";
 import { StatisticsViewModel } from "./_model/Statistics.viewmodel";
-import { oddEvenRarity, sumPosition, useStatisticsPanelPresenter } from "./StatisticsPanel.presenter";
+import { act, renderHook } from "@testing-library/react";
+import { oddEvenRarity, RECENT_WINDOW, recentWindow, sumPosition, useStatisticsPanelPresenter } from "./StatisticsPanel.presenter";
 
 /** 통계 응답은 오지 않는다 — 받은 통계는 withStats 가 칸에 넣는다 */
 beforeEach(() => {
@@ -50,6 +50,20 @@ describe("statistics presenters (순수 함수)", () => {
       ],
     });
     expect(sumPosition([20, 30, 10, 25, 15, 20], s)).toEqual({ mySum: 120, percentBelow: 30 });
+  });
+
+  it("recentWindow — 처음엔 최신 100회차, start 는 0~끝 사이로 당긴다", () => {
+    const rounds = Array.from({ length: 250 }, (_, i) => ({ round: i + 1 }));
+    const latest = recentWindow(rounds, null);
+    expect(latest.columns).toHaveLength(RECENT_WINDOW);
+    expect(latest.start).toBe(150);
+    expect(latest.maxStart).toBe(150);
+    expect(latest.range).toBe("제151회 ~ 제250회 (전 250회차 중 100회차)");
+    expect(recentWindow(rounds, 0).columns[0]?.round).toBe(1);
+    expect(recentWindow(rounds, -5).start).toBe(0);
+    expect(recentWindow(rounds, 999).start).toBe(150);
+    expect(recentWindow(rounds.slice(0, 3), null)).toMatchObject({ start: 0, maxStart: 0 });
+    expect(recentWindow([], null).range).toBe("");
   });
 });
 
@@ -156,7 +170,18 @@ describe("useStatisticsPanelPresenter", () => {
     withState();
     const views = renderHook(() => useStatisticsPanelPresenter()).result.current.views;
     expect(views?.frequency.bars).toHaveLength(2);
-    expect(views?.recent.range).toBe("제3회 ~ 제3회 (최근 1회차)");
+    expect(views?.recent.range).toBe("제3회 ~ 제3회 (전 1회차 중 1회차)");
     expect(views?.recent.columns[0]?.cells).toHaveLength(45);
+  });
+
+  it("recent — 타임라인으로 창을 옮기면 그 회차의 칸만 짓는다", () => {
+    const recentGrid = Array.from({ length: 150 }, (_, i) => ({ round: i + 1, numbers: [1] }));
+    withStats({ recentGrid });
+    withState();
+    const { result } = renderHook(() => useStatisticsPanelPresenter());
+    expect(result.current.views?.recent.columns[0]?.round).toBe(51);
+    act(() => result.current.views?.recent.timeline.onChange(0));
+    expect(result.current.views?.recent.columns[0]?.round).toBe(1);
+    expect(result.current.views?.recent.columns).toHaveLength(RECENT_WINDOW);
   });
 });

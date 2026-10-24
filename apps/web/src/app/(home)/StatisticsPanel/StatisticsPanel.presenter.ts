@@ -4,31 +4,25 @@ import { useStore } from "@fortuna-lottery/store/react";
 import { LOW_MAX } from "@lib/lotto-rules";
 import type { TabItem } from "@ui/Tabs";
 import type { StatisticsModel } from "./_model/Statistics.model";
-import type { DistBar } from "./_model/Statistics.viewmodel";
-import type { FrequencyHeatmapProps } from "./FrequencyHeatmap";
+import { type DistBar, StatisticsViewModel } from "./_model/Statistics.viewmodel";
 import type { HotColdBoardProps } from "./HotColdBoard";
 import type { NumberFrequencyBarsProps } from "./NumberFrequencyBars";
 import type { PatternBar, PatternDistributionProps } from "./PatternDistribution";
-import type { ProbabilityRealityProps } from "./ProbabilityReality";
 import type { RecentGridProps } from "./RecentGrid";
 import type { SumDistributionChartProps } from "./SumDistributionChart";
 import type { TopPairsListProps } from "./TopPairsList";
 
 export type StatView =
-  | "probability"
   | "sum"
-  | "heatmap"
   | "pattern"
   | "hotcold"
   | "pairs"
   | "frequency"
   | "recent";
 
-/** 8개를 동등하게 나열한다 — 요약/우선순위 압축 없음 (설계 문서 §4) */
+/** 6개를 동등하게 나열한다 — 요약/우선순위 압축 없음 (설계 문서 §4) */
 const STAT_VIEWS: readonly TabItem<StatView>[] = [
-  { key: "probability", label: "확률 현실" },
   { key: "sum", label: "합계 분포" },
-  { key: "heatmap", label: "히트맵" },
   { key: "pattern", label: "패턴 분포" },
   { key: "hotcold", label: "핫/콜드" },
   { key: "pairs", label: "상위 페어" },
@@ -37,6 +31,9 @@ const STAT_VIEWS: readonly TabItem<StatView>[] = [
 ];
 
 const HOT_COLD_TOP = 8;
+
+/** 잔디밭이 한 번에 보이는 회차 수 — 나머지는 타임라인으로 옮겨 본다 */
+export const RECENT_WINDOW = 100;
 
 /** 서버가 내는 상위 페어 개수(GetStatistics 의 TOP_PAIRS) — 카드 제목 「TOP 15」 */
 const TOP_PAIRS = 15;
@@ -109,6 +106,23 @@ function gapItems(
   return items.map(({ number, gap }) => ({ number, gapLabel: latestLabel && gap === 0 ? "최신" : `${gap}회` }));
 }
 
+/**
+ * 잔디밭 창 — 전 회차 중 start 부터 RECENT_WINDOW 회차. start 가 null 이면 최신 회차에 붙는다.
+ * 범위를 벗어난 start 는 끝으로 당긴다.
+ */
+export function recentWindow<T extends { round: number }>(
+  columns: T[],
+  start: number | null,
+): { start: number; maxStart: number; columns: T[]; range: string } {
+  const maxStart = Math.max(0, columns.length - RECENT_WINDOW);
+  const from = Math.min(Math.max(0, start ?? maxStart), maxStart);
+  const shown = columns.slice(from, from + RECENT_WINDOW);
+  const first = shown[0]?.round;
+  const last = shown[shown.length - 1]?.round;
+  const range = first && last ? `제${first}회 ~ 제${last}회 (전 ${columns.length}회차 중 ${shown.length}회차)` : "";
+  return { start: from, maxStart, columns: shown, range };
+}
+
 /** 내 조합이 놓인 막대를 표시한다 — 내 조합이 없으면 강조 없음 */
 function highlightBars(bars: DistBar[], highlight: number | null): PatternBar[] {
   return bars.map((bar, i) => ({ ...bar, highlighted: i === highlight }));
@@ -119,7 +133,8 @@ export function useStatisticsPanelPresenter() {
   const { data: stats, status, error } = useStore("api.home.StatisticsPanel.statistics");
   // 처음 그릴 때(idle)도 아직 받기 전이다
   const loading = status === "idle" || status === "loading";
-  const [activeStatView, setActiveStatView] = useState<StatView>("probability");
+  const [activeStatView, setActiveStatView] = useState<StatView>("sum");
+  const [recentStart, setRecentStart] = useState<number | null>(null);
 
   const tabs = { items: STAT_VIEWS, active: activeStatView, onChange: setActiveStatView };
 
@@ -128,7 +143,6 @@ export function useStatisticsPanelPresenter() {
   const my = myNumbers ? sumPosition(myNumbers, stats) : null;
   const rarity = myNumbers ? oddEvenRarity(myNumbers, stats) : null;
 
-  const probability: ProbabilityRealityProps = { stats };
   const sum: SumDistributionChartProps = {
     chart: stats.sumChart,
     subtitle: my
@@ -136,7 +150,6 @@ export function useStatisticsPanelPresenter() {
       : "전 회차 6개 번호 합계의 분포",
     marker: my ? { sum: my.mySum, x: stats.sumRatio(my.mySum) } : null,
   };
-  const heatmap: FrequencyHeatmapProps = { stats };
   const pattern: PatternDistributionProps = {
     subtitle: rarity
       ? `내 조합(${rarity.label})과 같은 홀짝 패턴은 과거 회차의 ${rarity.percent}%였습니다`
@@ -152,7 +165,13 @@ export function useStatisticsPanelPresenter() {
   };
   const pairs: TopPairsListProps = { top: TOP_PAIRS, bars: stats.topPairBars };
   const frequency: NumberFrequencyBarsProps = { bars: stats.frequencyBars };
-  const recent: RecentGridProps = { range: stats.recentRange, columns: stats.recentColumns };
+  // 칸은 창 안의 회차만 짓는다 — 전 회차를 다 지으면 타임라인을 끌 때마다 5만 칸을 새로 만든다
+  const grid = recentWindow(stats.recentGrid, recentStart);
+  const recent: RecentGridProps = {
+    range: grid.range,
+    columns: grid.columns.map(StatisticsViewModel.gridColumn),
+    timeline: { start: grid.start, maxStart: grid.maxStart, total: stats.recentGrid.length, onChange: setRecentStart },
+  };
 
-  return { loading, error, tabs, views: { probability, sum, heatmap, pattern, hotcold, pairs, frequency, recent } };
+  return { loading, error, tabs, views: { sum, pattern, hotcold, pairs, frequency, recent } };
 }
