@@ -12,7 +12,6 @@ import {
   zoneCounts,
 } from "./calculations.js";
 
-const GRID_ROUNDS = 52; // 잔디밭: 최근 1년치
 const TOP_PAIRS = 15;
 
 /**
@@ -36,7 +35,8 @@ export class GetStatistics {
       zoneCounts: zoneCounts(draws),
       hotCold: hotCold(draws),
       topPairs: topPairs(draws, TOP_PAIRS),
-      recentGrid: draws.slice(-GRID_ROUNDS).map((d) => ({
+      // 잔디밭: 전 회차 — 화면이 100회차 창으로 나눠 보인다
+      recentGrid: draws.map((d) => ({
         round: d.round,
         numbers: [...d.numbers],
       })),

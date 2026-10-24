@@ -21,23 +21,6 @@ const stats = (over: Partial<StatisticsModel> = {}): StatisticsViewModel =>
   );
 
 describe("StatisticsViewModel (그 통계 하나로 정해지는 값)", () => {
-  it("glowIntensity — min~max를 0~1로 정규화", () => {
-    expect(StatisticsViewModel.glowIntensity(10, 10, 20)).toBe(0);
-    expect(StatisticsViewModel.glowIntensity(20, 10, 20)).toBe(1);
-    expect(StatisticsViewModel.glowIntensity(15, 10, 20)).toBe(0.5);
-    expect(StatisticsViewModel.glowIntensity(5, 5, 5)).toBe(0.5); // 편차 없음 → 중간값
-  });
-
-  it("glows — 번호별 빈도를 그 통계의 min~max 로 정규화한다", () => {
-    expect(stats({ frequency: [10, 15, 20] }).glows).toEqual([0, 0.5, 1]);
-  });
-
-  it("probabilityFacts — 고정 분모 사실 서술", () => {
-    const facts = stats({ totalCombinations: 8_145_060 }).probabilityFacts;
-    expect(facts[0]).toContain("8,145,060");
-    expect(facts.some((f) => f.includes("동일"))).toBe(true);
-  });
-
   // 아래 기대값은 옮기기 전 화면의 식(NumberFrequencyBars·SumDistributionChart·TopPairsList·RecentGrid·
   // PatternDistribution)을 고정 입력에 그대로 적용해 얻은 값이다.
   it("frequencyBars — 최다 대비 높이와 전체 뽑힘 대비 비율(소수 둘째 자리)", () => {
@@ -95,17 +78,8 @@ describe("StatisticsViewModel (그 통계 하나로 정해지는 값)", () => {
     ]);
   });
 
-  it("recentRange — 첫 회차와 끝 회차, 없으면 빈 문자열", () => {
-    const recentGrid = [
-      { round: 5, numbers: [1, 3] },
-      { round: 7, numbers: [2] },
-    ];
-    expect(stats({ recentGrid }).recentRange).toBe("제5회 ~ 제7회 (최근 2회차)");
-    expect(stats({ recentGrid: [] }).recentRange).toBe("");
-  });
-
-  it("recentColumns — 회차마다 45칸, 출현 여부와 칸 제목", () => {
-    const columns = stats({ recentGrid: [{ round: 5, numbers: [1, 3] }] }).recentColumns;
+  it("gridColumn — 회차마다 45칸, 출현 여부와 칸 제목", () => {
+    const columns = [StatisticsViewModel.gridColumn({ round: 5, numbers: [1, 3] })];
     expect(columns).toHaveLength(1);
     expect(columns[0]?.round).toBe(5);
     expect(columns[0]?.cells).toHaveLength(45);

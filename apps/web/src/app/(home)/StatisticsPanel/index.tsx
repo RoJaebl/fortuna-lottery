@@ -1,10 +1,8 @@
 "use client";
 import { Tabs } from "@ui/Tabs";
-import { FrequencyHeatmap } from "./FrequencyHeatmap";
 import { HotColdBoard } from "./HotColdBoard";
 import { NumberFrequencyBars } from "./NumberFrequencyBars";
 import { PatternDistribution } from "./PatternDistribution";
-import { ProbabilityReality } from "./ProbabilityReality";
 import { RecentGrid } from "./RecentGrid";
 import { type StatView, useStatisticsPanelPresenter } from "./StatisticsPanel.presenter";
 import { SumDistributionChart } from "./SumDistributionChart";
@@ -14,12 +12,8 @@ type Views = NonNullable<ReturnType<typeof useStatisticsPanelPresenter>["views"]
 
 function renderActiveView(active: StatView, views: Views) {
   switch (active) {
-    case "probability":
-      return <ProbabilityReality {...views.probability} />;
     case "sum":
       return <SumDistributionChart {...views.sum} />;
-    case "heatmap":
-      return <FrequencyHeatmap {...views.heatmap} />;
     case "pattern":
       return <PatternDistribution {...views.pattern} />;
     case "hotcold":

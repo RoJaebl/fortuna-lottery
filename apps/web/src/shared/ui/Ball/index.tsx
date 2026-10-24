@@ -4,7 +4,7 @@ import { ball } from "./Ball.styles";
 interface BallProps {
   n: number;
   size?: "sm" | "md" | "lg";
-  /** 0~1 — 공 색을 바꾸지 않고 주변 글로우 강도로 표현 (빈도 히트맵) */
+  /** 0~1 — 공 색을 바꾸지 않고 주변 글로우 강도로 표현 */
   glow?: number;
   /** 흐리게 (미일치 강조용) */
   dimmed?: boolean;
