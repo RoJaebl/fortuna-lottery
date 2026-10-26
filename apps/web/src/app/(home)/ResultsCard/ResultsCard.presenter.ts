@@ -1,4 +1,4 @@
-import { useStore } from "@fortuna-lottery/store/react";
+import { useStore } from "supa-store/react";
 
 /** 부제 — 받은 결과에 기준 회차가 있는가를 보므로 조정자에 둔다 */
 export function resultsSubtitle(round: number | null): string {
@@ -6,8 +6,9 @@ export function resultsSubtitle(round: number | null): string {
 }
 
 export function useResultsCardPresenter() {
-  const { data: results = null, status, error, refetch } = useStore("api.home.ResultsCard.check");
-  const pending = status === "loading";
+  const { data: results = null, status, isFetching, error, refetch } = useStore("api.home.ResultsCard.check");
+  // 앞선 결과가 있으면 다시 받는 동안 status 는 ready 그대로다 — 진행 중인 받기는 isFetching 이 말한다
+  const pending = status === "loading" || isFetching;
 
   return {
     subtitle: resultsSubtitle(results?.draw?.round ?? null),

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useStore } from "@fortuna-lottery/store/react";
+import { useStore } from "supa-store/react";
 import type { GeneratorMode } from "./_model/GeneratorMode.model";
 
 const ALL_NUMBERS = Array.from({ length: 45 }, (_, i) => i + 1);
@@ -62,7 +62,7 @@ export function useGeneratorCardPresenter() {
   };
 
   const generate = async () => {
-    const generated = await generator.mutate(mode, selected);
+    const generated = await generator.mutateAsync(mode, selected).catch(() => undefined);
     if (generated) choose(generated.numbers);
   };
 

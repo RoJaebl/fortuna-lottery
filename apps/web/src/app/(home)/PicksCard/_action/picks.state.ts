@@ -1,5 +1,5 @@
-import { createStore } from "@fortuna-lottery/store";
-import { createResource, type Cache } from "@fortuna-lottery/store/query";
+import { createStore } from "supa-store";
+import { createResource, type Cache } from "supa-store/query";
 import { PickViewModel } from "../_model/Pick.viewmodel";
 import { picksListResponse } from "../_mapper/picksList.mapper";
 import { picksCreateRequest, picksCreateResponse } from "../_mapper/picksCreate.mapper";

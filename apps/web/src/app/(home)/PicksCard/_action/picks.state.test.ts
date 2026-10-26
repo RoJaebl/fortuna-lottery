@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { getStore, overrideStore } from "@fortuna-lottery/store";
+import { getStore, overrideStore } from "supa-store";
 import { TestHttpClient } from "@infrastructure/http";
 
 const count = (http: TestHttpClient, path: string, method: string) =>

@@ -8,3 +8,7 @@ allowBuilds:
   esbuild: true
   sharp: true
   "@swc/core": true
+  "supa-store@https://codeload.github.com/RoJaebl/supa-store/tar.gz/026389ca231321d8463ad782b22a200ac6ea7492": true
+# supa-store 의 선택 peer(vite · next 등)를 저절로 깔지 않는다 — 깔면 peer 조합이 갈려 supa-store 가 루트와 apps/web 에 두 벌 생긴다.
+# 그 대신 supa-store 의 필수 peer(typescript>=5.4)를 루트가 스스로 갖는다 — 루트 package.json 의 typescript devDependency 를 지우면 그 peer 가 빈다
+autoInstallPeers: false

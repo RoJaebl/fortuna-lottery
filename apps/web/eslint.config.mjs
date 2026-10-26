@@ -32,9 +32,9 @@ const STORE_REGISTER_NESTED = {
 
 // no-namespace-store-import — 이름공간으로 가져오면 S.useStore(…)·S.createStore(…) 꼴이 되어 store key 검사가 알아보지 못한다
 const STORE_NAMESPACE_IMPORT = {
-  selector: "ImportDeclaration[source.value=/^@fortuna-lottery.store/] > ImportNamespaceSpecifier",
+  selector: "ImportDeclaration[source.value=/^supa-store/] > ImportNamespaceSpecifier",
   message:
-    "@fortuna-lottery/store 는 이름으로 가져온다 — import * as 로 가져오면 store key 규칙을 비켜 간다 (no-namespace-store-import)",
+    "supa-store 는 이름으로 가져온다 — import * as 로 가져오면 store key 규칙을 비켜 간다 (no-namespace-store-import)",
 };
 
 const keyOf = (arg) => (arg?.type === "Literal" && typeof arg.value === "string" ? arg.value : null);
@@ -43,11 +43,11 @@ const isFunction = (node) => /Function/.test(node.type);
 /**
  * 호출 하나를 보고 바로 판정한다 — store key 검사와 ctx 검사가 쓴다.
  * judge 는 호출·이 파일의 경로·호출의 갈래를 받는다. 갈래는 넷이다.
- *   create — @fortuna-lottery/store 에서 가져온 createStore
- *   hook   — @fortuna-lottery/store/react 에서 가져온 useStore
+ *   create — supa-store 에서 가져온 createStore
+ *   hook   — supa-store/react 에서 가져온 useStore
  *   ctx    — createStore 에 넘긴 creator 의 셋째 인자. 이름은 쓰는 이가 정하므로 그 자리에서 읽는다
  *   top    — 이 호출이 store 를 짓는 순간 한 번 도는 자리에 있는가. 감싼 가장 가까운 함수가 creator 이거나,
- *            그 자리에서 부른 createResource·createEvent(@fortuna-lottery/store/query)의 첫 인자 함수다 —
+ *            그 자리에서 부른 createResource·createEvent(supa-store/query)의 첫 인자 함수다 —
  *            createResource 는 정의 함수를 짓는 순간 한 번 부른다
  * 가져온 이름은 바꿔 가져와도 따라가지만, 이름 공간 import(import * as s)와 구조 분해한 ctx 는 보지 못한다
  */
@@ -67,9 +67,9 @@ const callRule = (judge) => ({
     };
     const kind = { create: named(created), hook: named(hooks), ctx: named(ctxs), top };
     const sources = {
-      "@fortuna-lottery/store": [created, ["createStore"]],
-      "@fortuna-lottery/store/react": [hooks, ["useStore"]],
-      "@fortuna-lottery/store/query": [builders, ["createResource", "createEvent"]],
+      "supa-store": [created, ["createStore"]],
+      "supa-store/react": [hooks, ["useStore"]],
+      "supa-store/query": [builders, ["createResource", "createEvent"]],
     };
     return {
       ImportDeclaration(node) {

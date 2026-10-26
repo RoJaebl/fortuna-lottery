@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { basename, join, relative, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { getStore, registeredKeys } from "@fortuna-lottery/store";
+import { getStore, registeredKeys } from "supa-store";
 
 // 시험 러너(jsdom 환경)에서는 import.meta.url 이 file: 이 아니다 — 러너가 넣어 주는 __dirname 을 쓴다
 const SRC = resolve(__dirname, "..");

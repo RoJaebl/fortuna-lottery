@@ -1,4 +1,4 @@
-import { useStore } from "@fortuna-lottery/store/react";
+import { useStore } from "supa-store/react";
 
 /** 저장 버튼 문구 — 저장 중인가와 저장할 조합이 있는가 둘을 보므로 조정자에 둔다 */
 export function saveButtonLabel(saving: boolean, hasNumbers: boolean): string {

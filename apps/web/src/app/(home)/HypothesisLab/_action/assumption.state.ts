@@ -1,5 +1,5 @@
-import { createStore } from "@fortuna-lottery/store";
-import { createResource } from "@fortuna-lottery/store/query";
+import { createStore } from "supa-store";
+import { createResource } from "supa-store/query";
 import type { AssumptionModel } from "../_model/Evaluation.model";
 import { EvaluationViewModel } from "../_model/Evaluation.viewmodel";
 import { hypothesisEvaluateRequest, hypothesisEvaluateResponse } from "../_mapper/hypothesisEvaluate.mapper";

@@ -16,8 +16,9 @@
     "check:migration": "bash tools/checks/migration-status.sh"
   },
   "devDependencies": {
-    "@fortuna-lottery/store": "workspace:*",
     "dependency-cruiser": "^18.4.0",
-    "turbo": "^2.5.0"
+    "supa-store": "github:RoJaebl/supa-store#026389ca231321d8463ad782b22a200ac6ea7492",
+    "turbo": "^2.5.0",
+    "typescript": "^5.8.0"
   }
 }

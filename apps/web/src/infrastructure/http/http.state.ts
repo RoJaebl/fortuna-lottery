@@ -1,4 +1,4 @@
-import { createStore } from "@fortuna-lottery/store";
+import { createStore } from "supa-store";
 import { FetchHttpClient } from "./fetchHttpClient";
 import type { HttpClient } from "./http.port";
 

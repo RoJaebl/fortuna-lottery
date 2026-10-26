@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useStore } from "@fortuna-lottery/store/react";
+import { useStore } from "supa-store/react";
 
 /** 남은 시간(ms) → "D-3 12:34:56" — 지금 시각에 따라 바뀌므로 표시 모델이 아니라 조정자에 둔다 */
 export function formatRemaining(ms: number): string {

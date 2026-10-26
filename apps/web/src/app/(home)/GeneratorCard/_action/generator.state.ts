@@ -1,5 +1,5 @@
-import { createStore } from "@fortuna-lottery/store";
-import { createResource } from "@fortuna-lottery/store/query";
+import { createStore } from "supa-store";
+import { createResource } from "supa-store/query";
 import { GeneratedCombinationViewModel } from "../_model/GeneratedCombination.viewmodel";
 import type { GeneratorMode } from "../_model/GeneratorMode.model";
 import { generatorGenerateRequest, generatorGenerateResponse } from "../_mapper/generatorGenerate.mapper";

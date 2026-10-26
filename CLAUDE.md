@@ -135,7 +135,6 @@ pnpm --filter @fortuna-lottery/web exec vitest run <path>   # 파일 하나
 ```
 packages/contract/   @fortuna-lottery/contract — 도메인별 zod 스키마(와이어 모델의 SSOT). 두 앱이 참조한다
 packages/kernel/     @fortuna-lottery/kernel — 로또 순수 커널(combination · scoring · rng · result · generate). apps/api 만 참조한다
-packages/store/      @fortuna-lottery/store — key 로 등록하는 전역 store(공통 상태·자원·event)와 타입 생성기(tsserver·Next·CLI). apps/web 만 참조한다
 apps/api/            NestJS 응용 서버 — src/modules/<도메인>/, src/composition/CompositionModule.ts, prisma/
 apps/web/            Next.js 화면 앱 — src/app/(home)/, src/composition/, src/infrastructure/, src/shared/{ui,lib}/
 tools/checks/        이관 상태 스크립트와 규칙마다 하나씩 둔 위반 표본
@@ -154,7 +153,7 @@ ESLint 가 거는 모양 규칙은 이렇다.
   key 는 문자열 그대로 쓰고(`state-key-literal`), 폴더를 따르며(`state-key-matches-folder`), 자기·조상 폴더의 key 만
   꺼낸다(`state-key-within-scope`). 화면에서 `useStore` 를 부르는 것은 presenter 뿐이고(`state-only-in-presenter`),
   등록은 정의 파일만 한다(`state-registers-in-state-folder`).
-  `@fortuna-lottery/store*` 를 `import * as` 로 가져오지 않는다 — 이름공간으로 부르면 위 key 규칙을 비켜 간다(`no-namespace-store-import`).
+  `supa-store*` 를 `import * as` 로 가져오지 않는다 — 이름공간으로 부르면 위 key 규칙을 비켜 간다(`no-namespace-store-import`).
 - creator 맨 위와 그 자리의 `createResource`·`createEvent` 정의 함수 맨 위는 store 를 짓는 순간 한 번 돈다. 거기서 `ctx(…)` 를
   부르면 그 결과로 `.on`·`.exempt` 만 부른다(`ctx-at-top-binds-event-only`, ctx 를 이름으로 알아보는 근사다). 조회·바꾸기 함수 안은 맨 위가 아니다.
 
@@ -200,19 +199,27 @@ ESLint 가 거는 모양 규칙은 이렇다.
   내 번호·결과 확인·가정 실험실)을 보인다. 고른 메뉴와 활성 탭은 `Home.presenter.ts` 의 지역 상태이고, `page.tsx` 는 조립만 한다.
 - **자식 뷰가 함께 쓰는 상태는 `app/(home)/_state/` 의 공통 상태 하나다.** 현재 조합(`state.home.combination`)은
   생성기·가정 실험실이 바꾸고 통계·시뮬레이션·내 번호·가정 실험실이 읽는다. 누가 무엇을 읽고 바꾸는지는 store 출력 스냅숏이 적는다.
-- **화면 앱의 상태는 모두 `@fortuna-lottery/store` 의 전역 등록부에 있고 공급자도 컨테이너도 없다.** 정의는 `*.state.ts` 파일의
-  `createStore("key", (set, get, ctx) => …)` 하나다. `ctx(key)` 는 다른 store 의 부르는 순간의 값을 준다(구독은 없다).
+- **화면 앱의 상태는 모두 `supa-store` 의 전역 등록부에 있고 공급자도 컨테이너도 없다.** `supa-store` 는 이 저장소에서 떼어 낸
+  라이브러리이고 GitHub 의존(`RoJaebl/supa-store`, `package.json` 에 커밋째 `github:RoJaebl/supa-store#<커밋>`)으로 들인다. pnpm 11 은 git
+  의존의 빌드를 받아 온 주소째로 허락받으므로 `pnpm-workspace.yaml` 의 `allowBuilds` 에 그 커밋의 codeload 주소 한 줄이 함께 있다 — 커밋을 바꿀 때는
+  세 자리(루트·`apps/web` 의 `package.json`, `allowBuilds`)를 함께 바꾼다. **npm 판이 나오면 `"supa-store": "^0.3.0"` 으로 바꾸고 `allowBuilds` 줄을 지운다.**
+  같은 파일의 `autoInstallPeers: false` 는 supa-store 의 선택 peer(vite 등)가 저절로 깔리며 peer 조합이 갈려 supa-store 가 두 벌
+  생기는 것을 막는다. 그 대신 supa-store 의 필수 peer(`typescript>=5.4`)를 루트가 스스로 가져야 하므로 루트 `package.json` 의
+  devDependencies 에 `typescript` 가 있다 — **그 줄을 지우면 루트의 peer 가 빈다.**
+  정의는 `*.state.ts` 파일의 `createStore("key", (set, get, ctx) => …)` 하나다. `ctx(key)` 는 다른 store 의 부르는 순간의 값을 준다(구독은 없다).
   타입은 생성 파일(`src/composition/store.gen.ts`, git 에 넣지 않는다)의 `StateTypes` 가 준다.
   정의가 돌려주는 값에 쓴 타입은 정의 파일에서 `export` 한다 — 생성 파일이 그 이름을 그대로 적으므로, 내보내지 않으면 원인을 가리키지 않는 tsc 오류가 난다.
-  presenter 는 `useStore(key)`·`useStore(key, { pick })`·`useStore(key, { omit })`(`@fortuna-lottery/store/react`)로 꺼낸다.
+  presenter 는 `useStore(key)`·`useStore(key, { pick })`·`useStore(key, { omit })`(`supa-store/react`)로 꺼낸다.
   - **key 는 접두 넷이고 폴더를 따른다.** `state.`(공통 상태, `_state/`)·`api.`(자원, `_action/`)·`event.`(event, 내는 쪽의
     `_action/<도메인>.event.state.ts`)는 정의 파일의 폴더 경로를 key 로 쓴다 — `app/(home)/_state/` 는 `state.home.<이름>`,
     `app/(home)/PicksCard/_action/` 은 `api.home.PicksCard.<이름>`·`event.home.PicksCard.<이름>` 이다. `infra.`(바깥 도구)는 `infrastructure/<이름>/<이름>.state.ts`
     가 정의하고 key 는 `infra.<이름>` 이다. 자기·조상 폴더의 key 만 꺼내고, event 는 범위 밖에서도, infra 는 어디서나 꺼낸다.
-  - **서버 상태는 자원이다.** `createResource`(`@fortuna-lottery/store/query`)로 짓고, `query` 가 조회 하나이고 나머지 함수가 바꾸기다.
-    presenter 는 `useStore("api.…", { args, pick })` 로 조회 상태(`data`·`status`·`error`·`refetch`)와 바꾸기(`mutate`·`pending`…)를 받는다.
+  - **서버 상태는 자원이다.** `createResource`(`supa-store/query`)로 짓고, `query` 가 조회 하나이고 나머지 함수가 바꾸기다.
+    presenter 는 `useStore("api.…", { args, pick })` 로 조회 상태(`data`·`status`·`isFetching`·`error`·`refetch`)와 바꾸기(`mutate`·`mutateAsync`·`pending`…)를 받는다.
+    `mutate` 는 아무것도 돌려주지 않는다 — 결과가 필요하면 `mutateAsync` 를 쓴다(실패하면 던진다). 받은 값이 있는 칸을 다시 받는 동안
+    `status` 는 그대로이므로 「다시 받는 중」은 `isFetching` 으로 본다. 자원의 `args` 는 배열로 짓지 않는다(맨 배열은 목록 꼴로 읽힌다) — 객체로 묶는다.
     store 끼리는 `ctx("api.…")` 의 `fetch`·`getData`·`setData`·`invalidate` 와 바꾸기 함수를 부른다.
-  - **자원 사이는 event 로 잇는다.** `createEvent`(`@fortuna-lottery/store/query`)로 짓는다. 듣는 쪽은 creator 맨 위에서
+  - **자원 사이는 event 로 잇는다.** `createEvent`(`supa-store/query`)로 짓는다. 듣는 쪽은 creator 맨 위에서
     `ctx("event.…").on(ctx.key, …)` 로 반응하거나, `.exempt(ctx.key, 까닭)` 로 일부러 반응하지 않는다는 결정을 남긴다.
     creator 맨 위에서 `ctx` 를 쓰는 것은 이 자리 하나다(`ctx-at-top-binds-event-only`).
   - **HTTP 는 `infra.http` 다.** 정의는 `ctx("infra.http").client.get(…)`·`.send(…)` 로 부른다. 시험은
@@ -224,10 +231,10 @@ ESLint 가 거는 모양 규칙은 이렇다.
   생성 파일은 `apps/web/store.config.ts` 의 `targets`(tsserver·next·cli)가
   쓴다. VS Code 는 「TypeScript: Select TypeScript Version → Use Workspace Version」으로 작업 공간 TypeScript 를 써야 tsserver
   플러그인이 실린다(`.vscode/settings.json` 의 `tsdk` 가 가리킨다). tsserver 는 플러그인을 tsconfig 폴더가 아니라 TypeScript
-  곁(`../../..`)에서 찾으므로, 루트 `package.json` 의 devDependencies 에 `@fortuna-lottery/store` 를 두어 루트 `node_modules` 에 놓는다.
+  곁(`../../..`)에서 찾으므로, 루트 `package.json` 의 devDependencies 에 `supa-store` 를 두어 루트 `node_modules` 에 놓는다.
   플러그인은 프로젝트가 프로그램을 다시 지은 직후(`updateGraph`) 생성 내용을 다시 짓고, 바뀌었으면 같은 요청 안에서 한 번 더
   짓는다 — 그래서 정의를 고친 바로 그 진단에서 타입이 따라온다. 실제 tsserver 로 이것을 지키는 시험은
-  `packages/store/tools/tsserver.test.mjs` 다. VS Code 화면에서 직접 본 확인은 아직 없다.
+  supa-store 저장소의 `tools/tsserver.test.mjs` 다. VS Code 화면에서 직접 본 확인은 아직 없다.
 - **화면 앱에는 화면 모듈이 하나(`app/(home)/`)뿐이므로 모듈 사이 import 는 없다.** 개정판은 화면 모듈끼리 배럴 import 도 금지한다.
 - **규격 코드와 다르게 지킨 것이 둘 있다.** 둘 다 [보고 문서](<docs/superpowers/reports/2026-10-13-vault-feedback.md>)에 올렸다.
   - `FetchHttpClient`(`infrastructure/http`)는 서버 본문의 `{ error }` 문구를 꺼내 예외 메시지로 쓴다. 계약이 도메인 실패를 메시지를 실은 400 으로 정하므로 버리면 화면 문구가 사라진다.

@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { overrideStore } from "@fortuna-lottery/store";
+import { overrideStore } from "supa-store";
 import { TestHttpClient } from "@infrastructure/http";
 import { canGenerate, modeHint, useGeneratorCardPresenter } from "./GeneratorCard.presenter";
 
