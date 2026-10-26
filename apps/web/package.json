@@ -10,13 +10,13 @@
   },
   "dependencies": {
     "@fortuna-lottery/contract": "workspace:*",
-    "supa-store": "github:RoJaebl/supa-store#026389ca231321d8463ad782b22a200ac6ea7492",
     "@gsap/react": "2.1.2",
     "clsx": "2.1.1",
     "gsap": "3.13.0",
     "next": "^15.3.4",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "supa-store": "github:RoJaebl/supa-store#026389ca231321d8463ad782b22a200ac6ea7492",
     "tailwind-merge": "3.7.0",
     "tailwind-variants": "3.3.1"
   },

@@ -203,8 +203,10 @@ ESLint 가 거는 모양 규칙은 이렇다.
   라이브러리이고 GitHub 의존(`RoJaebl/supa-store`, `package.json` 에 커밋째 `github:RoJaebl/supa-store#<커밋>`)으로 들인다. pnpm 11 은 git
   의존의 빌드를 받아 온 주소째로 허락받으므로 `pnpm-workspace.yaml` 의 `allowBuilds` 에 그 커밋의 codeload 주소 한 줄이 함께 있다 — 커밋을 바꿀 때는
   세 자리(루트·`apps/web` 의 `package.json`, `allowBuilds`)를 함께 바꾼다. **npm 판이 나오면 `"supa-store": "^0.3.0"` 으로 바꾸고 `allowBuilds` 줄을 지운다.**
-  정의는 `*.state.ts` 파일의
-  `createStore("key", (set, get, ctx) => …)` 하나다. `ctx(key)` 는 다른 store 의 부르는 순간의 값을 준다(구독은 없다).
+  같은 파일의 `autoInstallPeers: false` 는 supa-store 의 선택 peer(vite 등)가 저절로 깔리며 peer 조합이 갈려 supa-store 가 두 벌
+  생기는 것을 막는다. 그 대신 supa-store 의 필수 peer(`typescript>=5.4`)를 루트가 스스로 가져야 하므로 루트 `package.json` 의
+  devDependencies 에 `typescript` 가 있다 — **그 줄을 지우면 루트의 peer 가 빈다.**
+  정의는 `*.state.ts` 파일의 `createStore("key", (set, get, ctx) => …)` 하나다. `ctx(key)` 는 다른 store 의 부르는 순간의 값을 준다(구독은 없다).
   타입은 생성 파일(`src/composition/store.gen.ts`, git 에 넣지 않는다)의 `StateTypes` 가 준다.
   정의가 돌려주는 값에 쓴 타입은 정의 파일에서 `export` 한다 — 생성 파일이 그 이름을 그대로 적으므로, 내보내지 않으면 원인을 가리키지 않는 tsc 오류가 난다.
   presenter 는 `useStore(key)`·`useStore(key, { pick })`·`useStore(key, { omit })`(`supa-store/react`)로 꺼낸다.
