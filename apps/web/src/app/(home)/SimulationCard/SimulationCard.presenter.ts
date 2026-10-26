@@ -1,4 +1,4 @@
-import { useStore } from "@fortuna-lottery/store/react";
+import { useStore } from "supa-store/react";
 
 /** 실행 버튼 문구 — 진행 중인가와 대입할 조합이 있는가 둘을 보므로 조정자에 둔다 */
 export function runButtonLabel(busy: boolean, hasNumbers: boolean): string {

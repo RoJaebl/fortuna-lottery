@@ -1,5 +1,5 @@
-import { createStore } from "@fortuna-lottery/store";
-import { createResource } from "@fortuna-lottery/store/query";
+import { createStore } from "supa-store";
+import { createResource } from "supa-store/query";
 import { ResultsDrawViewModel } from "../_model/ResultsDraw.viewmodel";
 import { ResultsCheckItemViewModel } from "../_model/ResultsCheckItem.viewmodel";
 import { resultsCheckResponse } from "../_mapper/resultsCheck.mapper";

@@ -8,12 +8,12 @@ importers:
 
   .:
     devDependencies:
-      '@fortuna-lottery/store':
-        specifier: workspace:*
-        version: link:packages/store
       dependency-cruiser:
         specifier: ^18.4.0
         version: 18.4.0
+      supa-store:
+        specifier: github:RoJaebl/supa-store#1419b7a0ad65b37dd583da61553a68a34864621f
+        version: https://codeload.github.com/RoJaebl/supa-store/tar.gz/1419b7a0ad65b37dd583da61553a68a34864621f(next@15.5.20(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react@19.2.7)(typescript@6.0.3)(vite@7.3.6(@types/node@26.1.2)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.4))
       turbo:
         specifier: ^2.5.0
         version: 2.10.2
@@ -78,9 +78,6 @@ importers:
       '@fortuna-lottery/contract':
         specifier: workspace:*
         version: link:../../packages/contract
-      '@fortuna-lottery/store':
-        specifier: workspace:*
-        version: link:../../packages/store
       '@gsap/react':
         specifier: 2.1.2
         version: 2.1.2(gsap@3.13.0)(react@19.2.7)
@@ -99,6 +96,9 @@ importers:
       react-dom:
         specifier: ^19.1.0
         version: 19.2.7(react@19.2.7)
+      supa-store:
+        specifier: github:RoJaebl/supa-store#1419b7a0ad65b37dd583da61553a68a34864621f
+        version: https://codeload.github.com/RoJaebl/supa-store/tar.gz/1419b7a0ad65b37dd583da61553a68a34864621f(next@15.5.20(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react@19.2.7)(typescript@5.9.3)(vite@7.3.6(@types/node@22.20.0)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.4))
       tailwind-merge:
         specifier: 3.7.0
         version: 3.7.0
@@ -161,36 +161,6 @@ importers:
 
   packages/kernel:
     devDependencies:
-      typescript:
-        specifier: ^5.8.0
-        version: 5.9.3
-      vitest:
-        specifier: ^3.1.0
-        version: 3.2.6(@types/node@26.1.2)(jiti@2.7.0)(jsdom@30.1.1)(lightningcss@1.32.0)(supports-color@7.2.0)(tsx@4.23.4)
-
-  packages/store:
-    devDependencies:
-      '@testing-library/dom':
-        specifier: ^10.4.2
-        version: 10.4.2
-      '@testing-library/react':
-        specifier: ^16.3.3
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
-      '@types/react':
-        specifier: ^19.1.0
-        version: 19.2.17
-      '@types/react-dom':
-        specifier: ^19.1.0
-        version: 19.2.3(@types/react@19.2.17)
-      jsdom:
-        specifier: ^30.1.1
-        version: 30.1.1
-      react:
-        specifier: ^19.1.0
-        version: 19.2.7
-      react-dom:
-        specifier: ^19.1.0
-        version: 19.2.7(react@19.2.7)
       typescript:
         specifier: ^5.8.0
         version: 5.9.3
@@ -2835,6 +2805,27 @@ packages:
       '@babel/core':
         optional: true
       babel-plugin-macros:
+        optional: true
+
+  supa-store@https://codeload.github.com/RoJaebl/supa-store/tar.gz/1419b7a0ad65b37dd583da61553a68a34864621f:
+    resolution: {gitHosted: true, integrity: sha512-I6VE1kcNnAhezNeybNEzRZ6PAaBRNxuGarx9EHPaL2dHowCYV1xZG3v2CgIUArYM79uatUTVsEJI3BxjChgfAw==, tarball: https://codeload.github.com/RoJaebl/supa-store/tar.gz/1419b7a0ad65b37dd583da61553a68a34864621f}
+    version: 0.3.0
+    engines: {node: '>=20'}
+    hasBin: true
+    peerDependencies:
+      next: '>=14'
+      react: '>=18'
+      typescript: '>=5.4'
+      vite: '>=6'
+      ws: '>=8'
+    peerDependenciesMeta:
+      next:
+        optional: true
+      react:
+        optional: true
+      vite:
+        optional: true
+      ws:
         optional: true
 
   supports-color@7.2.0:
@@ -5585,6 +5576,22 @@ snapshots:
     dependencies:
       client-only: 0.0.1
       react: 19.2.7
+
+  supa-store@https://codeload.github.com/RoJaebl/supa-store/tar.gz/1419b7a0ad65b37dd583da61553a68a34864621f(next@15.5.20(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react@19.2.7)(typescript@5.9.3)(vite@7.3.6(@types/node@22.20.0)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.4)):
+    dependencies:
+      typescript: 5.9.3
+    optionalDependencies:
+      next: 15.5.20(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      react: 19.2.7
+      vite: 7.3.6(@types/node@22.20.0)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.4)
+
+  supa-store@https://codeload.github.com/RoJaebl/supa-store/tar.gz/1419b7a0ad65b37dd583da61553a68a34864621f(next@15.5.20(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react@19.2.7)(typescript@6.0.3)(vite@7.3.6(@types/node@26.1.2)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.4)):
+    dependencies:
+      typescript: 6.0.3
+    optionalDependencies:
+      next: 15.5.20(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      react: 19.2.7
+      vite: 7.3.6(@types/node@26.1.2)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.4)
 
   supports-color@7.2.0:
     dependencies:

@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { getStore, resetStores } from "@fortuna-lottery/store";
+import { getStore, resetStores } from "supa-store";
 import { useHomePresenter } from "./Home.presenter";
 
 describe("useHomePresenter", () => {

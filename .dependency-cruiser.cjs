@@ -46,17 +46,11 @@ module.exports = {
     },
     {
       name: 'api-must-not-reach-store',
-      comment: '응용 서버는 packages/store 를 참조하지 않는다. 화면 앱의 공통 상태 라이브러리다',
+      comment: '응용 서버는 supa-store 를 참조하지 않는다. 화면 앱의 공통 상태 라이브러리다',
       severity: 'error',
       from: { path: '^apps/api/' },
-      to:   { path: '^packages/store/' },
-    },
-    {
-      name: 'store-package-reaches-nothing-local',
-      comment: 'packages/store 는 다른 작업 공간 패키지와 앱을 보지 않는다',
-      severity: 'error',
-      from: { path: '^packages/store/' },
-      to:   { path: '^(apps|packages)/', pathNot: '^packages/store/' },
+      // 풀린 경로(node_modules/…/supa-store/…)와 풀지 못한 이름(supa-store) 둘 다 잡는다
+      to:   { path: '(^|/)supa-store(/|$)' },
     },
     {
       name: 'contract-only-in-mapper',

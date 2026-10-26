@@ -1,6 +1,6 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { getStore, overrideStore } from "@fortuna-lottery/store";
+import { getStore, overrideStore } from "supa-store";
 import { TestHttpClient } from "@infrastructure/http";
 import { assumptionRequest, useHypothesisLabPresenter } from "./HypothesisLab.presenter";
 

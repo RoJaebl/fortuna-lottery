@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useStore } from "@fortuna-lottery/store/react";
+import { useStore } from "supa-store/react";
 import type { AssumptionModel } from "./_model/Evaluation.model";
 
 /** 스위치 셋을 가정 하나로 — K 스위치가 꺼져 있으면 topK 를 싣지 않는다 */
@@ -14,12 +14,12 @@ export function useHypothesisLabPresenter() {
   const [topK, setTopK] = useState(20);
   const { evaluate: evaluation, generate: generation } = useStore("api.home.HypothesisLab.assumption");
   // 조합이 없으면 인자가 없어 받지 않는다
-  const popularity = useStore("api.home.HypothesisLab.popularity", { args: numbers ?? undefined, pick: ["data", "error"] });
+  const popularity = useStore("api.home.HypothesisLab.popularity", { args: numbers ? { numbers } : undefined, pick: ["data", "error"] });
 
   const assumption = assumptionRequest(excludePastWinners, topKEnabled, topK);
 
   const generate = async () => {
-    const drawn = await generation.mutate(assumption);
+    const drawn = await generation.mutateAsync(assumption).catch(() => undefined);
     if (drawn) choose(drawn);
   };
 

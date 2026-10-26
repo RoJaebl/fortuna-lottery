@@ -1,6 +1,6 @@
 // 모든 표현은 과거 데이터의 사실만 말한다 (정직성 원칙).
 import { useState } from "react";
-import { useStore } from "@fortuna-lottery/store/react";
+import { useStore } from "supa-store/react";
 import { LOW_MAX } from "@lib/lotto-rules";
 import type { TabItem } from "@ui/Tabs";
 import type { StatisticsModel } from "./_model/Statistics.model";

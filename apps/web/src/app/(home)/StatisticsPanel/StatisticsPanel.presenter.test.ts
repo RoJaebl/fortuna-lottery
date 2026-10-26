@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { getStore, overrideStore } from "@fortuna-lottery/store";
+import { getStore, overrideStore } from "supa-store";
 import { TestHttpClient } from "@infrastructure/http";
 import { StatisticsModel } from "./_model/Statistics.model";
 import { StatisticsViewModel } from "./_model/Statistics.viewmodel";

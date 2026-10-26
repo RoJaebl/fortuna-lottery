@@ -1,5 +1,5 @@
-import { createStore } from "@fortuna-lottery/store";
-import { createResource } from "@fortuna-lottery/store/query";
+import { createStore } from "supa-store";
+import { createResource } from "supa-store/query";
 import { StatisticsViewModel } from "../_model/Statistics.viewmodel";
 import { statisticsReadResponse } from "../_mapper/statisticsRead.mapper";
 

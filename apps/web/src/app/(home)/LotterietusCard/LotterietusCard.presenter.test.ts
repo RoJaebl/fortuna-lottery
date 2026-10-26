@@ -1,6 +1,6 @@
 import { renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { getStore, overrideStore, resetStores } from "@fortuna-lottery/store";
+import { getStore, overrideStore, resetStores } from "supa-store";
 import { TestHttpClient } from "@infrastructure/http";
 import { formatRemaining, useLotterietusCardPresenter } from "./LotterietusCard.presenter";
 import { LotterietusViewModel } from "./_model/Lotterietus.viewmodel";
