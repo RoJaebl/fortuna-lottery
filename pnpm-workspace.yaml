@@ -8,4 +8,6 @@ allowBuilds:
   esbuild: true
   sharp: true
   "@swc/core": true
-  "supa-store@https://codeload.github.com/RoJaebl/supa-store/tar.gz/1419b7a0ad65b37dd583da61553a68a34864621f": true
+  "supa-store@https://codeload.github.com/RoJaebl/supa-store/tar.gz/026389ca231321d8463ad782b22a200ac6ea7492": true
+# supa-store 의 선택 peer(vite · next 등)를 저절로 깔지 않는다 — 깔면 peer 조합이 갈려 supa-store 가 루트와 apps/web 에 두 벌 생긴다
+autoInstallPeers: false

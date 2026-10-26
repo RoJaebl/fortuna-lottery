@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@fortuna-lottery/contract": "workspace:*",
-    "supa-store": "github:RoJaebl/supa-store#1419b7a0ad65b37dd583da61553a68a34864621f",
+    "supa-store": "github:RoJaebl/supa-store#026389ca231321d8463ad782b22a200ac6ea7492",
     "@gsap/react": "2.1.2",
     "clsx": "2.1.1",
     "gsap": "3.13.0",
