@@ -139,24 +139,42 @@ export function useStatisticsPanelPresenter() {
   const { data: stats, status, error } = useStore("api.home.StatisticsPanel.statistics");
   // 처음 그릴 때(idle)도 아직 받기 전이다
   const loading = status === "idle" || status === "loading";
-  const { activeStatView, recentStart, recentSize, changeStatView, changeRecentStart, changeRecentSize } =
+  const { activeStatView, recentStart, recentSize, sumUntil, changeStatView, changeRecentStart, changeRecentSize, changeSumUntil } =
     useStore("state.home.StatisticsPanel.view");
 
   const tabs = { items: STAT_VIEWS, active: activeStatView, onChange: changeStatView };
 
   if (!stats) return { loading, error, tabs, views: null };
 
-  const my = myNumbers ? sumPosition(myNumbers, stats) : null;
+  const total = stats.recentGrid.length;
+  const roundAt = (index: number) => stats.recentGrid[index]?.round ?? 0;
   const rarity = myNumbers ? oddEvenRarity(myNumbers, stats) : null;
 
+  // 합계 분포는 1회부터 재생 바가 고른 회차까지 쌓은 것이다 — 처음엔 최신 회차까지
+  const until = Math.min(sumUntil ?? total - 1, total - 1);
+  const sums = stats.sumsUntil(until);
+  const my = myNumbers ? sumPosition(myNumbers, sums) : null;
+  const upTo = `제${roundAt(0)}회 ~ 제${roundAt(until)}회 누적`;
   const sum: SumDistributionChartProps = {
-    chart: stats.sumChart,
+    chart: sums.sumChart,
     subtitle: my
-      ? `내 조합 합계 ${my.mySum} — 과거 회차의 ${my.percentBelow}%가 이보다 작았습니다`
-      : "전 회차 6개 번호 합계의 분포",
-    marker: my ? { sum: my.mySum, x: stats.sumRatio(my.mySum) } : null,
+      ? `${upTo} · 내 조합 합계 ${my.mySum} — 그 회차들의 ${my.percentBelow}%가 이보다 작았습니다`
+      : `${upTo} · 6개 번호 합계의 분포 (${sums.totalDraws}회차)`,
+    marker: my ? { sum: my.mySum, x: sums.sumRatio(my.mySum) } : null,
     // 내 합계가 든 구간을 표에 표시한다 — 내 조합이 없으면 표시 없음
-    bands: stats.sumBands.map((band, i) => ({ ...band, mine: my !== null && Math.floor((my.mySum - 21) / 20) === i })),
+    bands: sums.sumBands.map((band, i) => ({ ...band, mine: my !== null && Math.floor((my.mySum - 21) / 20) === i })),
+    timeline:
+      total > 1
+        ? {
+            position: until,
+            total,
+            roundAt,
+            onSeek: changeSumUntil,
+            page: 100,
+            label: "합계 분포를 쌓을 마지막 회차",
+            valueText: `제${roundAt(until)}회까지`,
+          }
+        : null,
   };
   const pattern: PatternDistributionProps = {
     subtitle: rarity
@@ -181,15 +199,19 @@ export function useStatisticsPanelPresenter() {
     onFit: (size) => {
       if (size !== recentSize) changeRecentSize(size);
     },
-    timeline: {
-      start: grid.start,
-      maxStart: grid.maxStart,
-      end: grid.start + grid.columns.length - 1,
-      total: stats.recentGrid.length,
-      roundAt: (index) => stats.recentGrid[index]?.round ?? 0,
-      onChange: changeRecentStart,
-      onSeek: (index) => changeRecentStart(startEndingAt(index, stats.recentGrid.length, recentSize)),
-    },
+    // 재생 위치는 창의 마지막 회차다. 고른 회차가 창의 맨 오른쪽에 오도록 창을 옮긴다
+    timeline:
+      grid.maxStart > 0
+        ? {
+            position: grid.start + grid.columns.length - 1,
+            total,
+            roundAt,
+            onSeek: (index) => changeRecentStart(startEndingAt(index, total, recentSize)),
+            page: grid.columns.length,
+            label: "잔디밭 회차 창",
+            valueText: grid.range,
+          }
+        : null,
   };
 
   return { loading, error, tabs, views: { sum, pattern, hotcold, pairs, frequency, recent } };

@@ -77,6 +77,32 @@ describe("StatisticsViewModel (그 통계 하나로 정해지는 값)", () => {
     expect(bands[11]).toEqual({ label: "241~255", count: 4, percent: 50 });
   });
 
+  it("sumsUntil — 1회부터 그 위치의 회차까지만 센 합계 분포, 합계 축은 전 회차의 것", () => {
+    const vm = stats({
+      totalDraws: 3,
+      sumDistribution: [
+        { sum: 21, count: 1 },
+        { sum: 60, count: 1 },
+        { sum: 255, count: 1 },
+      ],
+      recentGrid: [
+        { round: 1, numbers: [10, 10, 10, 10, 10, 10] },
+        { round: 2, numbers: [1, 2, 3, 4, 5, 6] },
+        { round: 3, numbers: [40, 41, 42, 43, 44, 45] },
+      ],
+    });
+    const cut = vm.sumsUntil(1);
+    expect(cut.totalDraws).toBe(2);
+    expect(cut.sumDistribution).toEqual([
+      { sum: 21, count: 1 },
+      { sum: 60, count: 1 },
+    ]);
+    // 축이 21~255 그대로라 255 회차가 빠져도 합계 60 의 자리는 같다
+    expect(cut.sumRatio(60)).toBe(vm.sumRatio(60));
+    expect(cut.sumChart).toMatchObject({ minSum: 21, maxSum: 255, maxCount: 1 });
+    expect(cut.sumBands[0]).toEqual({ label: "21~40", count: 1, percent: 50 });
+  });
+
   it("sumChart — 분포가 비면 null", () => {
     expect(stats({ sumDistribution: [] }).sumChart).toBeNull();
   });

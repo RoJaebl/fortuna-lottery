@@ -78,12 +78,33 @@ export class StatisticsViewModel extends StatisticsModel {
     return (sum - this.minSum) / Math.max(1, this.maxSum - this.minSum);
   }
 
+  /**
+   * 1회부터 index 번째(0 부터) 회차까지만 센 합계 분포 — 합계 분포와 회차 수만 바뀐다.
+   * 합계 축은 전 회차의 것을 그대로 쓴다. 재생 바를 끌어도 축이 흔들리지 않아 막대가 쌓여 가는 모습이 보인다
+   */
+  sumsUntil(index: number): StatisticsViewModel {
+    const counts = new Map<number, number>();
+    const rounds = this.recentGrid.slice(0, index + 1);
+    for (const { numbers } of rounds) {
+      const sum = numbers.reduce((a, b) => a + b, 0);
+      counts.set(sum, (counts.get(sum) ?? 0) + 1);
+    }
+    return Object.assign(new StatisticsViewModel(), this, {
+      sumDistribution: [...counts].sort(([a], [b]) => a - b).map(([sum, count]) => ({ sum, count })),
+      totalDraws: rounds.length,
+      sumAxis: { min: this.minSum, max: this.maxSum },
+    });
+  }
+
+  /** sumsUntil 이 정한 합계 축 — 없으면 자기 분포의 양 끝이다 */
+  private sumAxis: { min: number; max: number } | null = null;
+
   private get minSum(): number {
-    return this.sumDistribution[0]?.sum ?? 21;
+    return this.sumAxis?.min ?? this.sumDistribution[0]?.sum ?? 21;
   }
 
   private get maxSum(): number {
-    return this.sumDistribution[this.sumDistribution.length - 1]?.sum ?? 255;
+    return this.sumAxis?.max ?? this.sumDistribution[this.sumDistribution.length - 1]?.sum ?? 255;
   }
 
   /** 동시 출현 페어 막대 — 1위 대비 너비(%) */
