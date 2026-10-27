@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useStore } from "supa-store/react";
 import type { GeneratorMode } from "./_model/GeneratorMode.model";
 
@@ -42,23 +41,13 @@ export function generateButtonLabel(busy: boolean): string {
 
 export function useGeneratorCardPresenter() {
   const { choose } = useStore("state.home.combination", { pick: ["choose"] });
-  const [mode, setMode] = useState<GeneratorMode>("auto");
-  const [selected, setSelected] = useState<number[]>([]);
+  const { mode, selected, changeMode: selectMode, toggleNumber } = useStore("state.home.GeneratorCard.selection");
   const { generate: generator } = useStore("api.home.GeneratorCard.generator");
 
   const changeMode = (next: GeneratorMode) => {
-    setMode(next);
-    setSelected([]);
+    selectMode(next);
     // 앞선 오류만 지운다 — 오류가 없으면 앞선 결과를 그대로 두고, 진행 중이면 reset 이 응답까지 버리므로 건드리지 않는다
     if (generator.error && !generator.pending) generator.reset();
-  };
-
-  const toggleNumber = (n: number) => {
-    setSelected((prev) => {
-      if (prev.includes(n)) return prev.filter((x) => x !== n);
-      const limit = mode === "manual" ? 6 : 5;
-      return prev.length < limit ? [...prev, n] : prev;
-    });
   };
 
   const generate = async () => {

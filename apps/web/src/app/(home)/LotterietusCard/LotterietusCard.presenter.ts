@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { useStore } from "supa-store/react";
 
 /** 남은 시간(ms) → "D-3 12:34:56" — 지금 시각에 따라 바뀌므로 표시 모델이 아니라 조정자에 둔다 */
@@ -16,13 +15,7 @@ export function useLotterietusCardPresenter() {
   const { data: status = null, status: fetchStatus, error } = useStore("api.home.LotterietusCard.status");
   // 처음 그릴 때(idle)도 아직 받기 전이다
   const loading = fetchStatus === "idle" || fetchStatus === "loading";
-  const [now, setNow] = useState(() => Date.now());
-
-  // 카운트다운의 1초 틱 — 상호작용 상태이므로 조정자가 갖는다
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(timer);
-  }, []);
+  const { now } = useStore("state.home.LotterietusCard.clock", { pick: ["now"] }); // 1초마다 바뀐다
 
   return {
     /** 보여 줄 회차가 아직 없이 받는 중 — 앞선 회차가 있으면 그것을 계속 보인다 */

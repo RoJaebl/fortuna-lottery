@@ -1,5 +1,4 @@
 // 모든 표현은 과거 데이터의 사실만 말한다 (정직성 원칙).
-import { useState } from "react";
 import { useStore } from "supa-store/react";
 import { LOW_MAX } from "@lib/lotto-rules";
 import type { TabItem } from "@ui/Tabs";
@@ -133,10 +132,9 @@ export function useStatisticsPanelPresenter() {
   const { data: stats, status, error } = useStore("api.home.StatisticsPanel.statistics");
   // 처음 그릴 때(idle)도 아직 받기 전이다
   const loading = status === "idle" || status === "loading";
-  const [activeStatView, setActiveStatView] = useState<StatView>("sum");
-  const [recentStart, setRecentStart] = useState<number | null>(null);
+  const { activeStatView, recentStart, changeStatView, changeRecentStart } = useStore("state.home.StatisticsPanel.view");
 
-  const tabs = { items: STAT_VIEWS, active: activeStatView, onChange: setActiveStatView };
+  const tabs = { items: STAT_VIEWS, active: activeStatView, onChange: changeStatView };
 
   if (!stats) return { loading, error, tabs, views: null };
 
@@ -170,7 +168,7 @@ export function useStatisticsPanelPresenter() {
   const recent: RecentGridProps = {
     range: grid.range,
     columns: grid.columns.map(StatisticsViewModel.gridColumn),
-    timeline: { start: grid.start, maxStart: grid.maxStart, total: stats.recentGrid.length, onChange: setRecentStart },
+    timeline: { start: grid.start, maxStart: grid.maxStart, total: stats.recentGrid.length, onChange: changeRecentStart },
   };
 
   return { loading, error, tabs, views: { sum, pattern, hotcold, pairs, frequency, recent } };

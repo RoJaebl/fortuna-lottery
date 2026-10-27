@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useStore } from "supa-store/react";
 import type { TabItem, TabsProps } from "@ui/Tabs";
 
 export type HomeMenuKey = "workroom";
@@ -17,19 +17,18 @@ const TABS: readonly TabItem<HomeTabKey>[] = [
 ];
 
 /**
- * 페이지의 presenter — 고른 메뉴와 작업실의 활성 탭은 이 화면 안의 지역 상태다.
- * 자식이 함께 쓰는 현재 조합은 _state/ 의 공통 상태다 (frontend-shared-state §1)
+ * 페이지의 presenter — 고른 메뉴와 작업실의 활성 탭은 _state/ 의 state.home.navigation 이다.
+ * 자식이 함께 쓰는 현재 조합도 _state/ 의 공통 상태다 (frontend-shared-state §1)
  */
 export function useHomePresenter() {
-  const [activeMenu, setActiveMenu] = useState<HomeMenuKey>("workroom");
-  const [activeTab, setActiveTab] = useState<HomeTabKey>("statistics");
+  const { activeMenu, activeTab, selectMenu, selectTab } = useStore("state.home.navigation");
 
-  const menu = { items: MENU, active: activeMenu, onChange: setActiveMenu };
+  const menu = { items: MENU, active: activeMenu, onChange: selectMenu };
 
   const tabs: TabsProps<HomeTabKey> = {
     items: TABS,
     active: activeTab,
-    onChange: setActiveTab,
+    onChange: selectTab,
     label: "작업실 화면",
   };
 

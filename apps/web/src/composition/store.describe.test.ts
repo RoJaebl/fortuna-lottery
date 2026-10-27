@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { basename, join, relative, resolve } from "node:path";
-import { describe, expect, it } from "vitest";
-import { getStore, registeredKeys } from "supa-store";
+import { describe, expect, it, vi } from "vitest";
+import { getStore, registeredKeys, resetStores } from "supa-store";
 
 // 시험 러너(jsdom 환경)에서는 import.meta.url 이 file: 이 아니다 — 러너가 넣어 주는 __dirname 을 쓴다
 const SRC = resolve(__dirname, "..");
@@ -87,7 +87,14 @@ function describeStores(): string {
 describe("store", () => {
   it("store 에 등록된 전부", () => {
     // 「무엇이 무엇을 갱신하는가」와 「어느 presenter 가 어느 상태를 쓰는가」를 읽는 자리
-    expect(describeStores()).toMatchSnapshot();
+    // 시계 store 는 지은 순간의 시각을 처음 값으로 가지므로 시각을 0 에 묶어 짓는다
+    vi.useFakeTimers({ now: 0 });
+    resetStores();
+    try {
+      expect(describeStores()).toMatchSnapshot();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("픽이 바뀌어도 당첨 대조는 일부러 다시 받지 않는다", () => {
