@@ -122,6 +122,12 @@ export function recentWindow<T extends { round: number }>(
   return { start: from, maxStart, columns: shown, range };
 }
 
+/** 재생 바에서 고른 회차(0 부터 센 위치)가 창의 맨 오른쪽에 오는 창의 시작 */
+export function startEndingAt(index: number, total: number): number {
+  const maxStart = Math.max(0, total - RECENT_WINDOW);
+  return Math.min(Math.max(0, index - RECENT_WINDOW + 1), maxStart);
+}
+
 /** 내 조합이 놓인 막대를 표시한다 — 내 조합이 없으면 강조 없음 */
 function highlightBars(bars: DistBar[], highlight: number | null): PatternBar[] {
   return bars.map((bar, i) => ({ ...bar, highlighted: i === highlight }));
@@ -168,7 +174,15 @@ export function useStatisticsPanelPresenter() {
   const recent: RecentGridProps = {
     range: grid.range,
     columns: grid.columns.map(StatisticsViewModel.gridColumn),
-    timeline: { start: grid.start, maxStart: grid.maxStart, total: stats.recentGrid.length, onChange: changeRecentStart },
+    timeline: {
+      start: grid.start,
+      maxStart: grid.maxStart,
+      end: grid.start + grid.columns.length - 1,
+      total: stats.recentGrid.length,
+      roundAt: (index) => stats.recentGrid[index]?.round ?? 0,
+      onChange: changeRecentStart,
+      onSeek: (index) => changeRecentStart(startEndingAt(index, stats.recentGrid.length)),
+    },
   };
 
   return { loading, error, tabs, views: { sum, pattern, hotcold, pairs, frequency, recent } };

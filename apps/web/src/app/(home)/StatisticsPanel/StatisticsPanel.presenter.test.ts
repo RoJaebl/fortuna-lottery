@@ -4,7 +4,7 @@ import { TestHttpClient } from "@infrastructure/http";
 import { StatisticsModel } from "./_model/Statistics.model";
 import { StatisticsViewModel } from "./_model/Statistics.viewmodel";
 import { act, renderHook } from "@testing-library/react";
-import { oddEvenRarity, RECENT_WINDOW, recentWindow, sumPosition, useStatisticsPanelPresenter } from "./StatisticsPanel.presenter";
+import { oddEvenRarity, RECENT_WINDOW, recentWindow, startEndingAt, sumPosition, useStatisticsPanelPresenter } from "./StatisticsPanel.presenter";
 
 /** 통계 응답은 오지 않는다 — 받은 통계는 withStats 가 칸에 넣는다 */
 beforeEach(() => {
@@ -64,6 +64,13 @@ describe("statistics presenters (순수 함수)", () => {
     expect(recentWindow(rounds, 999).start).toBe(150);
     expect(recentWindow(rounds.slice(0, 3), null)).toMatchObject({ start: 0, maxStart: 0 });
     expect(recentWindow([], null).range).toBe("");
+  });
+
+  it("startEndingAt — 고른 회차가 창의 맨 오른쪽에 오도록 창의 시작을 정한다", () => {
+    expect(startEndingAt(199, 250)).toBe(100); // 100~199 번째
+    expect(startEndingAt(249, 250)).toBe(150); // 최신
+    expect(startEndingAt(10, 250)).toBe(0); // 앞에 100개가 없으면 처음부터
+    expect(startEndingAt(2, 3)).toBe(0); // 전 회차가 창보다 적다
   });
 });
 
