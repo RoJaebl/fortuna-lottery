@@ -40,8 +40,8 @@ const SUM_AXIS_MODES: readonly TabItem<SumAxisMode>[] = [
 /** 6개 번호 합계가 낼 수 있는 범위 — 1+2+…+6 ~ 40+41+…+45 */
 const SUM_RANGE = { min: 21, max: 255 };
 
-/** 잔디밭 창 양옆에 흐리게 그리는 버퍼 열 수 */
-const GRID_EDGE_COLUMNS = 4;
+/** 잔디밭 창 양옆에 그리는 버퍼 열 수 — 화면이 흐리게 지우는 폭에 띠가 밀리는 폭까지 덮는다 */
+const GRID_EDGE_COLUMNS = 8;
 
 /** 재생 바에서 고를 수 있는 배속 — 1 배속은 한 회차에 0.1 초 */
 const PLAY_SPEEDS = [0.5, 1, 2, 5, 10] as const;

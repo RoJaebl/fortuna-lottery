@@ -30,6 +30,12 @@ const GAP = 1;
 /** 이보다 많이 건너뛰면 미끄러뜨리지 않는다 — 수백 칸을 미끄러뜨리면 흐릿한 줄무늬만 지나간다 */
 const SLIDE_LIMIT = 30;
 
+/** 그리드 양옆을 흐리게 지우는 폭(px) — 열 넷 */
+const FADE = 4 * (CELL + GAP);
+
+/** 한 번 옮길 때 띠가 미끄러지는 시간(초) */
+const SLIDE_SECONDS = 0.35;
+
 /** 세로축에 숫자를 적는 줄 — 9px 줄마다 적으면 글자가 겹친다 */
 const TICKS = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45];
 
@@ -79,16 +85,18 @@ function NumberAxis() {
 
 /** 잔디밭 — 가로 회차 / 세로 1~45, 출현 번호 칸을 공 색으로 칠한다. 아래 재생 바로 전 회차를 오간다 */
 export function RecentGrid({ range, columns, before, after, onFit, timeline }: RecentGridProps) {
-  // 양옆 버퍼가 차지하는 폭 — 이 폭만큼 흐리게 지운다
-  const edge = before.length * (CELL + GAP);
-  const fitLatest = useRef({ onFit, edge });
-  fitLatest.current = { onFit, edge };
-  // 그리드 자리의 폭에서 양옆 버퍼를 뺀 만큼 들어가는 칸 수를 알린다 — 스크롤 없이 보이고 나머지는 재생 바로 본다
+  // 버퍼 열이 차지하는 폭. 그 가운데 FADE 만큼은 흐림 구간 안에 서고, 나머지(slack)는 흐림 구간 바깥에 숨는다.
+  // 띠가 slack 만큼 밀려도 흐림 구간에는 언제나 버퍼 열이 남는다
+  const buffer = before.length * (CELL + GAP);
+  const slack = Math.max(0, buffer - FADE);
+  const fitLatest = useRef(onFit);
+  fitLatest.current = onFit;
+  // 그리드 자리의 폭에서 양옆 흐림 구간을 뺀 만큼 들어가는 칸 수를 알린다 — 스크롤 없이 보이고 나머지는 재생 바로 본다
   const measureRef = useCallback((el: HTMLDivElement | null) => {
     if (!el) return;
     const observer = new ResizeObserver(([entry]) => {
-      const width = (entry?.contentRect.width ?? 0) - 2 * fitLatest.current.edge;
-      fitLatest.current.onFit(Math.max(1, Math.floor((width + GAP) / (CELL + GAP))));
+      const width = (entry?.contentRect.width ?? 0) - 2 * FADE;
+      fitLatest.current(Math.max(1, Math.floor((width + GAP) / (CELL + GAP))));
     });
     observer.observe(el);
     return () => observer.disconnect();
@@ -99,23 +107,41 @@ export function RecentGrid({ range, columns, before, after, onFit, timeline }: R
   const stripRef = useRef<HTMLDivElement>(null);
   const first = columns[0]?.round ?? 0;
   const prevFirst = useRef(first);
+  const lastMoveAt = useRef(0);
   useGSAP(() => {
     const strip = stripRef.current;
     const moved = first - prevFirst.current;
     prevFirst.current = first;
     if (!strip || moved === 0) return;
+    // 앞선 이동에서 지난 시간 — 재생처럼 잇달아 오면 짧다
+    const now = performance.now();
+    const interval = (now - lastMoveAt.current) / 1000;
+    lastMoveAt.current = now;
     if (Math.abs(moved) > SLIDE_LIMIT) {
       // 멀리 건너뛰면 미끄러뜨리지 않고 살짝 비추어 바뀐 것만 알린다
       gsap.fromTo(strip, { x: 0, opacity: 0.35 }, { opacity: 1, duration: 0.35, ease: "power2.out", overwrite: true });
       return;
     }
-    // 버퍼 폭보다 멀리 밀지 않는다 — 빠른 배속에서 거리가 쌓여도 버퍼 바깥의 빈자리가 보이지 않게
+    // slack 보다 멀리 밀지 않는다 — 빠른 배속에서 거리가 쌓여도 흐림 구간에 버퍼 열이 남게
     const pending = Number(gsap.getProperty(strip, "x")) + moved * (CELL + GAP);
-    const from = Math.min(Math.max(pending, -edge), edge);
-    gsap.fromTo(strip, { x: from }, { x: 0, opacity: 1, duration: 0.35, ease: "power3.out", overwrite: true });
+    const from = Math.min(Math.max(pending, -slack), slack);
+    // 미끄러지는 시간을 이동 간격에 맞춘다 — 잇달아 오면 다음 이동이 올 때쯤 제자리에 닿도록 고르게 흐르고,
+    // 한 번 옮길 때만 감속하며 멈춘다. 고정 시간이면 빠른 배속에서 밀린 거리가 쌓여 상한에 붙는다
+    const streaming = interval < SLIDE_SECONDS;
+    gsap.fromTo(
+      strip,
+      { x: from },
+      {
+        x: 0,
+        opacity: 1,
+        duration: streaming ? interval : SLIDE_SECONDS,
+        ease: streaming ? "none" : "power3.out",
+        overwrite: true,
+      },
+    );
   }, [first]);
 
-  const fade = `linear-gradient(to right, transparent, #000 ${edge}px, #000 calc(100% - ${edge}px), transparent)`;
+  const fade = `linear-gradient(to right, transparent, #000 ${FADE}px, #000 calc(100% - ${FADE}px), transparent)`;
 
   return (
     <Card title="회차별 잔디밭" subtitle={range}>
@@ -124,10 +150,11 @@ export function RecentGrid({ range, columns, before, after, onFit, timeline }: R
         <div
           ref={measureRef}
           className="relative min-w-0 flex-1 overflow-hidden"
-          // 양옆 버퍼 폭만큼 옅게 지운다 — 창 밖으로 나가는 회차가 잘리지 않고 스러지듯 사라진다
+          // 양옆 FADE 만큼 옅게 지운다 — 창 밖으로 나가는 회차가 잘리지 않고 스러지듯 사라진다
           style={{ maskImage: fade }}
         >
-          <div ref={stripRef} className="flex w-max gap-px">
+          {/* 버퍼 가운데 slack 만큼을 왼쪽 바깥으로 당겨, 창의 첫 열이 흐림 구간 바로 뒤에 서게 한다 */}
+          <div ref={stripRef} className="flex w-max gap-px" style={{ marginLeft: -slack }}>
             {before.map((column, i) =>
               column ? <RoundColumn key={column.round} column={column} /> : <EmptyColumn key={`before-${i}`} />,
             )}
@@ -142,12 +169,12 @@ export function RecentGrid({ range, columns, before, after, onFit, timeline }: R
           <div
             aria-hidden
             className="pointer-events-none absolute inset-y-0 left-0 backdrop-blur-[2px]"
-            style={{ width: edge, maskImage: "linear-gradient(to right, #000, transparent)" }}
+            style={{ width: FADE, maskImage: "linear-gradient(to right, #000, transparent)" }}
           />
           <div
             aria-hidden
             className="pointer-events-none absolute inset-y-0 right-0 backdrop-blur-[2px]"
-            style={{ width: edge, maskImage: "linear-gradient(to left, #000, transparent)" }}
+            style={{ width: FADE, maskImage: "linear-gradient(to left, #000, transparent)" }}
           />
         </div>
       </div>
