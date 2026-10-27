@@ -203,6 +203,7 @@ describe("useStatisticsPanelPresenter", () => {
     withState([20, 30, 10, 25, 15, 20]);
     const { result } = renderHook(() => useStatisticsPanelPresenter());
     expect(result.current.views?.sum.timeline?.position).toBe(9);
+    expect(result.current.views?.sum.timeline?.minPosition).toBe(0);
     act(() => result.current.views?.sum.timeline?.onSeek(4)); // 제5회까지 — 100 이 3회, 120 이 2회
     const sum = result.current.views?.sum;
     expect(sum?.timeline?.position).toBe(4);
@@ -238,6 +239,8 @@ describe("useStatisticsPanelPresenter", () => {
     act(() => result.current.views?.recent.onFit(60));
     expect(result.current.views?.recent.columns).toHaveLength(60);
     expect(result.current.views?.recent.columns[0]?.round).toBe(91);
+    // 재생을 처음부터 다시 돌릴 자리는 창이 처음 회차에 붙을 때의 끝이다
+    expect(result.current.views?.recent.timeline?.minPosition).toBe(59);
     // 고른 회차가 맨 오른쪽에 오는 창도 그 칸 수로 센다
     act(() => result.current.views?.recent.timeline?.onSeek(99));
     expect(result.current.views?.recent.columns[0]?.round).toBe(41);

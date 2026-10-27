@@ -189,6 +189,7 @@ export function useStatisticsPanelPresenter() {
       total > 1
         ? {
             position: until,
+            minPosition: 0,
             total,
             roundAt,
             onSeek: changeSumUntil,
@@ -226,6 +227,8 @@ export function useStatisticsPanelPresenter() {
       grid.maxStart > 0
         ? {
             position: grid.start + grid.columns.length - 1,
+            // 창이 처음 회차부터 설 때 그 끝 — 이보다 앞은 창이 움직이지 않는다
+            minPosition: grid.columns.length - 1,
             total,
             roundAt,
             onSeek: (index) => changeRecentStart(startEndingAt(index, total, recentSize)),
