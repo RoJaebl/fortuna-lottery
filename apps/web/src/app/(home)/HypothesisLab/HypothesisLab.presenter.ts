@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useStore } from "supa-store/react";
 import type { AssumptionModel } from "./_model/Evaluation.model";
 
@@ -9,9 +8,8 @@ export function assumptionRequest(excludePastWinners: boolean, topKEnabled: bool
 
 export function useHypothesisLabPresenter() {
   const { numbers, choose } = useStore("state.home.combination", { pick: ["numbers", "choose"] });
-  const [excludePastWinners, setExcludePastWinners] = useState(true);
-  const [topKEnabled, setTopKEnabled] = useState(true);
-  const [topK, setTopK] = useState(20);
+  const switches = useStore("state.home.HypothesisLab.switches");
+  const { excludePastWinners, topKEnabled, topK } = switches;
   const { evaluate: evaluation, generate: generation } = useStore("api.home.HypothesisLab.assumption");
   // 조합이 없으면 인자가 없어 받지 않는다
   const popularity = useStore("api.home.HypothesisLab.popularity", { args: numbers ? { numbers } : undefined, pick: ["data", "error"] });
@@ -29,17 +27,17 @@ export function useHypothesisLabPresenter() {
   return {
     excludePastWinners,
     toggleExcludePastWinners: () => {
-      setExcludePastWinners((v) => !v);
+      switches.toggleExcludePastWinners();
       clearEvaluation();
     },
     topKEnabled,
     toggleTopK: () => {
-      setTopKEnabled((v) => !v);
+      switches.toggleTopK();
       clearEvaluation();
     },
     topK,
     changeTopK: (value: string) => {
-      setTopK(Number(value));
+      switches.changeTopK(Number(value));
       clearEvaluation();
     },
     evaluate: () => void evaluation.mutate(assumption),
