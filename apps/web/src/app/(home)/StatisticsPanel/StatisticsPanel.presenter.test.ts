@@ -171,7 +171,8 @@ describe("useStatisticsPanelPresenter", () => {
     withState([20, 30, 10, 25, 15, 20]);
     const mine = renderHook(() => useStatisticsPanelPresenter()).result.current.views?.sum;
     expect(mine?.subtitle).toBe("제1회 ~ 제10회 누적 · 내 조합 합계 120 — 그 회차들의 30%가 이보다 작았습니다");
-    expect(mine?.marker).toEqual({ sum: 120, x: 0.5 });
+    expect(mine?.marker?.sum).toBe(120);
+    expect(mine?.marker?.x).toBeCloseTo((120 - 40) / 215);
     expect(mine?.chart?.maxCount).toBe(4);
     // 합계 120 은 101~120 구간(다섯째)이다
     expect(mine?.bands.findIndex((b) => b.mine)).toBe(4);
@@ -184,15 +185,15 @@ describe("useStatisticsPanelPresenter", () => {
     expect(none?.bands.some((b) => b.mine)).toBe(false);
   });
 
-  it("sum — 상대 길이는 쌓은 회차의 양 끝을 넉넉히 잡은 축이고, 절대 길이는 21~255 가 축이다", () => {
+  it("sum — 상대 길이는 기본 40~255 에 고정된 축이고, 절대 길이는 21~255 가 축이다", () => {
     withStats({ sumDistribution, recentGrid: sumRounds });
     withState([20, 30, 10, 25, 15, 20]);
     const { result } = renderHook(() => useStatisticsPanelPresenter());
-    // 제5회까지 — 합계 100~120, 여백 5 + 150/√5 ≈ 72 라 축은 40~200
+    // 제5회까지 — 합계 100~120 은 기본 범위 안이라 축은 40~255 그대로다
     act(() => result.current.views?.sum.timeline?.onSeek(4));
     expect(result.current.views?.sum.axis.active).toBe("relative");
-    expect(result.current.views?.sum.chart).toMatchObject({ minSum: 40, maxSum: 200 });
-    expect(result.current.views?.sum.marker?.x).toBeCloseTo(80 / 160);
+    expect(result.current.views?.sum.chart).toMatchObject({ minSum: 40, maxSum: 255 });
+    expect(result.current.views?.sum.marker?.x).toBeCloseTo((120 - 40) / 215);
 
     act(() => result.current.views?.sum.axis.onChange("absolute"));
     expect(result.current.views?.sum.chart).toMatchObject({ minSum: 21, maxSum: 255 });

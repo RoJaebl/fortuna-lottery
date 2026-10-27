@@ -18,11 +18,10 @@ export interface GridColumn {
   cells: { n: number; present: boolean; title: string }[];
 }
 
-/** 상대 길이 합계 축이 실제 양 끝 바깥으로 두는 여백 — 최소 여백과, 회차가 적을 때 더하는 몫(÷√회차수) */
+/** 상대 길이 합계 축의 기본 범위 — 쌓은 합계가 이 안에 있는 한 축은 움직이지 않는다 */
+const SUM_AXIS_BASE = { min: 40, max: 255 };
+/** 기본 범위를 벗어난 합계를 넓힌 축 끝에서 떨어뜨려 두는 여백 */
 const SUM_AXIS_PAD = 5;
-const SUM_AXIS_PAD_SPREAD = 150;
-/** 상대 길이 합계 축의 기본 아래 끝 — 실제 합계가 이보다 작을 때만 넘어간다 */
-const SUM_AXIS_FLOOR = 40;
 
 /** rough 이상인 가장 작은 1·2·5×10ⁿ (정수, 1 이상) — 눈금 간격이 사람이 읽기 좋은 수가 되게 한다 */
 function niceStep(rough: number): number {
@@ -122,24 +121,17 @@ export class StatisticsViewModel extends StatisticsModel {
   }
 
   /**
-   * 합계 축을 실제 양 끝에서 여백만큼 넉넉히 잡은 것 — 최소는 여백을 빼고 20 단위로 내리고, 최대는 여백을
-   * 더하고 20 단위로 올린다. 축은 기본 40~255 안이다(전 회차 최소 합계가 48 이라 40 아래는 빈 자리다).
-   * 실제 합계가 40 아래로 나오면 그때만 21 까지 내린다. 새 최소·최대가 나와도 20 경계를 넘을 때만 축이
-   * 바뀌어, 재생 중에 막대가 좌우로 흔들리지 않는다. 분포가 비면 null.
-   *
-   * 여백은 5 + 150/√회차수 다. 회차가 적으면 양 끝이 아직 크게 튈 수 있어 넓게 두고(첫 회차는 기본 범위 40~255
-   * 에서 시작한다), 회차가 쌓일수록 새 극값이 드물어지므로 좁힌다 — 1 회차 155, 10 회차 52, 100 회차 20,
-   * 1245 회차 약 9
+   * 상대 길이 합계 축 — 기본 범위 40~255 에 고정해 두고, 쌓은 합계가 그 범위를 벗어날 때만 여백(5)을 둔
+   * 20 단위 경계로 한 단계씩 넓힌다(21 아래로는 가지 않는다). 위 끝 255 는 6개 합계의 최댓값이라 넓힐 일이
+   * 없다. 지금까지의 합계(48~238)는 기본 범위 안이라 재생 내내 축이 움직이지 않는다. 분포가 비면 null
    */
   get paddedSumAxis(): { min: number; max: number } | null {
     const first = this.sumDistribution[0]?.sum;
-    const last = this.sumDistribution[this.sumDistribution.length - 1]?.sum;
-    if (first === undefined || last === undefined) return null;
-    const pad = SUM_AXIS_PAD + SUM_AXIS_PAD_SPREAD / Math.sqrt(Math.max(1, this.totalDraws));
-    return {
-      min: Math.max(first < SUM_AXIS_FLOOR ? 21 : SUM_AXIS_FLOOR, Math.floor((first - pad) / 20) * 20),
-      max: Math.min(255, Math.ceil((last + pad) / 20) * 20),
-    };
+    if (first === undefined) return null;
+    const min = first - SUM_AXIS_PAD < SUM_AXIS_BASE.min
+      ? Math.max(21, Math.floor((first - SUM_AXIS_PAD) / 20) * 20)
+      : SUM_AXIS_BASE.min;
+    return { min, max: SUM_AXIS_BASE.max };
   }
 
   /** sumsUntil 이 고정한 합계 축 — 없으면 자기 분포의 양 끝이다 */

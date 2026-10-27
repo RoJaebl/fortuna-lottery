@@ -104,21 +104,16 @@ describe("StatisticsViewModel (그 통계 하나로 정해지는 값)", () => {
     expect(cut.sumBands[0]).toEqual({ label: "21~40", count: 1, percent: 50 });
   });
 
-  it("paddedSumAxis — 양 끝에서 여백만큼 떨어진 20 단위 경계, 기본 40~255 안. 여백은 회차가 적을수록 크다", () => {
-    const axisOf = (sums: number[], totalDraws = 1245) =>
-      stats({ totalDraws, sumDistribution: sums.map((sum) => ({ sum, count: 1 })) }).paddedSumAxis;
-    // 전 회차를 쌓으면 여백은 5 + 150/√1245 ≈ 9.3
+  it("paddedSumAxis — 기본 40~255 에 고정하고, 합계가 그 밖으로 나갈 때만 20 단위로 한 단계씩 넓힌다", () => {
+    const axisOf = (sums: number[]) => stats({ sumDistribution: sums.map((sum) => ({ sum, count: 1 })) }).paddedSumAxis;
+    // 기본 범위 안이면 회차가 몇이든 축은 그대로다
+    expect(axisOf([172])).toEqual({ min: 40, max: 255 });
+    expect(axisOf([79, 196])).toEqual({ min: 40, max: 255 });
     expect(axisOf([48, 238])).toEqual({ min: 40, max: 255 });
-    expect(axisOf([79, 196])).toEqual({ min: 60, max: 220 });
-    // 새 극값이 같은 경계 안이면 축은 그대로다
-    expect(axisOf([72, 205])).toEqual({ min: 60, max: 220 });
-    // 실제 합계가 40 아래로 나오면 그때만 21 까지 내린다
-    expect(axisOf([24, 100])).toEqual({ min: 21, max: 120 });
-    // 1회차뿐이면 여백 155 — 기본 범위 40~255 에서 시작한다
-    expect(axisOf([172, 172], 1)).toEqual({ min: 40, max: 255 });
-    // 같은 양 끝이라도 회차가 늘수록 축이 좁아진다
-    expect(axisOf([100, 140], 10)).toEqual({ min: 40, max: 200 });
-    expect(axisOf([100, 140], 100)).toEqual({ min: 80, max: 160 });
+    expect(axisOf([45, 250])).toEqual({ min: 40, max: 255 });
+    // 기본 범위를 벗어나면(여백 5 포함) 그 합계를 담는 20 단위 경계로 한 단계 넓힌다
+    expect(axisOf([44, 200])).toEqual({ min: 21, max: 255 });
+    expect(axisOf([30, 200])).toEqual({ min: 21, max: 255 });
     expect(axisOf([])).toBeNull();
   });
 
