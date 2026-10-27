@@ -129,7 +129,7 @@ export function SumDistributionChart({ chart, subtitle, marker, axis, bands, tim
                 {mine ? <span className="ml-2 text-nano text-warn">내 합계</span> : null}
               </td>
               <td className="py-1.5 text-right">{count.toLocaleString()}</td>
-              <td className="py-1.5 text-right text-muted">{percent}%</td>
+              <td className="py-1.5 text-right text-muted">{percent.toFixed(1)}%</td>
             </tr>
           ))}
         </tbody>

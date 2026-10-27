@@ -188,11 +188,11 @@ describe("useStatisticsPanelPresenter", () => {
     withStats({ sumDistribution, recentGrid: sumRounds });
     withState([20, 30, 10, 25, 15, 20]);
     const { result } = renderHook(() => useStatisticsPanelPresenter());
-    // 제5회까지 — 합계 100~120, 여백 5 + 60/√5 ≈ 31.8 이라 축은 60~160
+    // 제5회까지 — 합계 100~120, 여백 5 + 150/√5 ≈ 72 라 축은 40~200
     act(() => result.current.views?.sum.timeline?.onSeek(4));
     expect(result.current.views?.sum.axis.active).toBe("relative");
-    expect(result.current.views?.sum.chart).toMatchObject({ minSum: 60, maxSum: 160 });
-    expect(result.current.views?.sum.marker?.x).toBeCloseTo(60 / 100);
+    expect(result.current.views?.sum.chart).toMatchObject({ minSum: 40, maxSum: 200 });
+    expect(result.current.views?.sum.marker?.x).toBeCloseTo(80 / 160);
 
     act(() => result.current.views?.sum.axis.onChange("absolute"));
     expect(result.current.views?.sum.chart).toMatchObject({ minSum: 21, maxSum: 255 });
