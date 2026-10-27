@@ -31,7 +31,7 @@ const STAT_VIEWS: readonly TabItem<StatView>[] = [
 
 const HOT_COLD_TOP = 8;
 
-/** 잔디밭이 한 번에 보이는 회차 수 — 나머지는 타임라인으로 옮겨 본다 */
+/** 잔디밭이 한 번에 보이는 회차 수의 기본값 — 화면이 그리드 폭을 재면 그 칸 수로 바뀐다. 나머지는 타임라인으로 옮겨 본다 */
 export const RECENT_WINDOW = 100;
 
 /** 서버가 내는 상위 페어 개수(GetStatistics 의 TOP_PAIRS) — 카드 제목 「TOP 15」 */
@@ -106,16 +106,17 @@ function gapItems(
 }
 
 /**
- * 잔디밭 창 — 전 회차 중 start 부터 RECENT_WINDOW 회차. start 가 null 이면 최신 회차에 붙는다.
+ * 잔디밭 창 — 전 회차 중 start 부터 size 회차. start 가 null 이면 최신 회차에 붙는다.
  * 범위를 벗어난 start 는 끝으로 당긴다.
  */
 export function recentWindow<T extends { round: number }>(
   columns: T[],
   start: number | null,
+  size = RECENT_WINDOW,
 ): { start: number; maxStart: number; columns: T[]; range: string } {
-  const maxStart = Math.max(0, columns.length - RECENT_WINDOW);
+  const maxStart = Math.max(0, columns.length - size);
   const from = Math.min(Math.max(0, start ?? maxStart), maxStart);
-  const shown = columns.slice(from, from + RECENT_WINDOW);
+  const shown = columns.slice(from, from + size);
   const first = shown[0]?.round;
   const last = shown[shown.length - 1]?.round;
   const range = first && last ? `제${first}회 ~ 제${last}회 (전 ${columns.length}회차 중 ${shown.length}회차)` : "";
@@ -123,9 +124,9 @@ export function recentWindow<T extends { round: number }>(
 }
 
 /** 재생 바에서 고른 회차(0 부터 센 위치)가 창의 맨 오른쪽에 오는 창의 시작 */
-export function startEndingAt(index: number, total: number): number {
-  const maxStart = Math.max(0, total - RECENT_WINDOW);
-  return Math.min(Math.max(0, index - RECENT_WINDOW + 1), maxStart);
+export function startEndingAt(index: number, total: number, size = RECENT_WINDOW): number {
+  const maxStart = Math.max(0, total - size);
+  return Math.min(Math.max(0, index - size + 1), maxStart);
 }
 
 /** 내 조합이 놓인 막대를 표시한다 — 내 조합이 없으면 강조 없음 */
@@ -138,7 +139,8 @@ export function useStatisticsPanelPresenter() {
   const { data: stats, status, error } = useStore("api.home.StatisticsPanel.statistics");
   // 처음 그릴 때(idle)도 아직 받기 전이다
   const loading = status === "idle" || status === "loading";
-  const { activeStatView, recentStart, changeStatView, changeRecentStart } = useStore("state.home.StatisticsPanel.view");
+  const { activeStatView, recentStart, recentSize, changeStatView, changeRecentStart, changeRecentSize } =
+    useStore("state.home.StatisticsPanel.view");
 
   const tabs = { items: STAT_VIEWS, active: activeStatView, onChange: changeStatView };
 
@@ -170,10 +172,13 @@ export function useStatisticsPanelPresenter() {
   const pairs: TopPairsListProps = { top: TOP_PAIRS, bars: stats.topPairBars };
   const frequency: NumberFrequencyBarsProps = { bars: stats.frequencyBars };
   // 칸은 창 안의 회차만 짓는다 — 전 회차를 다 지으면 타임라인을 끌 때마다 5만 칸을 새로 만든다
-  const grid = recentWindow(stats.recentGrid, recentStart);
+  const grid = recentWindow(stats.recentGrid, recentStart, recentSize);
   const recent: RecentGridProps = {
     range: grid.range,
     columns: grid.columns.map(StatisticsViewModel.gridColumn),
+    onFit: (size) => {
+      if (size !== recentSize) changeRecentSize(size);
+    },
     timeline: {
       start: grid.start,
       maxStart: grid.maxStart,
@@ -181,7 +186,7 @@ export function useStatisticsPanelPresenter() {
       total: stats.recentGrid.length,
       roundAt: (index) => stats.recentGrid[index]?.round ?? 0,
       onChange: changeRecentStart,
-      onSeek: (index) => changeRecentStart(startEndingAt(index, stats.recentGrid.length)),
+      onSeek: (index) => changeRecentStart(startEndingAt(index, stats.recentGrid.length, recentSize)),
     },
   };
 

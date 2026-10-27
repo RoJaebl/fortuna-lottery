@@ -64,6 +64,7 @@ describe("statistics presenters (순수 함수)", () => {
     expect(recentWindow(rounds, 999).start).toBe(150);
     expect(recentWindow(rounds.slice(0, 3), null)).toMatchObject({ start: 0, maxStart: 0 });
     expect(recentWindow([], null).range).toBe("");
+    expect(recentWindow(rounds, null, 40)).toMatchObject({ start: 210, maxStart: 210 });
   });
 
   it("startEndingAt — 고른 회차가 창의 맨 오른쪽에 오도록 창의 시작을 정한다", () => {
@@ -71,6 +72,7 @@ describe("statistics presenters (순수 함수)", () => {
     expect(startEndingAt(249, 250)).toBe(150); // 최신
     expect(startEndingAt(10, 250)).toBe(0); // 앞에 100개가 없으면 처음부터
     expect(startEndingAt(2, 3)).toBe(0); // 전 회차가 창보다 적다
+    expect(startEndingAt(199, 250, 40)).toBe(160); // 창이 40칸이면 160~199 번째
   });
 });
 
@@ -190,5 +192,18 @@ describe("useStatisticsPanelPresenter", () => {
     act(() => result.current.views?.recent.timeline.onChange(0));
     expect(result.current.views?.recent.columns[0]?.round).toBe(1);
     expect(result.current.views?.recent.columns).toHaveLength(RECENT_WINDOW);
+  });
+
+  it("recent — 그리드에 들어가는 칸 수를 알리면 그만큼만 보이고 최신 회차에 붙는다", () => {
+    const recentGrid = Array.from({ length: 150 }, (_, i) => ({ round: i + 1, numbers: [1] }));
+    withStats({ recentGrid });
+    withState();
+    const { result } = renderHook(() => useStatisticsPanelPresenter());
+    act(() => result.current.views?.recent.onFit(60));
+    expect(result.current.views?.recent.columns).toHaveLength(60);
+    expect(result.current.views?.recent.columns[0]?.round).toBe(91);
+    // 고른 회차가 맨 오른쪽에 오는 창도 그 칸 수로 센다
+    act(() => result.current.views?.recent.timeline.onSeek(99));
+    expect(result.current.views?.recent.columns[0]?.round).toBe(41);
   });
 });

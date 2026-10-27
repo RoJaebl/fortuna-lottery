@@ -1,5 +1,5 @@
 "use client";
-import { memo, useRef, type KeyboardEvent } from "react";
+import { memo, useCallback, useRef, type KeyboardEvent } from "react";
 import gsap from "gsap";
 import { Draggable } from "gsap/Draggable";
 import { useGSAP } from "@gsap/react";
@@ -14,6 +14,8 @@ export interface RecentGridProps {
   range: string;
   /** 창 안의 회차만 */
   columns: GridColumn[];
+  /** 그리드 폭에 들어가는 칸 수를 알린다 — 폭이 바뀔 때마다 부른다 */
+  onFit: (size: number) => void;
   timeline: {
     /** 창의 첫 회차 위치(0 부터) */
     start: number;
@@ -80,8 +82,20 @@ function NumberAxis() {
 }
 
 /** 잔디밭 — 가로 회차 / 세로 1~45, 출현 번호 칸을 공 색으로 칠한다. 아래 재생 바로 전 회차를 오간다 */
-export function RecentGrid({ range, columns, timeline }: RecentGridProps) {
+export function RecentGrid({ range, columns, onFit, timeline }: RecentGridProps) {
   const { start, maxStart, end, total, roundAt, onChange, onSeek } = timeline;
+  const fitLatest = useRef(onFit);
+  fitLatest.current = onFit;
+  // 그리드 자리의 폭을 재어 들어가는 칸 수를 알린다 — 스크롤 없이 들어가는 만큼만 보이고 나머지는 재생 바로 본다
+  const measureRef = useCallback((el: HTMLDivElement | null) => {
+    if (!el) return;
+    const observer = new ResizeObserver(([entry]) => {
+      const width = entry?.contentRect.width ?? 0;
+      fitLatest.current(Math.max(1, Math.floor((width + GAP) / (CELL + GAP))));
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
   const trackRef = useRef<HTMLDivElement>(null);
   const playedRef = useRef<HTMLDivElement>(null);
   const headRef = useRef<HTMLDivElement>(null);
@@ -171,7 +185,7 @@ export function RecentGrid({ range, columns, timeline }: RecentGridProps) {
     <Card title="회차별 잔디밭" subtitle={range}>
       <div className="flex gap-1.5">
         <NumberAxis />
-        <div className="min-w-0 overflow-x-auto [scrollbar-gutter:stable]">
+        <div ref={measureRef} className="min-w-0 flex-1 overflow-hidden">
           <div className="flex w-max gap-px">
             {columns.map((column) => (
               <RoundColumn key={column.round} column={column} />
