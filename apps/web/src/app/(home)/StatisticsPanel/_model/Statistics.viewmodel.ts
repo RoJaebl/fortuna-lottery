@@ -18,6 +18,9 @@ export interface GridColumn {
   cells: { n: number; present: boolean; title: string }[];
 }
 
+/** 회차 항목 → 지어 둔 열. 통계를 다시 받으면 항목도 새것이라 옛 열은 함께 버려진다 */
+const gridColumns = new WeakMap<object, GridColumn>();
+
 /**
  * 표시 모델 — 그 통계 하나만 보고 정해지는 값을 갖는다(model-vocabulary 규칙 4절).
  * 내 조합이나 상위 몇 개 같은 바깥 값이 필요한 것은 표시 조정자(StatisticsPanel.presenter)가 갖는다.
@@ -98,10 +101,16 @@ export class StatisticsViewModel extends StatisticsModel {
     }));
   }
 
-  /** 잔디밭 열 하나 — 회차 하나의 1~45 칸. 창(바깥 값)으로 자른 회차만 presenter 가 짓는다 */
-  static gridColumn({ round, numbers }: { round: number; numbers: number[] }): GridColumn {
+  /**
+   * 잔디밭 열 하나 — 회차 하나의 1~45 칸. 창(바깥 값)으로 자른 회차만 presenter 가 짓는다.
+   * 같은 회차 항목에는 같은 열 객체를 돌려준다 — 화면이 열을 memo 로 건너뛰려면 참조가 같아야 한다
+   */
+  static gridColumn(entry: { round: number; numbers: number[] }): GridColumn {
+    const cached = gridColumns.get(entry);
+    if (cached) return cached;
+    const { round, numbers } = entry;
     const present = new Set(numbers);
-    return {
+    const column = {
       round,
       cells: Array.from({ length: 45 }, (_, i) => {
         const n = i + 1;
@@ -109,6 +118,8 @@ export class StatisticsViewModel extends StatisticsModel {
         return { n, present: has, title: `제${round}회 · ${n}번${has ? " 출현" : ""}` };
       }),
     };
+    gridColumns.set(entry, column);
+    return column;
   }
 
   static from(m: StatisticsModel): StatisticsViewModel {
