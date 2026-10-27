@@ -39,37 +39,24 @@ const SLIDE_SECONDS = 0.35;
 /** 세로축에 숫자를 적는 줄 — 9px 줄마다 적으면 글자가 겹친다 */
 const TICKS = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45];
 
-/** 둥근 칸 하나(9×9, 모서리 2) 아래에 1px 틈을 둔 마스크 타일 — 세로로 되풀이해 45칸의 모양을 낸다 */
-const CELL_MASK = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${CELL}' height='${CELL + GAP}'%3E%3Crect width='${CELL}' height='${CELL}' rx='2'/%3E%3C/svg%3E")`;
-
 /**
- * 회차 하나의 세로 45칸을 요소 하나로 그린다 — 칸마다 요소를 두면 탭을 열 때 5천 개 가까이 짓느라 느리다.
- * 칸 색은 끊기는 세로 그라데이션으로 칠하고, 둥근 칸 모양은 마스크 타일을 되풀이해 낸다.
- * 타임라인을 끌면 창 안의 열 대부분이 그대로이므로, 열을 회차로 키 잡고 memo 로 건너뛴다 —
+ * 회차 하나의 세로 45칸. 타임라인을 끌면 창 안의 열 대부분이 그대로이므로, 열을 회차로 키 잡고 memo 로 건너뛴다 —
  * 새로 들어온 회차의 열만 그린다. 열 객체는 표시 모델이 회차마다 같은 것을 돌려준다
  */
 const RoundColumn = memo(function RoundColumn({ column }: { column: GridColumn }) {
-  const stops = column.cells.map(({ n, present }, i) => {
-    const top = i * (CELL + GAP);
-    return `${present ? ballColor(n).bg : "var(--ui-line)"} ${top}px ${top + CELL + GAP}px`;
-  });
-  const drawn = column.cells.filter((c) => c.present).map((c) => c.n);
   return (
-    <div
-      title={`제${column.round}회 · 출현 ${drawn.join(", ")}`}
-      className="shrink-0"
-      style={{
-        width: CELL,
-        height: 45 * CELL + 44 * GAP,
-        backgroundImage: `linear-gradient(to bottom, ${stops.join(", ")})`,
-        maskImage: CELL_MASK,
-        maskSize: `${CELL}px ${CELL + GAP}px`,
-        maskRepeat: "repeat-y",
-        WebkitMaskImage: CELL_MASK,
-        WebkitMaskSize: `${CELL}px ${CELL + GAP}px`,
-        WebkitMaskRepeat: "repeat-y",
-      }}
-    />
+    <div className="grid gap-px" style={{ gridTemplateRows: `repeat(45, ${CELL}px)`, gridTemplateColumns: `${CELL}px` }}>
+      {column.cells.map(({ n, present, title }) => (
+        <div
+          key={n}
+          title={title}
+          className="rounded-[2px]"
+          style={{
+            backgroundColor: present ? ballColor(n).bg : "var(--ui-line)",
+          }}
+        />
+      ))}
+    </div>
   );
 });
 
