@@ -120,6 +120,17 @@ describe("StatisticsViewModel (그 통계 하나로 정해지는 값)", () => {
     expect(stats({ sumDistribution: [{ sum: 100, count: 20 }] }).sumChart?.yTicks[2]).toEqual({ count: 10, y: 0.5 });
   });
 
+  it("sumChart — 가로축 눈금은 양 끝 사이의 20 배수 합계, x 는 0~1 비율", () => {
+    const chart = stats({
+      sumDistribution: [
+        { sum: 48, count: 1 },
+        { sum: 128, count: 1 },
+      ],
+    }).sumChart;
+    expect(chart?.xTicks.map((t) => t.sum)).toEqual([60, 80, 100, 120]);
+    expect(chart?.xTicks[0]?.x).toBeCloseTo(12 / 80);
+  });
+
   it("sumChart — 분포가 비면 null", () => {
     expect(stats({ sumDistribution: [] }).sumChart).toBeNull();
   });

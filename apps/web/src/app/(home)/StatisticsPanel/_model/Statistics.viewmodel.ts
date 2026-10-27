@@ -53,6 +53,8 @@ export class StatisticsViewModel extends StatisticsModel {
     points: { sum: number; count: number; x: number; y: number }[];
     /** 세로축(출현 횟수) 눈금 — 0 부터 최다 건수 안쪽까지, y 는 0~1 비율 */
     yTicks: { count: number; y: number }[];
+    /** 가로축(합계) 눈금 — 양 끝 사이의 20 배수, x 는 0~1 비율. 양 끝은 minSum·maxSum 으로 따로 적는다 */
+    xTicks: { sum: number; x: number }[];
   } | null {
     const dist = this.sumDistribution;
     if (dist.length === 0) return null;
@@ -67,6 +69,9 @@ export class StatisticsViewModel extends StatisticsModel {
         count: i * step,
         y: (i * step) / maxCount,
       })),
+      xTicks: Array.from({ length: 13 }, (_, i) => 20 * (i + 1))
+        .filter((sum) => sum > this.minSum && sum < this.maxSum)
+        .map((sum) => ({ sum, x: this.sumRatio(sum) })),
     };
   }
 

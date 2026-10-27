@@ -1,9 +1,13 @@
 "use client";
 import { memo, useCallback, useRef } from "react";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
 import { ballColor } from "@lib/lotto-colors";
 import { Card } from "@ui/Card";
 import type { GridColumn } from "./_model/Statistics.viewmodel";
 import { RoundTimeline, type RoundTimelineProps } from "./RoundTimeline";
+
+gsap.registerPlugin(useGSAP);
 
 export interface RecentGridProps {
   /** 회차 범위 문구 — 회차가 없으면 빈 문자열 */
@@ -19,6 +23,9 @@ export interface RecentGridProps {
 /** 칸 한 변과 칸 사이(px) — 세로축 눈금이 칸 줄에 맞춰 서도록 같은 값을 쓴다 */
 const CELL = 9;
 const GAP = 1;
+
+/** 이보다 많이 건너뛰면 미끄러뜨리지 않는다 — 수백 칸을 미끄러뜨리면 흐릿한 줄무늬만 지나간다 */
+const SLIDE_LIMIT = 30;
 
 /** 세로축에 숫자를 적는 줄 — 9px 줄마다 적으면 글자가 겹친다 */
 const TICKS = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45];
@@ -47,7 +54,7 @@ const RoundColumn = memo(function RoundColumn({ column }: { column: GridColumn }
 /** 그리드 왼쪽의 1~45 세로축 — 숫자 줄마다 짧은 눈금선을 긋는다 */
 function NumberAxis() {
   return (
-    <div aria-hidden className="relative w-7 shrink-0 text-nano tabular-nums text-muted" style={{ height: 45 * CELL + 44 * GAP }}>
+    <div aria-hidden className="relative w-6 shrink-0 text-pico tabular-nums text-muted" style={{ height: 45 * CELL + 44 * GAP }}>
       {TICKS.map((n) => (
         <span
           key={n}
@@ -55,7 +62,7 @@ function NumberAxis() {
           style={{ top: (n - 1) * (CELL + GAP) + CELL / 2 }}
         >
           {n}
-          <span className="h-px w-1.5 bg-muted" />
+          <span className="h-px w-1 bg-line" />
         </span>
       ))}
     </div>
@@ -77,12 +84,36 @@ export function RecentGrid({ range, columns, onFit, timeline }: RecentGridProps)
     return () => observer.disconnect();
   }, []);
 
+  // 창이 옮겨지면 칸 띠를 옛 자리에서 새 자리로 미끄러뜨린다 — 열이 한 칸씩 툭툭 넘어가지 않고 흐르듯 지나간다.
+  // 재생 중에는 앞선 미끄러짐이 끝나기 전에 다음 회차가 오므로, 지금 남은 거리에 새 거리를 더해 이어 간다
+  const stripRef = useRef<HTMLDivElement>(null);
+  const first = columns[0]?.round ?? 0;
+  const prevFirst = useRef(first);
+  useGSAP(() => {
+    const strip = stripRef.current;
+    const moved = first - prevFirst.current;
+    prevFirst.current = first;
+    if (!strip || moved === 0) return;
+    if (Math.abs(moved) > SLIDE_LIMIT) {
+      // 멀리 건너뛰면 미끄러뜨리지 않고 살짝 비추어 바뀐 것만 알린다
+      gsap.fromTo(strip, { x: 0, opacity: 0.35 }, { opacity: 1, duration: 0.35, ease: "power2.out", overwrite: true });
+      return;
+    }
+    const from = Number(gsap.getProperty(strip, "x")) + moved * (CELL + GAP);
+    gsap.fromTo(strip, { x: from }, { x: 0, opacity: 1, duration: 0.35, ease: "power3.out", overwrite: true });
+  }, [first]);
+
   return (
     <Card title="회차별 잔디밭" subtitle={range}>
       <div className="flex gap-1.5">
         <NumberAxis />
-        <div ref={measureRef} className="min-w-0 flex-1 overflow-hidden">
-          <div className="flex w-max gap-px">
+        <div
+          ref={measureRef}
+          className="min-w-0 flex-1 overflow-hidden"
+          // 왼쪽 끝을 옅게 지운다 — 띠가 미끄러지는 동안 비는 자리가 보이지 않게
+          style={{ maskImage: "linear-gradient(to right, transparent, #000 12px)" }}
+        >
+          <div ref={stripRef} className="flex w-max gap-px">
             {columns.map((column) => (
               <RoundColumn key={column.round} column={column} />
             ))}
@@ -90,7 +121,7 @@ export function RecentGrid({ range, columns, onFit, timeline }: RecentGridProps)
         </div>
       </div>
       {timeline && (
-        <div className="mt-4 pl-8.5">
+        <div className="mt-4 pl-7.5">
           <RoundTimeline {...timeline} />
         </div>
       )}

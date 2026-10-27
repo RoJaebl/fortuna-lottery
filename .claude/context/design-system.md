@@ -17,7 +17,7 @@ vault 골조의 디자인 케이스 **standard-light**(밝은 종이 바닥, 표
 | 토큰 | 유틸리티 |
 |---|---|
 | `--ui-{bg,panel,raised,said,inset,selected,line,text,muted,strong,on-strong,accent,ok,warn,danger,info,busy}` | `bg-*` `text-*` `border-*` (`bg-strong`, `text-on-strong`, `text-muted`, `border-line` …) |
-| `--text-{display,head,sub,read,body,small,micro,nano}` (+ `--lh-*`) | `text-head`, `text-nano` … (글자 크기와 줄 높이가 함께 걸린다) |
+| `--text-{display,head,sub,read,body,small,micro,nano,pico}` (+ `--lh-*`) | `text-head`, `text-nano` … (글자 크기와 줄 높이가 함께 걸린다). `pico`(9px)는 차트 축 숫자 전용이고 본문에 쓰지 않는다 |
 | `--r-{panel,card,box,button,pill}` | `rounded-panel`, `rounded-card` … |
 | `--ui-font-sans` | `font-sans` |
 

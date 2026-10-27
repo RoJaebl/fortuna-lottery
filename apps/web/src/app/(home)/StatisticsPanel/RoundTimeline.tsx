@@ -211,7 +211,7 @@ export function RoundTimeline({
         aria-label="재생 속도"
         value={speed}
         onChange={(e) => onSpeedChange(Number(e.target.value))}
-        className="-mt-1 h-6 shrink-0 rounded-button border border-line bg-panel px-1 text-micro tabular-nums text-text outline-none focus-visible:ring-2 focus-visible:ring-text"
+        className="-mt-1 h-6 shrink-0 rounded-button border border-line bg-panel px-1 text-nano tabular-nums text-muted outline-none focus-visible:ring-2 focus-visible:ring-text"
       >
         {speeds.map((s) => (
           <option key={s} value={s}>
@@ -254,7 +254,7 @@ export function RoundTimeline({
             className="pointer-events-none absolute bottom-full mb-1.5 -translate-x-1/2 whitespace-nowrap rounded-button bg-text px-1.5 py-0.5 text-nano tabular-nums text-on-strong opacity-0 transition-opacity"
           />
         </div>
-        <div className="mt-1 flex justify-between text-nano tabular-nums text-muted">
+        <div className="mt-1 flex justify-between text-pico tabular-nums text-muted">
           <span>제{roundAt(0)}회</span>
           <span>제{roundAt(total - 1)}회</span>
         </div>
