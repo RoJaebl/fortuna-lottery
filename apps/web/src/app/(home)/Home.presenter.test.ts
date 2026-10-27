@@ -18,8 +18,13 @@ describe("useHomePresenter", () => {
   it("탭을 바꾸면 활성 탭이 바뀐다", () => {
     const { result } = renderHook(() => useHomePresenter());
     expect(result.current.tabs.active).toBe("statistics");
-    act(() => result.current.tabs.onChange("results"));
-    expect(result.current.tabs.active).toBe("results");
+    act(() => result.current.tabs.onChange("simulation"));
+    expect(result.current.tabs.active).toBe("simulation");
+  });
+
+  it("내 번호·결과 확인은 탭이 아니라 번호 만들기 영역에 있다", () => {
+    const { result } = renderHook(() => useHomePresenter());
+    expect(result.current.tabs.items.map((t) => t.key)).toEqual(["statistics", "simulation", "hypothesis"]);
   });
 
   it("resetStores 뒤에는 공통 상태가 처음 값이다", () => {

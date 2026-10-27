@@ -2,17 +2,18 @@ import { useStore } from "supa-store/react";
 import type { TabItem, TabsProps } from "@ui/Tabs";
 
 export type HomeMenuKey = "workroom";
-export type HomeTabKey = "statistics" | "simulation" | "picks" | "results" | "hypothesis";
+export type HomeTabKey = "statistics" | "simulation" | "hypothesis";
 
 /** 왼쪽 패널의 메뉴 — 지금은 작업실 하나다 */
 const MENU: readonly TabItem<HomeMenuKey>[] = [{ key: "workroom", label: "작업실" }];
 
-/** 작업실 안의 탭 — 각 카드의 기존 title을 탭 라벨로 그대로 사용 (설계 문서 §3) */
+/**
+ * 작업실 안의 탭 — 각 카드의 기존 title을 탭 라벨로 그대로 사용 (설계 문서 §3).
+ * 내 번호·결과 확인은 탭이 아니라 위쪽 번호 영역에 번호 만들기와 함께 늘 펼쳐 둔다
+ */
 const TABS: readonly TabItem<HomeTabKey>[] = [
   { key: "statistics", label: "통계" },
   { key: "simulation", label: "시뮬레이션" },
-  { key: "picks", label: "내 번호" },
-  { key: "results", label: "결과 확인" },
   { key: "hypothesis", label: "가정 실험실" },
 ];
 
