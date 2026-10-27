@@ -184,14 +184,14 @@ describe("useStatisticsPanelPresenter", () => {
     expect(none?.bands.some((b) => b.mine)).toBe(false);
   });
 
-  it("sum — 상대 길이는 쌓은 회차의 최소~최대가 축이고, 절대 길이는 21~255 가 축이다", () => {
+  it("sum — 상대 길이는 쌓은 회차의 양 끝을 넉넉히 잡은 축이고, 절대 길이는 21~255 가 축이다", () => {
     withStats({ sumDistribution, recentGrid: sumRounds });
     withState([20, 30, 10, 25, 15, 20]);
     const { result } = renderHook(() => useStatisticsPanelPresenter());
-    act(() => result.current.views?.sum.timeline?.onSeek(4)); // 제5회까지 — 합계 100~120
+    act(() => result.current.views?.sum.timeline?.onSeek(4)); // 제5회까지 — 합계 100~120, 축은 80~140
     expect(result.current.views?.sum.axis.active).toBe("relative");
-    expect(result.current.views?.sum.chart).toMatchObject({ minSum: 100, maxSum: 120 });
-    expect(result.current.views?.sum.marker).toEqual({ sum: 120, x: 1 });
+    expect(result.current.views?.sum.chart).toMatchObject({ minSum: 80, maxSum: 140 });
+    expect(result.current.views?.sum.marker?.x).toBeCloseTo(40 / 60);
 
     act(() => result.current.views?.sum.axis.onChange("absolute"));
     expect(result.current.views?.sum.chart).toMatchObject({ minSum: 21, maxSum: 255 });
@@ -243,10 +243,14 @@ describe("useStatisticsPanelPresenter", () => {
     act(() => result.current.views?.recent.onFit(60));
     expect(result.current.views?.recent.columns).toHaveLength(60);
     expect(result.current.views?.recent.columns[0]?.round).toBe(91);
+    // 창 양옆 버퍼 — 최신 창이면 앞은 이웃 회차 넷, 뒤는 회차가 없어 비어 있다
+    expect(result.current.views?.recent.before.map((c) => c?.round ?? null)).toEqual([87, 88, 89, 90]);
+    expect(result.current.views?.recent.after).toEqual([null, null, null, null]);
     // 재생을 처음부터 다시 돌릴 자리는 창이 처음 회차에 붙을 때의 끝이다
     expect(result.current.views?.recent.timeline?.minPosition).toBe(59);
     // 고른 회차가 맨 오른쪽에 오는 창도 그 칸 수로 센다
     act(() => result.current.views?.recent.timeline?.onSeek(99));
     expect(result.current.views?.recent.columns[0]?.round).toBe(41);
+    expect(result.current.views?.recent.after.map((c) => c?.round)).toEqual([101, 102, 103, 104]);
   });
 });

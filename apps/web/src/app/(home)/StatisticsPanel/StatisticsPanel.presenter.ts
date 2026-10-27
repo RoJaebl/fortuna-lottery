@@ -40,6 +40,9 @@ const SUM_AXIS_MODES: readonly TabItem<SumAxisMode>[] = [
 /** 6개 번호 합계가 낼 수 있는 범위 — 1+2+…+6 ~ 40+41+…+45 */
 const SUM_RANGE = { min: 21, max: 255 };
 
+/** 잔디밭 창 양옆에 흐리게 그리는 버퍼 열 수 */
+const GRID_EDGE_COLUMNS = 4;
+
 /** 재생 바에서 고를 수 있는 배속 — 1 배속은 한 회차에 0.1 초 */
 const PLAY_SPEEDS = [0.5, 1, 2, 5, 10] as const;
 
@@ -180,7 +183,8 @@ export function useStatisticsPanelPresenter() {
 
   // 합계 분포는 1회부터 재생 바가 고른 회차까지 쌓은 것이다 — 처음엔 최신 회차까지
   const until = Math.min(sumUntil ?? total - 1, total - 1);
-  const sums = stats.sumsUntil(until, sumAxis === "absolute" ? SUM_RANGE : null);
+  // 상대 길이는 쌓은 회차의 양 끝을 넉넉히 잡은 축이다 — 재생 중에 막대가 좌우로 흔들리지 않게
+  const sums = stats.sumsUntil(until, sumAxis === "absolute" ? SUM_RANGE : stats.sumsUntil(until).paddedSumAxis);
   const my = myNumbers ? sumPosition(myNumbers, sums) : null;
   const upTo = `제${roundAt(0)}회 ~ 제${roundAt(until)}회 누적`;
   const sum: SumDistributionChartProps = {
@@ -224,9 +228,17 @@ export function useStatisticsPanelPresenter() {
   const frequency: NumberFrequencyBarsProps = { bars: stats.frequencyBars };
   // 칸은 창 안의 회차만 짓는다 — 전 회차를 다 지으면 타임라인을 끌 때마다 5만 칸을 새로 만든다
   const grid = recentWindow(stats.recentGrid, recentStart, recentSize);
+  // 창 양옆의 버퍼 열 — 화면이 흐리게 지워 보이는 자리다. 창이 미끄러지는 동안 빈 칸 대신 이웃 회차가 보인다
+  const edgeOf = (from: number) =>
+    Array.from({ length: GRID_EDGE_COLUMNS }, (_, i) => {
+      const entry = stats.recentGrid[from + i];
+      return from + i >= 0 && entry ? StatisticsViewModel.gridColumn(entry) : null;
+    });
   const recent: RecentGridProps = {
     range: grid.range,
     columns: grid.columns.map(StatisticsViewModel.gridColumn),
+    before: edgeOf(grid.start - GRID_EDGE_COLUMNS),
+    after: edgeOf(grid.start + grid.columns.length),
     onFit: (size) => {
       if (size !== recentSize) changeRecentSize(size);
     },

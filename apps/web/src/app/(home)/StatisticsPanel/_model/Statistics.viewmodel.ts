@@ -18,6 +18,9 @@ export interface GridColumn {
   cells: { n: number; present: boolean; title: string }[];
 }
 
+/** 상대 길이 합계 축이 실제 양 끝 바깥으로 두는 최소 여백 */
+const SUM_AXIS_PAD = 5;
+
 /** rough 이상인 가장 작은 1·2·5×10ⁿ (정수, 1 이상) — 눈금 간격이 사람이 읽기 좋은 수가 되게 한다 */
 function niceStep(rough: number): number {
   if (rough <= 1) return 1;
@@ -113,6 +116,21 @@ export class StatisticsViewModel extends StatisticsModel {
       totalDraws: rounds.length,
       sumAxis: axis,
     });
+  }
+
+  /**
+   * 합계 축을 실제 양 끝에서 한 걸음 넉넉히 잡은 것 — 최소는 5 를 빼고 20 단위로 내리고, 최대는 5 를 더하고
+   * 20 단위로 올린다(21~255 안). 새 최소·최대가 나와도 20 경계를 넘을 때만 축이 바뀌어, 재생 중에 막대가
+   * 좌우로 흔들리지 않는다. 분포가 비면 null
+   */
+  get paddedSumAxis(): { min: number; max: number } | null {
+    const first = this.sumDistribution[0]?.sum;
+    const last = this.sumDistribution[this.sumDistribution.length - 1]?.sum;
+    if (first === undefined || last === undefined) return null;
+    return {
+      min: Math.max(21, Math.floor((first - SUM_AXIS_PAD) / 20) * 20),
+      max: Math.min(255, Math.ceil((last + SUM_AXIS_PAD) / 20) * 20),
+    };
   }
 
   /** sumsUntil 이 고정한 합계 축 — 없으면 자기 분포의 양 끝이다 */

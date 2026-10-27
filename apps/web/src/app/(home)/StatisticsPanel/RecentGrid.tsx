@@ -14,6 +14,9 @@ export interface RecentGridProps {
   range: string;
   /** 창 안의 회차만 */
   columns: GridColumn[];
+  /** 창 양옆의 버퍼 열(같은 개수) — 흐리게 지워 그린다. 회차가 없는 자리는 null 이고 빈칸으로 둔다 */
+  before: (GridColumn | null)[];
+  after: (GridColumn | null)[];
   /** 그리드 폭에 들어가는 칸 수를 알린다 — 폭이 바뀔 때마다 부른다 */
   onFit: (size: number) => void;
   /** 재생 바 — 재생 위치는 창의 마지막 회차다. 전 회차가 한 창에 들어가면 null 이고 그리지 않는다 */
@@ -51,6 +54,11 @@ const RoundColumn = memo(function RoundColumn({ column }: { column: GridColumn }
   );
 });
 
+/** 회차가 없는 버퍼 자리 — 열 하나 폭의 빈칸 */
+function EmptyColumn() {
+  return <div aria-hidden className="shrink-0" style={{ width: CELL }} />;
+}
+
 /** 그리드 왼쪽의 1~45 세로축 — 숫자 줄마다 짧은 눈금선을 긋는다 */
 function NumberAxis() {
   return (
@@ -70,15 +78,17 @@ function NumberAxis() {
 }
 
 /** 잔디밭 — 가로 회차 / 세로 1~45, 출현 번호 칸을 공 색으로 칠한다. 아래 재생 바로 전 회차를 오간다 */
-export function RecentGrid({ range, columns, onFit, timeline }: RecentGridProps) {
-  const fitLatest = useRef(onFit);
-  fitLatest.current = onFit;
-  // 그리드 자리의 폭을 재어 들어가는 칸 수를 알린다 — 스크롤 없이 들어가는 만큼만 보이고 나머지는 재생 바로 본다
+export function RecentGrid({ range, columns, before, after, onFit, timeline }: RecentGridProps) {
+  // 양옆 버퍼가 차지하는 폭 — 이 폭만큼 흐리게 지운다
+  const edge = before.length * (CELL + GAP);
+  const fitLatest = useRef({ onFit, edge });
+  fitLatest.current = { onFit, edge };
+  // 그리드 자리의 폭에서 양옆 버퍼를 뺀 만큼 들어가는 칸 수를 알린다 — 스크롤 없이 보이고 나머지는 재생 바로 본다
   const measureRef = useCallback((el: HTMLDivElement | null) => {
     if (!el) return;
     const observer = new ResizeObserver(([entry]) => {
-      const width = entry?.contentRect.width ?? 0;
-      fitLatest.current(Math.max(1, Math.floor((width + GAP) / (CELL + GAP))));
+      const width = (entry?.contentRect.width ?? 0) - 2 * fitLatest.current.edge;
+      fitLatest.current.onFit(Math.max(1, Math.floor((width + GAP) / (CELL + GAP))));
     });
     observer.observe(el);
     return () => observer.disconnect();
@@ -99,9 +109,13 @@ export function RecentGrid({ range, columns, onFit, timeline }: RecentGridProps)
       gsap.fromTo(strip, { x: 0, opacity: 0.35 }, { opacity: 1, duration: 0.35, ease: "power2.out", overwrite: true });
       return;
     }
-    const from = Number(gsap.getProperty(strip, "x")) + moved * (CELL + GAP);
+    // 버퍼 폭보다 멀리 밀지 않는다 — 빠른 배속에서 거리가 쌓여도 버퍼 바깥의 빈자리가 보이지 않게
+    const pending = Number(gsap.getProperty(strip, "x")) + moved * (CELL + GAP);
+    const from = Math.min(Math.max(pending, -edge), edge);
     gsap.fromTo(strip, { x: from }, { x: 0, opacity: 1, duration: 0.35, ease: "power3.out", overwrite: true });
   }, [first]);
+
+  const fade = `linear-gradient(to right, transparent, #000 ${edge}px, #000 calc(100% - ${edge}px), transparent)`;
 
   return (
     <Card title="회차별 잔디밭" subtitle={range}>
@@ -109,15 +123,32 @@ export function RecentGrid({ range, columns, onFit, timeline }: RecentGridProps)
         <NumberAxis />
         <div
           ref={measureRef}
-          className="min-w-0 flex-1 overflow-hidden"
-          // 왼쪽 끝을 옅게 지운다 — 띠가 미끄러지는 동안 비는 자리가 보이지 않게
-          style={{ maskImage: "linear-gradient(to right, transparent, #000 12px)" }}
+          className="relative min-w-0 flex-1 overflow-hidden"
+          // 양옆 버퍼 폭만큼 옅게 지운다 — 창 밖으로 나가는 회차가 잘리지 않고 스러지듯 사라진다
+          style={{ maskImage: fade }}
         >
           <div ref={stripRef} className="flex w-max gap-px">
+            {before.map((column, i) =>
+              column ? <RoundColumn key={column.round} column={column} /> : <EmptyColumn key={`before-${i}`} />,
+            )}
             {columns.map((column) => (
               <RoundColumn key={column.round} column={column} />
             ))}
+            {after.map((column, i) =>
+              column ? <RoundColumn key={column.round} column={column} /> : <EmptyColumn key={`after-${i}`} />,
+            )}
           </div>
+          {/* 양 끝에 옅은 블러를 겹친다 — 바깥으로 갈수록 흐려진다 */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 left-0 backdrop-blur-[2px]"
+            style={{ width: edge, maskImage: "linear-gradient(to right, #000, transparent)" }}
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 right-0 backdrop-blur-[2px]"
+            style={{ width: edge, maskImage: "linear-gradient(to left, #000, transparent)" }}
+          />
         </div>
       </div>
       {timeline && (

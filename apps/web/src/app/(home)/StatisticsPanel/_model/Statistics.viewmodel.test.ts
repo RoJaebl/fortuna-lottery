@@ -104,6 +104,16 @@ describe("StatisticsViewModel (그 통계 하나로 정해지는 값)", () => {
     expect(cut.sumBands[0]).toEqual({ label: "21~40", count: 1, percent: 50 });
   });
 
+  it("paddedSumAxis — 양 끝에서 5 이상 떨어진 20 단위 경계, 21~255 안", () => {
+    const axisOf = (sums: number[]) => stats({ sumDistribution: sums.map((sum) => ({ sum, count: 1 })) }).paddedSumAxis;
+    expect(axisOf([48, 238])).toEqual({ min: 40, max: 255 });
+    expect(axisOf([79, 196])).toEqual({ min: 60, max: 220 });
+    // 새 극값이 같은 경계 안이면 축은 그대로다
+    expect(axisOf([66, 210])).toEqual({ min: 60, max: 220 });
+    expect(axisOf([24, 100])).toEqual({ min: 21, max: 120 });
+    expect(axisOf([])).toBeNull();
+  });
+
   it("sumsUntil — 축을 주면 그 축으로 고정한다(절대 길이)", () => {
     const cut = threeRounds().sumsUntil(1, { min: 21, max: 255 });
     expect(cut.sumChart).toMatchObject({ minSum: 21, maxSum: 255 });
