@@ -88,6 +88,11 @@ describe("StatisticsViewModel (그 통계 하나로 정해지는 값)", () => {
     expect(columns[0]?.cells[44]).toEqual({ n: 45, present: false, title: "제5회 · 45번" });
   });
 
+  it("gridColumn — 같은 회차 항목이면 같은 열 객체를 돌려준다(타임라인을 끌 때 열을 다시 그리지 않는다)", () => {
+    const entry = { round: 7, numbers: [2, 4] };
+    expect(StatisticsViewModel.gridColumn(entry)).toBe(StatisticsViewModel.gridColumn(entry));
+  });
+
   it("oddBars — 회차 대비 반올림 비율과 6+최다 대비×56 높이", () => {
     const bars = stats({ totalDraws: 100, oddCountDist: [0, 0, 10, 30, 40, 15, 5] }).oddBars;
     expect(bars.map((b) => b.label)).toEqual(["홀0", "홀1", "홀2", "홀3", "홀4", "홀5", "홀6"]);

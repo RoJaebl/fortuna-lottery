@@ -1,5 +1,5 @@
 "use client";
-import { useRef, type KeyboardEvent } from "react";
+import { memo, useRef, type KeyboardEvent } from "react";
 import gsap from "gsap";
 import { Draggable } from "gsap/Draggable";
 import { useGSAP } from "@gsap/react";
@@ -26,6 +26,27 @@ export interface RecentGridProps {
 
 /** 키 한 번에 옮기는 회차 수 — PageUp/PageDown 은 창 하나만큼 */
 const STEP = 10;
+
+/**
+ * 회차 하나의 세로 45칸. 타임라인을 끌면 창 안의 열 대부분이 그대로이므로, 열을 회차로 키 잡고 memo 로 건너뛴다 —
+ * 새로 들어온 회차의 열만 그린다. 열 객체는 표시 모델이 회차마다 같은 것을 돌려준다
+ */
+const RoundColumn = memo(function RoundColumn({ column }: { column: GridColumn }) {
+  return (
+    <div className="grid gap-px" style={{ gridTemplateRows: "repeat(45, 9px)", gridTemplateColumns: "9px" }}>
+      {column.cells.map(({ n, present, title }) => (
+        <div
+          key={n}
+          title={title}
+          className="rounded-none"
+          style={{
+            backgroundColor: present ? ballColor(n).bg : "var(--ui-line)",
+          }}
+        />
+      ))}
+    </div>
+  );
+});
 
 /** 잔디밭 — 가로 회차 / 세로 1~45, 출현 번호 칸을 공 색으로 칠한다. 아래 타임라인을 끌어 전 회차를 오간다 */
 export function RecentGrid({ range, columns, timeline }: RecentGridProps) {
@@ -81,26 +102,10 @@ export function RecentGrid({ range, columns, timeline }: RecentGridProps) {
   return (
     <Card title="회차별 잔디밭" subtitle={range}>
       <div className="overflow-x-auto [scrollbar-gutter:stable]">
-        <div
-          className="grid gap-px"
-          style={{
-            gridTemplateColumns: `repeat(${columns.length}, 9px)`,
-            gridTemplateRows: "repeat(45, 9px)",
-            gridAutoFlow: "column",
-          }}
-        >
-          {columns.map(({ round, cells }) =>
-            cells.map(({ n, present, title }) => (
-              <div
-                key={`${round}-${n}`}
-                title={title}
-                className="rounded-none"
-                style={{
-                  backgroundColor: present ? ballColor(n).bg : "var(--ui-line)",
-                }}
-              />
-            )),
-          )}
+        <div className="flex w-max gap-px">
+          {columns.map((column) => (
+            <RoundColumn key={column.round} column={column} />
+          ))}
         </div>
       </div>
       {maxStart > 0 && (
