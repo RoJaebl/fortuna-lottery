@@ -54,8 +54,8 @@ state.home.LotterietusCard.clock = {"now":0}
   바꾸는 함수: 없다
   정의: app/(home)/LotterietusCard/_state/clock.state.ts
   쓰는 곳: LotterietusCard
-state.home.StatisticsPanel.view = {"activeStatView":"sum","recentStart":null,"recentSize":100,"sumUntil":null,"sumAxis":"relative"}
-  바꾸는 함수: changeRecentSize, changeRecentStart, changeStatView, changeSumAxis, changeSumUntil
+state.home.StatisticsPanel.view = {"activeStatView":"sum","recentStart":null,"recentSize":100,"sumUntil":null,"sumAxis":"relative","playSpeed":1}
+  바꾸는 함수: changePlaySpeed, changeRecentSize, changeRecentStart, changeStatView, changeSumAxis, changeSumUntil
   정의: app/(home)/StatisticsPanel/_state/view.state.ts
   쓰는 곳: StatisticsPanel
 state.home.combination = {"numbers":null}

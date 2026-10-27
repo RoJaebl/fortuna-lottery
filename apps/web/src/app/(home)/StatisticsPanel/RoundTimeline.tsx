@@ -22,12 +22,17 @@ export interface RoundTimelineProps {
   /** 손잡이의 이름과 지금 값의 문구(보조 기술용) */
   label: string;
   valueText: string;
+  /** 재생 배속 — 1 배속이면 한 회차에 0.1 초 머문다 */
+  speed: number;
+  /** 고를 수 있는 배속 */
+  speeds: readonly number[];
+  onSpeedChange: (speed: number) => void;
 }
 
 /** 화살표 키 한 번에 옮기는 회차 수 */
 const STEP = 10;
 
-/** 재생할 때 한 회차에 머무는 시간(초) */
+/** 1 배속으로 재생할 때 한 회차에 머무는 시간(초) */
 const SECONDS_PER_ROUND = 0.1;
 
 /**
@@ -35,7 +40,19 @@ const SECONDS_PER_ROUND = 0.1;
  * 바 위에 마우스를 올리면 그 자리의 회차를 띄우고, 클릭하면 그 회차를 고른다.
  * 왼쪽 재생 단추는 지금 위치부터 다음 회차로 차례로 넘긴다 — 손으로 옮기면 멈춘다
  */
-export function RoundTimeline({ position, minPosition, total, roundAt, onSeek, page, label, valueText }: RoundTimelineProps) {
+export function RoundTimeline({
+  position,
+  minPosition,
+  total,
+  roundAt,
+  onSeek,
+  page,
+  label,
+  valueText,
+  speed,
+  speeds,
+  onSpeedChange,
+}: RoundTimelineProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const playedRef = useRef<HTMLDivElement>(null);
   const headRef = useRef<HTMLDivElement>(null);
@@ -44,8 +61,8 @@ export function RoundTimeline({ position, minPosition, total, roundAt, onSeek, p
   const dragRef = useRef<Draggable | null>(null);
   const playRef = useRef<gsap.core.Tween | null>(null);
   // Draggable·재생 트윈은 한 번 짓고 최신 값은 ref 로 읽는다
-  const latest = useRef({ position, minPosition, total, roundAt, onSeek });
-  latest.current = { position, minPosition, total, roundAt, onSeek };
+  const latest = useRef({ position, minPosition, total, roundAt, onSeek, speed });
+  latest.current = { position, minPosition, total, roundAt, onSeek, speed };
 
   /** 재생 중인지를 단추에 적는다 — 화면은 상태를 갖지 않으므로 DOM 에 바로 쓴다 */
   const markPlaying = (playing: boolean) => {
@@ -111,7 +128,7 @@ export function RoundTimeline({ position, minPosition, total, roundAt, onSeek, p
     gsap.to(headRef.current, {
       x,
       // 재생 중에는 0.1 초마다 위치가 바뀌므로 앞선 미끄러짐을 이어받아 덮는다
-      duration: playRef.current ? SECONDS_PER_ROUND : 0.3,
+      duration: playRef.current ? SECONDS_PER_ROUND / speed : 0.3,
       ease: playRef.current ? "none" : "power2.out",
       overwrite: "auto",
       onUpdate: () => {
@@ -120,6 +137,11 @@ export function RoundTimeline({ position, minPosition, total, roundAt, onSeek, p
       },
     });
   }, [position, total]);
+
+  // 재생 중에 배속을 바꾸면 남은 재생이 그 배속으로 이어진다
+  useGSAP(() => {
+    playRef.current?.timeScale(speed);
+  }, [speed]);
 
   /** 지금 위치부터 마지막 회차까지 한 회차씩 넘긴다. 끝에 있으면 가장 앞자리부터 다시 돈다. 재생 중이면 멈춘다 */
   const togglePlay = contextSafe(() => {
@@ -145,7 +167,7 @@ export function RoundTimeline({ position, minPosition, total, roundAt, onSeek, p
         latest.current.onSeek(last);
         stop();
       },
-    });
+    }).timeScale(latest.current.speed);
     markPlaying(true);
   });
 
@@ -185,6 +207,18 @@ export function RoundTimeline({ position, minPosition, total, roundAt, onSeek, p
           <rect x="7" y="1.5" width="2.5" height="9" rx="0.5" fill="currentColor" />
         </svg>
       </button>
+      <select
+        aria-label="재생 속도"
+        value={speed}
+        onChange={(e) => onSpeedChange(Number(e.target.value))}
+        className="-mt-1 h-6 shrink-0 rounded-button border border-line bg-panel px-1 text-micro tabular-nums text-text outline-none focus-visible:ring-2 focus-visible:ring-text"
+      >
+        {speeds.map((s) => (
+          <option key={s} value={s}>
+            {s}배속
+          </option>
+        ))}
+      </select>
       <div className="min-w-0 flex-1">
         <div
           ref={trackRef}

@@ -7,6 +7,11 @@ import { RoundTimeline, type RoundTimelineProps } from "./RoundTimeline";
 
 const W = 560;
 const H = 140;
+/** 세로축 숫자가 서는 왼쪽 여백 */
+const AXIS = 36;
+
+/** 0~1 높이 비율 → 막대 윗변의 y — 맨 위 10 은 남긴다 */
+const barTop = (y: number) => H - y * (H - 10);
 
 export interface SumDistributionChartProps {
   /** 합계 분포 — 분포가 비면 null 이고 카드를 그리지 않는다 */
@@ -30,18 +35,30 @@ export function SumDistributionChart({ chart, subtitle, marker, axis, bands, tim
       <div className="mb-3">
         <Tabs {...axis} variant="chip" label="합계 축 길이" />
       </div>
-      <svg viewBox={`0 0 ${W} ${H + 20}`} className="w-full">
-        {chart.points.map(({ sum, x, y }) => (
+      <svg viewBox={`${-AXIS} 0 ${W + AXIS} ${H + 20}`} className="w-full">
+        {/* 세로축 — 출현 횟수 눈금과 가로 보조선 */}
+        {chart.yTicks.map(({ count, y }, i) => (
+          <g key={count}>
+            <line x1={0} y1={barTop(y)} x2={W} y2={barTop(y)} stroke="var(--ui-line)" strokeWidth={1} />
+            <text x={-6} y={barTop(y) + 3.5} textAnchor="end" fontSize={10} fill="var(--ui-muted)">
+              {/* 맨 위 눈금에만 단위를 붙인다 */}
+              {i === chart.yTicks.length - 1 ? `${count}회` : count}
+            </text>
+          </g>
+        ))}
+        {chart.points.map(({ sum, count, x, y }) => (
           <rect
             key={sum}
             x={x * W - 1}
-            y={H - y * (H - 10)}
+            y={barTop(y)}
             width={2.4}
-            height={y * (H - 10)}
+            height={H - barTop(y)}
             rx={0.8}
             fill="var(--ui-accent)"
             opacity={0.75}
-          />
+          >
+            <title>{`합계 ${sum} · ${count}회`}</title>
+          </rect>
         ))}
         {marker ? (
           <g>

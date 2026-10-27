@@ -18,6 +18,13 @@ export interface GridColumn {
   cells: { n: number; present: boolean; title: string }[];
 }
 
+/** rough 이상인 가장 작은 1·2·5×10ⁿ (정수, 1 이상) — 눈금 간격이 사람이 읽기 좋은 수가 되게 한다 */
+function niceStep(rough: number): number {
+  if (rough <= 1) return 1;
+  const unit = 10 ** Math.floor(Math.log10(rough));
+  return ([1, 2, 5, 10].map((m) => m * unit).find((s) => s >= rough) ?? 10 * unit);
+}
+
 /** 회차 항목 → 지어 둔 열. 통계를 다시 받으면 항목도 새것이라 옛 열은 함께 버려진다 */
 const gridColumns = new WeakMap<object, GridColumn>();
 
@@ -44,15 +51,22 @@ export class StatisticsViewModel extends StatisticsModel {
     maxSum: number;
     maxCount: number;
     points: { sum: number; count: number; x: number; y: number }[];
+    /** 세로축(출현 횟수) 눈금 — 0 부터 최다 건수 안쪽까지, y 는 0~1 비율 */
+    yTicks: { count: number; y: number }[];
   } | null {
     const dist = this.sumDistribution;
     if (dist.length === 0) return null;
     const maxCount = Math.max(...dist.map((d) => d.count));
+    const step = niceStep(maxCount / 4);
     return {
       minSum: this.minSum,
       maxSum: this.maxSum,
       maxCount,
       points: dist.map(({ sum, count }) => ({ sum, count, x: this.sumRatio(sum), y: count / maxCount })),
+      yTicks: Array.from({ length: Math.floor(maxCount / step) + 1 }, (_, i) => ({
+        count: i * step,
+        y: (i * step) / maxCount,
+      })),
     };
   }
 

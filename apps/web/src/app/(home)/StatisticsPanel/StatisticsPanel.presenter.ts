@@ -40,6 +40,9 @@ const SUM_AXIS_MODES: readonly TabItem<SumAxisMode>[] = [
 /** 6개 번호 합계가 낼 수 있는 범위 — 1+2+…+6 ~ 40+41+…+45 */
 const SUM_RANGE = { min: 21, max: 255 };
 
+/** 재생 바에서 고를 수 있는 배속 — 1 배속은 한 회차에 0.1 초 */
+const PLAY_SPEEDS = [0.5, 1, 2, 5, 10] as const;
+
 const HOT_COLD_TOP = 8;
 
 /** 잔디밭이 한 번에 보이는 회차 수의 기본값 — 화면이 그리드 폭을 재면 그 칸 수로 바뀐다. 나머지는 타임라인으로 옮겨 본다 */
@@ -156,11 +159,13 @@ export function useStatisticsPanelPresenter() {
     recentSize,
     sumUntil,
     sumAxis,
+    playSpeed,
     changeStatView,
     changeRecentStart,
     changeRecentSize,
     changeSumUntil,
     changeSumAxis,
+    changePlaySpeed,
   } = useStore("state.home.StatisticsPanel.view");
 
   const tabs = { items: STAT_VIEWS, active: activeStatView, onChange: changeStatView };
@@ -169,6 +174,8 @@ export function useStatisticsPanelPresenter() {
 
   const total = stats.recentGrid.length;
   const roundAt = (index: number) => stats.recentGrid[index]?.round ?? 0;
+  // 두 재생 바가 같은 배속을 쓴다
+  const playback = { speed: playSpeed, speeds: PLAY_SPEEDS, onSpeedChange: changePlaySpeed };
   const rarity = myNumbers ? oddEvenRarity(myNumbers, stats) : null;
 
   // 합계 분포는 1회부터 재생 바가 고른 회차까지 쌓은 것이다 — 처음엔 최신 회차까지
@@ -196,6 +203,7 @@ export function useStatisticsPanelPresenter() {
             page: 100,
             label: "합계 분포를 쌓을 마지막 회차",
             valueText: `제${roundAt(until)}회까지`,
+            ...playback,
           }
         : null,
   };
@@ -235,6 +243,7 @@ export function useStatisticsPanelPresenter() {
             page: grid.columns.length,
             label: "잔디밭 회차 창",
             valueText: grid.range,
+            ...playback,
           }
         : null,
   };

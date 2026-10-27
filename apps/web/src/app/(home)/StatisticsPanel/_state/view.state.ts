@@ -13,9 +13,12 @@ createStore("state.home.StatisticsPanel.view", (set) => ({
   recentSize: 100,
   sumUntil: null as number | null,
   sumAxis: "relative" as SumAxisMode,
+  /** 잔디밭과 합계 분포의 재생 배속 — 둘이 함께 쓴다 */
+  playSpeed: 1,
   changeStatView: (activeStatView: StatView) => set({ activeStatView }),
   changeRecentStart: (recentStart: number) => set({ recentStart }),
   changeRecentSize: (recentSize: number) => set({ recentSize }),
   changeSumUntil: (sumUntil: number) => set({ sumUntil }),
   changeSumAxis: (sumAxis: SumAxisMode) => set({ sumAxis }),
+  changePlaySpeed: (playSpeed: number) => set({ playSpeed }),
 }));

@@ -47,7 +47,7 @@ describe("StatisticsViewModel (그 통계 하나로 정해지는 값)", () => {
         { sum: 140, count: 1 },
       ],
     });
-    expect(vm.sumChart).toEqual({
+    expect(vm.sumChart).toMatchObject({
       minSum: 100,
       maxSum: 140,
       maxCount: 4,
@@ -108,6 +108,16 @@ describe("StatisticsViewModel (그 통계 하나로 정해지는 값)", () => {
     const cut = threeRounds().sumsUntil(1, { min: 21, max: 255 });
     expect(cut.sumChart).toMatchObject({ minSum: 21, maxSum: 255 });
     expect(cut.sumRatio(138)).toBe(0.5);
+  });
+
+  it("sumChart — 세로축 눈금은 0 부터 최다 건수까지 1·2·5 단위의 깔끔한 간격, y 는 0~1 비율", () => {
+    const ticksOf = (max: number) =>
+      stats({ sumDistribution: [{ sum: 100, count: max }] }).sumChart?.yTicks.map((t) => t.count);
+    expect(ticksOf(4)).toEqual([0, 1, 2, 3, 4]);
+    expect(ticksOf(23)).toEqual([0, 10, 20]);
+    expect(ticksOf(37)).toEqual([0, 10, 20, 30]);
+    expect(ticksOf(1)).toEqual([0, 1]);
+    expect(stats({ sumDistribution: [{ sum: 100, count: 20 }] }).sumChart?.yTicks[2]).toEqual({ count: 10, y: 0.5 });
   });
 
   it("sumChart — 분포가 비면 null", () => {

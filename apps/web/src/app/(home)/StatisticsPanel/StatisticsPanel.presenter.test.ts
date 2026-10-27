@@ -204,6 +204,10 @@ describe("useStatisticsPanelPresenter", () => {
     const { result } = renderHook(() => useStatisticsPanelPresenter());
     expect(result.current.views?.sum.timeline?.position).toBe(9);
     expect(result.current.views?.sum.timeline?.minPosition).toBe(0);
+    // 배속은 잔디밭과 함께 쓴다
+    expect(result.current.views?.sum.timeline?.speed).toBe(1);
+    act(() => result.current.views?.sum.timeline?.onSpeedChange(5));
+    expect(result.current.views?.sum.timeline?.speed).toBe(5);
     act(() => result.current.views?.sum.timeline?.onSeek(4)); // 제5회까지 — 100 이 3회, 120 이 2회
     const sum = result.current.views?.sum;
     expect(sum?.timeline?.position).toBe(4);
