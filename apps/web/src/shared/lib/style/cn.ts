@@ -20,7 +20,7 @@ import { extendTailwindMerge } from "tailwind-merge";
 export const twMergeConfig = {
   extend: {
     classGroups: {
-      "font-size": [{ text: ["display", "head", "sub", "read", "body", "small", "micro", "nano"] }],
+      "font-size": [{ text: ["display", "head", "sub", "read", "body", "small", "micro", "nano", "pico"] }],
       rounded: [{ rounded: ["panel", "card", "box", "button", "pill"] }],
     },
   },

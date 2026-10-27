@@ -18,6 +18,18 @@ export interface GridColumn {
   cells: { n: number; present: boolean; title: string }[];
 }
 
+/** 상대 길이 합계 축의 기본 범위 — 쌓은 합계가 이 안에 있는 한 축은 움직이지 않는다 */
+const SUM_AXIS_BASE = { min: 40, max: 255 };
+/** 기본 범위를 벗어난 합계를 넓힌 축 끝에서 떨어뜨려 두는 여백 */
+const SUM_AXIS_PAD = 5;
+
+/** rough 이상인 가장 작은 1·2·5×10ⁿ (정수, 1 이상) — 눈금 간격이 사람이 읽기 좋은 수가 되게 한다 */
+function niceStep(rough: number): number {
+  if (rough <= 1) return 1;
+  const unit = 10 ** Math.floor(Math.log10(rough));
+  return ([1, 2, 5, 10].map((m) => m * unit).find((s) => s >= rough) ?? 10 * unit);
+}
+
 /** 회차 항목 → 지어 둔 열. 통계를 다시 받으면 항목도 새것이라 옛 열은 함께 버려진다 */
 const gridColumns = new WeakMap<object, GridColumn>();
 
@@ -44,16 +56,45 @@ export class StatisticsViewModel extends StatisticsModel {
     maxSum: number;
     maxCount: number;
     points: { sum: number; count: number; x: number; y: number }[];
+    /** 세로축(출현 횟수) 눈금 — 0 부터 최다 건수 안쪽까지, y 는 0~1 비율 */
+    yTicks: { count: number; y: number }[];
+    /** 가로축(합계) 눈금 — 양 끝 사이의 20 배수, x 는 0~1 비율. 양 끝은 minSum·maxSum 으로 따로 적는다 */
+    xTicks: { sum: number; x: number }[];
   } | null {
     const dist = this.sumDistribution;
     if (dist.length === 0) return null;
     const maxCount = Math.max(...dist.map((d) => d.count));
+    const step = niceStep(maxCount / 4);
     return {
       minSum: this.minSum,
       maxSum: this.maxSum,
       maxCount,
       points: dist.map(({ sum, count }) => ({ sum, count, x: this.sumRatio(sum), y: count / maxCount })),
+      yTicks: Array.from({ length: Math.floor(maxCount / step) + 1 }, (_, i) => ({
+        count: i * step,
+        y: (i * step) / maxCount,
+      })),
+      xTicks: Array.from({ length: 13 }, (_, i) => 20 * (i + 1))
+        .filter((sum) => sum > this.minSum && sum < this.maxSum)
+        .map((sum) => ({ sum, x: this.sumRatio(sum) })),
     };
+  }
+
+  /** 합계 구간표 — 6개 합계가 낼 수 있는 21~255 를 20 단위로 묶은 회차 수와 회차 대비 비율(소수 첫째 자리) */
+  get sumBands(): { label: string; count: number; percent: number }[] {
+    const bands = Array.from({ length: 12 }, (_, i) => {
+      const from = 21 + i * 20;
+      return { from, to: Math.min(from + 19, 255), count: 0 };
+    });
+    for (const { sum, count } of this.sumDistribution) {
+      const band = bands[Math.floor((sum - 21) / 20)];
+      if (band) band.count += count;
+    }
+    return bands.map(({ from, to, count }) => ({
+      label: `${from}~${to}`,
+      count,
+      percent: this.totalDraws > 0 ? Math.round((count / this.totalDraws) * 1000) / 10 : 0,
+    }));
   }
 
   /** 합계 하나가 합계 축의 어디(0~1)에 놓이는가 — 내 합계 표지도 같은 축을 쓴다 */
@@ -61,12 +102,47 @@ export class StatisticsViewModel extends StatisticsModel {
     return (sum - this.minSum) / Math.max(1, this.maxSum - this.minSum);
   }
 
+  /**
+   * 1회부터 index 번째(0 부터) 회차까지만 센 합계 분포 — 합계 분포와 회차 수만 바뀐다.
+   * axis 를 주면 합계 축을 그 범위로 고정하고(절대 길이), 주지 않으면 쌓은 회차의 최소~최대가 축이다(상대 길이)
+   */
+  sumsUntil(index: number, axis: { min: number; max: number } | null = null): StatisticsViewModel {
+    const counts = new Map<number, number>();
+    const rounds = this.recentGrid.slice(0, index + 1);
+    for (const { numbers } of rounds) {
+      const sum = numbers.reduce((a, b) => a + b, 0);
+      counts.set(sum, (counts.get(sum) ?? 0) + 1);
+    }
+    return Object.assign(new StatisticsViewModel(), this, {
+      sumDistribution: [...counts].sort(([a], [b]) => a - b).map(([sum, count]) => ({ sum, count })),
+      totalDraws: rounds.length,
+      sumAxis: axis,
+    });
+  }
+
+  /**
+   * 상대 길이 합계 축 — 기본 범위 40~255 에 고정해 두고, 쌓은 합계가 그 범위를 벗어날 때만 여백(5)을 둔
+   * 20 단위 경계로 한 단계씩 넓힌다(21 아래로는 가지 않는다). 위 끝 255 는 6개 합계의 최댓값이라 넓힐 일이
+   * 없다. 지금까지의 합계(48~238)는 기본 범위 안이라 재생 내내 축이 움직이지 않는다. 분포가 비면 null
+   */
+  get paddedSumAxis(): { min: number; max: number } | null {
+    const first = this.sumDistribution[0]?.sum;
+    if (first === undefined) return null;
+    const min = first - SUM_AXIS_PAD < SUM_AXIS_BASE.min
+      ? Math.max(21, Math.floor((first - SUM_AXIS_PAD) / 20) * 20)
+      : SUM_AXIS_BASE.min;
+    return { min, max: SUM_AXIS_BASE.max };
+  }
+
+  /** sumsUntil 이 고정한 합계 축 — 없으면 자기 분포의 양 끝이다 */
+  private sumAxis: { min: number; max: number } | null = null;
+
   private get minSum(): number {
-    return this.sumDistribution[0]?.sum ?? 21;
+    return this.sumAxis?.min ?? this.sumDistribution[0]?.sum ?? 21;
   }
 
   private get maxSum(): number {
-    return this.sumDistribution[this.sumDistribution.length - 1]?.sum ?? 255;
+    return this.sumAxis?.max ?? this.sumDistribution[this.sumDistribution.length - 1]?.sum ?? 255;
   }
 
   /** 동시 출현 페어 막대 — 1위 대비 너비(%) */

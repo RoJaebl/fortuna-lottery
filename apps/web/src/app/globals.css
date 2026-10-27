@@ -52,6 +52,8 @@
   --text-small: 0.875rem;     --lh-small: 1.5;
   --text-micro: 0.78125rem;   --lh-micro: 1.5;
   --text-nano: 0.71875rem;    --lh-nano: 1.45;
+  /* 차트 축 숫자 전용 — 본문에 쓰지 않는다 */
+  --text-pico: 0.5625rem;     --lh-pico: 1.4;
 
   /* 모서리 */
   --r-panel: 12px;
@@ -117,6 +119,8 @@
   --text-micro--line-height: var(--lh-micro);
   --text-nano: var(--text-nano);
   --text-nano--line-height: var(--lh-nano);
+  --text-pico: var(--text-pico);
+  --text-pico--line-height: var(--lh-pico);
 
   --radius-panel: var(--r-panel);
   --radius-card: var(--r-card);

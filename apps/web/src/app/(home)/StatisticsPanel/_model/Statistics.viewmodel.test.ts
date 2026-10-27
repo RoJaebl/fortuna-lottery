@@ -47,7 +47,7 @@ describe("StatisticsViewModel (그 통계 하나로 정해지는 값)", () => {
         { sum: 140, count: 1 },
       ],
     });
-    expect(vm.sumChart).toEqual({
+    expect(vm.sumChart).toMatchObject({
       minSum: 100,
       maxSum: 140,
       maxCount: 4,
@@ -58,6 +58,90 @@ describe("StatisticsViewModel (그 통계 하나로 정해지는 값)", () => {
       ],
     });
     expect(vm.sumRatio(110)).toBe(0.25);
+  });
+
+  it("sumBands — 합계를 20 단위 구간(21~40 … 241~255)으로 묶어 회차 수와 회차 대비 비율(소수 첫째 자리)", () => {
+    const bands = stats({
+      totalDraws: 8,
+      sumDistribution: [
+        { sum: 21, count: 1 },
+        { sum: 40, count: 1 },
+        { sum: 41, count: 2 },
+        { sum: 255, count: 4 },
+      ],
+    }).sumBands;
+    expect(bands).toHaveLength(12);
+    expect(bands[0]).toEqual({ label: "21~40", count: 2, percent: 25 });
+    expect(bands[1]).toEqual({ label: "41~60", count: 2, percent: 25 });
+    expect(bands[2]).toEqual({ label: "61~80", count: 0, percent: 0 });
+    expect(bands[11]).toEqual({ label: "241~255", count: 4, percent: 50 });
+  });
+
+  const threeRounds = () =>
+    stats({
+      totalDraws: 3,
+      sumDistribution: [
+        { sum: 30, count: 1 },
+        { sum: 60, count: 1 },
+        { sum: 200, count: 1 },
+      ],
+      recentGrid: [
+        { round: 1, numbers: [10, 10, 10, 10, 10, 10] },
+        { round: 2, numbers: [5, 5, 5, 5, 5, 5] },
+        { round: 3, numbers: [30, 30, 30, 30, 40, 40] },
+      ],
+    });
+
+  it("sumsUntil — 1회부터 그 위치의 회차까지만 센 합계 분포, 축을 주지 않으면 쌓은 회차의 양 끝이 축이다", () => {
+    const cut = threeRounds().sumsUntil(1);
+    expect(cut.totalDraws).toBe(2);
+    expect(cut.sumDistribution).toEqual([
+      { sum: 30, count: 1 },
+      { sum: 60, count: 1 },
+    ]);
+    expect(cut.sumChart).toMatchObject({ minSum: 30, maxSum: 60, maxCount: 1 });
+    expect(cut.sumRatio(45)).toBe(0.5);
+    expect(cut.sumBands[0]).toEqual({ label: "21~40", count: 1, percent: 50 });
+  });
+
+  it("paddedSumAxis — 기본 40~255 에 고정하고, 합계가 그 밖으로 나갈 때만 20 단위로 한 단계씩 넓힌다", () => {
+    const axisOf = (sums: number[]) => stats({ sumDistribution: sums.map((sum) => ({ sum, count: 1 })) }).paddedSumAxis;
+    // 기본 범위 안이면 회차가 몇이든 축은 그대로다
+    expect(axisOf([172])).toEqual({ min: 40, max: 255 });
+    expect(axisOf([79, 196])).toEqual({ min: 40, max: 255 });
+    expect(axisOf([48, 238])).toEqual({ min: 40, max: 255 });
+    expect(axisOf([45, 250])).toEqual({ min: 40, max: 255 });
+    // 기본 범위를 벗어나면(여백 5 포함) 그 합계를 담는 20 단위 경계로 한 단계 넓힌다
+    expect(axisOf([44, 200])).toEqual({ min: 21, max: 255 });
+    expect(axisOf([30, 200])).toEqual({ min: 21, max: 255 });
+    expect(axisOf([])).toBeNull();
+  });
+
+  it("sumsUntil — 축을 주면 그 축으로 고정한다(절대 길이)", () => {
+    const cut = threeRounds().sumsUntil(1, { min: 21, max: 255 });
+    expect(cut.sumChart).toMatchObject({ minSum: 21, maxSum: 255 });
+    expect(cut.sumRatio(138)).toBe(0.5);
+  });
+
+  it("sumChart — 세로축 눈금은 0 부터 최다 건수까지 1·2·5 단위의 깔끔한 간격, y 는 0~1 비율", () => {
+    const ticksOf = (max: number) =>
+      stats({ sumDistribution: [{ sum: 100, count: max }] }).sumChart?.yTicks.map((t) => t.count);
+    expect(ticksOf(4)).toEqual([0, 1, 2, 3, 4]);
+    expect(ticksOf(23)).toEqual([0, 10, 20]);
+    expect(ticksOf(37)).toEqual([0, 10, 20, 30]);
+    expect(ticksOf(1)).toEqual([0, 1]);
+    expect(stats({ sumDistribution: [{ sum: 100, count: 20 }] }).sumChart?.yTicks[2]).toEqual({ count: 10, y: 0.5 });
+  });
+
+  it("sumChart — 가로축 눈금은 양 끝 사이의 20 배수 합계, x 는 0~1 비율", () => {
+    const chart = stats({
+      sumDistribution: [
+        { sum: 48, count: 1 },
+        { sum: 128, count: 1 },
+      ],
+    }).sumChart;
+    expect(chart?.xTicks.map((t) => t.sum)).toEqual([60, 80, 100, 120]);
+    expect(chart?.xTicks[0]?.x).toBeCloseTo(12 / 80);
   });
 
   it("sumChart — 분포가 비면 null", () => {

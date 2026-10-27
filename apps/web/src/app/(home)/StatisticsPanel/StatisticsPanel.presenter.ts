@@ -29,9 +29,26 @@ const STAT_VIEWS: readonly TabItem<StatView>[] = [
   { key: "recent", label: "최근 그리드" },
 ];
 
+/** 합계 축의 길이 — 상대는 쌓은 회차의 최소~최대, 절대는 6개 합계가 낼 수 있는 21~255 */
+export type SumAxisMode = "relative" | "absolute";
+
+const SUM_AXIS_MODES: readonly TabItem<SumAxisMode>[] = [
+  { key: "relative", label: "상대 길이" },
+  { key: "absolute", label: "절대 길이" },
+];
+
+/** 6개 번호 합계가 낼 수 있는 범위 — 1+2+…+6 ~ 40+41+…+45 */
+const SUM_RANGE = { min: 21, max: 255 };
+
+/** 잔디밭 창 양옆에 그리는 버퍼 열 수 — 화면이 흐리게 지우는 폭에 띠가 밀리는 폭까지 덮는다 */
+const GRID_EDGE_COLUMNS = 8;
+
+/** 재생 바에서 고를 수 있는 배속 — 1 배속은 한 회차에 0.1 초 */
+const PLAY_SPEEDS = [0.5, 1, 2, 5, 10] as const;
+
 const HOT_COLD_TOP = 8;
 
-/** 잔디밭이 한 번에 보이는 회차 수 — 나머지는 타임라인으로 옮겨 본다 */
+/** 잔디밭이 한 번에 보이는 회차 수의 기본값 — 화면이 그리드 폭을 재면 그 칸 수로 바뀐다. 나머지는 타임라인으로 옮겨 본다 */
 export const RECENT_WINDOW = 100;
 
 /** 서버가 내는 상위 페어 개수(GetStatistics 의 TOP_PAIRS) — 카드 제목 「TOP 15」 */
@@ -106,20 +123,27 @@ function gapItems(
 }
 
 /**
- * 잔디밭 창 — 전 회차 중 start 부터 RECENT_WINDOW 회차. start 가 null 이면 최신 회차에 붙는다.
+ * 잔디밭 창 — 전 회차 중 start 부터 size 회차. start 가 null 이면 최신 회차에 붙는다.
  * 범위를 벗어난 start 는 끝으로 당긴다.
  */
 export function recentWindow<T extends { round: number }>(
   columns: T[],
   start: number | null,
+  size = RECENT_WINDOW,
 ): { start: number; maxStart: number; columns: T[]; range: string } {
-  const maxStart = Math.max(0, columns.length - RECENT_WINDOW);
+  const maxStart = Math.max(0, columns.length - size);
   const from = Math.min(Math.max(0, start ?? maxStart), maxStart);
-  const shown = columns.slice(from, from + RECENT_WINDOW);
+  const shown = columns.slice(from, from + size);
   const first = shown[0]?.round;
   const last = shown[shown.length - 1]?.round;
   const range = first && last ? `제${first}회 ~ 제${last}회 (전 ${columns.length}회차 중 ${shown.length}회차)` : "";
   return { start: from, maxStart, columns: shown, range };
+}
+
+/** 재생 바에서 고른 회차(0 부터 센 위치)가 창의 맨 오른쪽에 오는 창의 시작 */
+export function startEndingAt(index: number, total: number, size = RECENT_WINDOW): number {
+  const maxStart = Math.max(0, total - size);
+  return Math.min(Math.max(0, index - size + 1), maxStart);
 }
 
 /** 내 조합이 놓인 막대를 표시한다 — 내 조합이 없으면 강조 없음 */
@@ -132,21 +156,60 @@ export function useStatisticsPanelPresenter() {
   const { data: stats, status, error } = useStore("api.home.StatisticsPanel.statistics");
   // 처음 그릴 때(idle)도 아직 받기 전이다
   const loading = status === "idle" || status === "loading";
-  const { activeStatView, recentStart, changeStatView, changeRecentStart } = useStore("state.home.StatisticsPanel.view");
+  const {
+    activeStatView,
+    recentStart,
+    recentSize,
+    sumUntil,
+    sumAxis,
+    playSpeed,
+    changeStatView,
+    changeRecentStart,
+    changeRecentSize,
+    changeSumUntil,
+    changeSumAxis,
+    changePlaySpeed,
+  } = useStore("state.home.StatisticsPanel.view");
 
   const tabs = { items: STAT_VIEWS, active: activeStatView, onChange: changeStatView };
 
   if (!stats) return { loading, error, tabs, views: null };
 
-  const my = myNumbers ? sumPosition(myNumbers, stats) : null;
+  const total = stats.recentGrid.length;
+  const roundAt = (index: number) => stats.recentGrid[index]?.round ?? 0;
+  // 두 재생 바가 같은 배속을 쓴다
+  const playback = { speed: playSpeed, speeds: PLAY_SPEEDS, onSpeedChange: changePlaySpeed };
   const rarity = myNumbers ? oddEvenRarity(myNumbers, stats) : null;
 
+  // 합계 분포는 1회부터 재생 바가 고른 회차까지 쌓은 것이다 — 처음엔 최신 회차까지
+  const until = Math.min(sumUntil ?? total - 1, total - 1);
+  // 상대 길이는 쌓은 회차의 양 끝을 넉넉히 잡은 축이다 — 재생 중에 막대가 좌우로 흔들리지 않게
+  const sums = stats.sumsUntil(until, sumAxis === "absolute" ? SUM_RANGE : stats.sumsUntil(until).paddedSumAxis);
+  const my = myNumbers ? sumPosition(myNumbers, sums) : null;
+  const upTo = `제${roundAt(0)}회 ~ 제${roundAt(until)}회 누적`;
   const sum: SumDistributionChartProps = {
-    chart: stats.sumChart,
+    chart: sums.sumChart,
     subtitle: my
-      ? `내 조합 합계 ${my.mySum} — 과거 회차의 ${my.percentBelow}%가 이보다 작았습니다`
-      : "전 회차 6개 번호 합계의 분포",
-    marker: my ? { sum: my.mySum, x: stats.sumRatio(my.mySum) } : null,
+      ? `${upTo} · 내 조합 합계 ${my.mySum} — 그 회차들의 ${my.percentBelow}%가 이보다 작았습니다`
+      : `${upTo} · 6개 번호 합계의 분포 (${sums.totalDraws}회차)`,
+    marker: my ? { sum: my.mySum, x: sums.sumRatio(my.mySum) } : null,
+    axis: { items: SUM_AXIS_MODES, active: sumAxis, onChange: changeSumAxis },
+    // 내 합계가 든 구간을 표에 표시한다 — 내 조합이 없으면 표시 없음
+    bands: sums.sumBands.map((band, i) => ({ ...band, mine: my !== null && Math.floor((my.mySum - 21) / 20) === i })),
+    timeline:
+      total > 1
+        ? {
+            position: until,
+            minPosition: 0,
+            total,
+            roundAt,
+            onSeek: changeSumUntil,
+            page: 100,
+            label: "합계 분포를 쌓을 마지막 회차",
+            valueText: `제${roundAt(until)}회까지`,
+            ...playback,
+          }
+        : null,
   };
   const pattern: PatternDistributionProps = {
     subtitle: rarity
@@ -164,11 +227,37 @@ export function useStatisticsPanelPresenter() {
   const pairs: TopPairsListProps = { top: TOP_PAIRS, bars: stats.topPairBars };
   const frequency: NumberFrequencyBarsProps = { bars: stats.frequencyBars };
   // 칸은 창 안의 회차만 짓는다 — 전 회차를 다 지으면 타임라인을 끌 때마다 5만 칸을 새로 만든다
-  const grid = recentWindow(stats.recentGrid, recentStart);
+  const grid = recentWindow(stats.recentGrid, recentStart, recentSize);
+  // 창 양옆의 버퍼 열 — 화면이 흐리게 지워 보이는 자리다. 창이 미끄러지는 동안 빈 칸 대신 이웃 회차가 보인다
+  const edgeOf = (from: number) =>
+    Array.from({ length: GRID_EDGE_COLUMNS }, (_, i) => {
+      const entry = stats.recentGrid[from + i];
+      return from + i >= 0 && entry ? StatisticsViewModel.gridColumn(entry) : null;
+    });
   const recent: RecentGridProps = {
     range: grid.range,
     columns: grid.columns.map(StatisticsViewModel.gridColumn),
-    timeline: { start: grid.start, maxStart: grid.maxStart, total: stats.recentGrid.length, onChange: changeRecentStart },
+    before: edgeOf(grid.start - GRID_EDGE_COLUMNS),
+    after: edgeOf(grid.start + grid.columns.length),
+    onFit: (size) => {
+      if (size !== recentSize) changeRecentSize(size);
+    },
+    // 재생 위치는 창의 마지막 회차다. 고른 회차가 창의 맨 오른쪽에 오도록 창을 옮긴다
+    timeline:
+      grid.maxStart > 0
+        ? {
+            position: grid.start + grid.columns.length - 1,
+            // 창이 처음 회차부터 설 때 그 끝 — 이보다 앞은 창이 움직이지 않는다
+            minPosition: grid.columns.length - 1,
+            total,
+            roundAt,
+            onSeek: (index) => changeRecentStart(startEndingAt(index, total, recentSize)),
+            page: grid.columns.length,
+            label: "잔디밭 회차 창",
+            valueText: grid.range,
+            ...playback,
+          }
+        : null,
   };
 
   return { loading, error, tabs, views: { sum, pattern, hotcold, pairs, frequency, recent } };

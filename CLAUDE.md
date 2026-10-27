@@ -195,8 +195,8 @@ ESLint 가 거는 모양 규칙은 이렇다.
 - **모듈 시험은 모듈 뿌리에 둔다.** `modules/<도메인>/<도메인>Module.test.ts` 가 그 모듈 하나를 띄우고
   `configureApp` 으로 실제 접두를 건 뒤 HTTP 로 부른다. 유스케이스 시험은 `business/` 의 파일 옆에 둔다.
 - **화면은 상단 띠 · 왼쪽 메뉴 패널 · 오른쪽 콘텐츠로 선다.** 상단 띠(`LotterietusCard`)는 최근 회차, 다음 추첨까지 남은 시간,
-  실제 당첨 확률 1/8,145,060 을 보인다. 메뉴는 지금 `작업실` 하나이고, 작업실은 생성기를 늘 펼쳐 두고 그 아래 탭 다섯(통계·시뮬레이션·
-  내 번호·결과 확인·가정 실험실)을 보인다. 고른 메뉴와 활성 탭은 `app/(home)/_state/` 의 `state.home.navigation` 이고, `page.tsx` 는 조립만 한다.
+  실제 당첨 확률 1/8,145,060 을 보인다. 메뉴는 지금 `작업실` 하나이고, 작업실은 위쪽 번호 영역에 생성기·내 번호·결과 확인을 늘 펼쳐 두고
+  (넓은 화면은 왼쪽 생성기 · 오른쪽 내 번호와 결과 확인), 그 아래 탭 셋(통계·시뮬레이션·가정 실험실)을 보인다. 고른 메뉴와 활성 탭은 `app/(home)/_state/` 의 `state.home.navigation` 이고, `page.tsx` 는 조립만 한다.
 - **presenter 는 `useState`·`useEffect` 로 상태를 갖지 않는다.** 화면 하나만 쓰는 상태도 그 뷰 폴더의 `_state/` 에 둔다
   (`state.home.GeneratorCard.selection` · `state.home.HypothesisLab.switches` · `state.home.StatisticsPanel.view` ·
   `state.home.LotterietusCard.clock`). 전역 등록부에 있으므로 탭을 옮겼다 돌아와도 값이 남는다.

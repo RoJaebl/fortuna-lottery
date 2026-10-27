@@ -12,10 +12,12 @@ describe("cn", () => {
   it("글자 크기 토큰끼리는 뒤엣것이 이긴다", () => {
     expect(cn("text-small", "text-micro")).toBe("text-micro");
     expect(cn("text-display", "text-nano")).toBe("text-nano");
+    expect(cn("text-nano", "text-pico")).toBe("text-pico");
   });
   it("글자 크기 토큰과 색은 함께 남는다", () => {
     expect(cn("text-small", "text-muted")).toBe("text-small text-muted");
     expect(cn("text-nano", "font-bold", "text-warn")).toBe("text-nano font-bold text-warn");
+    expect(cn("text-pico", "text-muted")).toBe("text-pico text-muted");
   });
   it("모서리 토큰끼리는 뒤엣것이 이긴다", () => {
     expect(cn("rounded-card", "rounded-box")).toBe("rounded-box");

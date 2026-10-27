@@ -15,8 +15,6 @@ import { useHomePresenter, type HomeMenuKey, type HomeTabKey } from "./Home.pres
 const PANELS: Record<HomeTabKey, ReactNode> = {
   statistics: <StatisticsPanel />,
   simulation: <SimulationCard />,
-  picks: <PicksCard />,
-  results: <ResultsCard />,
   hypothesis: <HypothesisLab />,
 };
 
@@ -26,7 +24,14 @@ export default function HomePage() {
   const content: Record<HomeMenuKey, ReactNode> = {
     workroom: (
       <>
-        <GeneratorCard />
+        {/* 번호 영역 — 만들고, 저장하고, 대조하는 일을 한자리에 늘 펼쳐 둔다. 넓은 화면은 왼쪽 만들기 · 오른쪽 내 번호와 결과 */}
+        <div className="grid items-start gap-4 lg:grid-cols-2">
+          <GeneratorCard />
+          <div className="grid gap-4">
+            <PicksCard />
+            <ResultsCard />
+          </div>
+        </div>
         <div className="mt-8">
           <Tabs {...tabs} />
         </div>
