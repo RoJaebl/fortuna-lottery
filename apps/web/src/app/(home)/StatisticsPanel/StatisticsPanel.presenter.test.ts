@@ -184,7 +184,21 @@ describe("useStatisticsPanelPresenter", () => {
     expect(none?.bands.some((b) => b.mine)).toBe(false);
   });
 
-  it("sum — 재생 바로 고른 회차까지만 쌓고, 합계 축은 그대로다", () => {
+  it("sum — 상대 길이는 쌓은 회차의 최소~최대가 축이고, 절대 길이는 21~255 가 축이다", () => {
+    withStats({ sumDistribution, recentGrid: sumRounds });
+    withState([20, 30, 10, 25, 15, 20]);
+    const { result } = renderHook(() => useStatisticsPanelPresenter());
+    act(() => result.current.views?.sum.timeline?.onSeek(4)); // 제5회까지 — 합계 100~120
+    expect(result.current.views?.sum.axis.active).toBe("relative");
+    expect(result.current.views?.sum.chart).toMatchObject({ minSum: 100, maxSum: 120 });
+    expect(result.current.views?.sum.marker).toEqual({ sum: 120, x: 1 });
+
+    act(() => result.current.views?.sum.axis.onChange("absolute"));
+    expect(result.current.views?.sum.chart).toMatchObject({ minSum: 21, maxSum: 255 });
+    expect(result.current.views?.sum.marker?.x).toBeCloseTo((120 - 21) / 234);
+  });
+
+  it("sum — 재생 바로 고른 회차까지만 쌓는다", () => {
     withStats({ sumDistribution, recentGrid: sumRounds });
     withState([20, 30, 10, 25, 15, 20]);
     const { result } = renderHook(() => useStatisticsPanelPresenter());
@@ -194,7 +208,6 @@ describe("useStatisticsPanelPresenter", () => {
     expect(sum?.timeline?.position).toBe(4);
     expect(sum?.subtitle).toBe("제1회 ~ 제5회 누적 · 내 조합 합계 120 — 그 회차들의 60%가 이보다 작았습니다");
     expect(sum?.bands[4]).toMatchObject({ count: 2, percent: 40 });
-    expect(sum?.marker).toEqual({ sum: 120, x: 0.5 });
   });
 
   it("frequency · recent — 표시 모델의 파생값을 그대로 넘긴다", () => {

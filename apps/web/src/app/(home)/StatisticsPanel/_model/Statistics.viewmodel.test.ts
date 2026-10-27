@@ -77,30 +77,37 @@ describe("StatisticsViewModel (그 통계 하나로 정해지는 값)", () => {
     expect(bands[11]).toEqual({ label: "241~255", count: 4, percent: 50 });
   });
 
-  it("sumsUntil — 1회부터 그 위치의 회차까지만 센 합계 분포, 합계 축은 전 회차의 것", () => {
-    const vm = stats({
+  const threeRounds = () =>
+    stats({
       totalDraws: 3,
       sumDistribution: [
-        { sum: 21, count: 1 },
+        { sum: 30, count: 1 },
         { sum: 60, count: 1 },
-        { sum: 255, count: 1 },
+        { sum: 200, count: 1 },
       ],
       recentGrid: [
         { round: 1, numbers: [10, 10, 10, 10, 10, 10] },
-        { round: 2, numbers: [1, 2, 3, 4, 5, 6] },
-        { round: 3, numbers: [40, 41, 42, 43, 44, 45] },
+        { round: 2, numbers: [5, 5, 5, 5, 5, 5] },
+        { round: 3, numbers: [30, 30, 30, 30, 40, 40] },
       ],
     });
-    const cut = vm.sumsUntil(1);
+
+  it("sumsUntil — 1회부터 그 위치의 회차까지만 센 합계 분포, 축을 주지 않으면 쌓은 회차의 양 끝이 축이다", () => {
+    const cut = threeRounds().sumsUntil(1);
     expect(cut.totalDraws).toBe(2);
     expect(cut.sumDistribution).toEqual([
-      { sum: 21, count: 1 },
+      { sum: 30, count: 1 },
       { sum: 60, count: 1 },
     ]);
-    // 축이 21~255 그대로라 255 회차가 빠져도 합계 60 의 자리는 같다
-    expect(cut.sumRatio(60)).toBe(vm.sumRatio(60));
-    expect(cut.sumChart).toMatchObject({ minSum: 21, maxSum: 255, maxCount: 1 });
+    expect(cut.sumChart).toMatchObject({ minSum: 30, maxSum: 60, maxCount: 1 });
+    expect(cut.sumRatio(45)).toBe(0.5);
     expect(cut.sumBands[0]).toEqual({ label: "21~40", count: 1, percent: 50 });
+  });
+
+  it("sumsUntil — 축을 주면 그 축으로 고정한다(절대 길이)", () => {
+    const cut = threeRounds().sumsUntil(1, { min: 21, max: 255 });
+    expect(cut.sumChart).toMatchObject({ minSum: 21, maxSum: 255 });
+    expect(cut.sumRatio(138)).toBe(0.5);
   });
 
   it("sumChart — 분포가 비면 null", () => {

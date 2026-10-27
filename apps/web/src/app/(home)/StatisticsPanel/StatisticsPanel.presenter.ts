@@ -29,6 +29,17 @@ const STAT_VIEWS: readonly TabItem<StatView>[] = [
   { key: "recent", label: "최근 그리드" },
 ];
 
+/** 합계 축의 길이 — 상대는 쌓은 회차의 최소~최대, 절대는 6개 합계가 낼 수 있는 21~255 */
+export type SumAxisMode = "relative" | "absolute";
+
+const SUM_AXIS_MODES: readonly TabItem<SumAxisMode>[] = [
+  { key: "relative", label: "상대 길이" },
+  { key: "absolute", label: "절대 길이" },
+];
+
+/** 6개 번호 합계가 낼 수 있는 범위 — 1+2+…+6 ~ 40+41+…+45 */
+const SUM_RANGE = { min: 21, max: 255 };
+
 const HOT_COLD_TOP = 8;
 
 /** 잔디밭이 한 번에 보이는 회차 수의 기본값 — 화면이 그리드 폭을 재면 그 칸 수로 바뀐다. 나머지는 타임라인으로 옮겨 본다 */
@@ -139,8 +150,18 @@ export function useStatisticsPanelPresenter() {
   const { data: stats, status, error } = useStore("api.home.StatisticsPanel.statistics");
   // 처음 그릴 때(idle)도 아직 받기 전이다
   const loading = status === "idle" || status === "loading";
-  const { activeStatView, recentStart, recentSize, sumUntil, changeStatView, changeRecentStart, changeRecentSize, changeSumUntil } =
-    useStore("state.home.StatisticsPanel.view");
+  const {
+    activeStatView,
+    recentStart,
+    recentSize,
+    sumUntil,
+    sumAxis,
+    changeStatView,
+    changeRecentStart,
+    changeRecentSize,
+    changeSumUntil,
+    changeSumAxis,
+  } = useStore("state.home.StatisticsPanel.view");
 
   const tabs = { items: STAT_VIEWS, active: activeStatView, onChange: changeStatView };
 
@@ -152,7 +173,7 @@ export function useStatisticsPanelPresenter() {
 
   // 합계 분포는 1회부터 재생 바가 고른 회차까지 쌓은 것이다 — 처음엔 최신 회차까지
   const until = Math.min(sumUntil ?? total - 1, total - 1);
-  const sums = stats.sumsUntil(until);
+  const sums = stats.sumsUntil(until, sumAxis === "absolute" ? SUM_RANGE : null);
   const my = myNumbers ? sumPosition(myNumbers, sums) : null;
   const upTo = `제${roundAt(0)}회 ~ 제${roundAt(until)}회 누적`;
   const sum: SumDistributionChartProps = {
@@ -161,6 +182,7 @@ export function useStatisticsPanelPresenter() {
       ? `${upTo} · 내 조합 합계 ${my.mySum} — 그 회차들의 ${my.percentBelow}%가 이보다 작았습니다`
       : `${upTo} · 6개 번호 합계의 분포 (${sums.totalDraws}회차)`,
     marker: my ? { sum: my.mySum, x: sums.sumRatio(my.mySum) } : null,
+    axis: { items: SUM_AXIS_MODES, active: sumAxis, onChange: changeSumAxis },
     // 내 합계가 든 구간을 표에 표시한다 — 내 조합이 없으면 표시 없음
     bands: sums.sumBands.map((band, i) => ({ ...band, mine: my !== null && Math.floor((my.mySum - 21) / 20) === i })),
     timeline:

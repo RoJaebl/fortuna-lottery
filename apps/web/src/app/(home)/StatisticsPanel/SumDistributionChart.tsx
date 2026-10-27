@@ -1,6 +1,8 @@
 "use client";
 import { Card } from "@ui/Card";
+import { Tabs, type TabsProps } from "@ui/Tabs";
 import type { StatisticsViewModel } from "./_model/Statistics.viewmodel";
+import type { SumAxisMode } from "./StatisticsPanel.presenter";
 import { RoundTimeline, type RoundTimelineProps } from "./RoundTimeline";
 
 const W = 560;
@@ -12,17 +14,22 @@ export interface SumDistributionChartProps {
   subtitle: string;
   /** 합계 축 위 내 합계의 자리(x 는 0~1) — 내 조합이 없으면 null */
   marker: { sum: number; x: number } | null;
+  /** 합계 축의 길이 고르기 — 상대 길이(쌓은 회차의 최소~최대) · 절대 길이(21~255) */
+  axis: Pick<TabsProps<SumAxisMode>, "items" | "active" | "onChange">;
   /** 차트 아래 표 — 합계 20 단위 구간별 회차 수와 비율. mine 은 내 합계가 든 구간 */
   bands: { label: string; count: number; percent: number; mine: boolean }[];
   /** 재생 바 — 1회부터 고른 회차까지 쌓은 분포를 보인다. 회차가 하나뿐이면 null 이고 그리지 않는다 */
   timeline: RoundTimelineProps | null;
 }
 
-export function SumDistributionChart({ chart, subtitle, marker, bands, timeline }: SumDistributionChartProps) {
+export function SumDistributionChart({ chart, subtitle, marker, axis, bands, timeline }: SumDistributionChartProps) {
   if (!chart) return null;
 
   return (
     <Card title="번호 합계 분포" subtitle={subtitle}>
+      <div className="mb-3">
+        <Tabs {...axis} variant="chip" label="합계 축 길이" />
+      </div>
       <svg viewBox={`0 0 ${W} ${H + 20}`} className="w-full">
         {chart.points.map(({ sum, x, y }) => (
           <rect

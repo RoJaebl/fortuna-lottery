@@ -80,9 +80,9 @@ export class StatisticsViewModel extends StatisticsModel {
 
   /**
    * 1회부터 index 번째(0 부터) 회차까지만 센 합계 분포 — 합계 분포와 회차 수만 바뀐다.
-   * 합계 축은 전 회차의 것을 그대로 쓴다. 재생 바를 끌어도 축이 흔들리지 않아 막대가 쌓여 가는 모습이 보인다
+   * axis 를 주면 합계 축을 그 범위로 고정하고(절대 길이), 주지 않으면 쌓은 회차의 최소~최대가 축이다(상대 길이)
    */
-  sumsUntil(index: number): StatisticsViewModel {
+  sumsUntil(index: number, axis: { min: number; max: number } | null = null): StatisticsViewModel {
     const counts = new Map<number, number>();
     const rounds = this.recentGrid.slice(0, index + 1);
     for (const { numbers } of rounds) {
@@ -92,11 +92,11 @@ export class StatisticsViewModel extends StatisticsModel {
     return Object.assign(new StatisticsViewModel(), this, {
       sumDistribution: [...counts].sort(([a], [b]) => a - b).map(([sum, count]) => ({ sum, count })),
       totalDraws: rounds.length,
-      sumAxis: { min: this.minSum, max: this.maxSum },
+      sumAxis: axis,
     });
   }
 
-  /** sumsUntil 이 정한 합계 축 — 없으면 자기 분포의 양 끝이다 */
+  /** sumsUntil 이 고정한 합계 축 — 없으면 자기 분포의 양 끝이다 */
   private sumAxis: { min: number; max: number } | null = null;
 
   private get minSum(): number {
