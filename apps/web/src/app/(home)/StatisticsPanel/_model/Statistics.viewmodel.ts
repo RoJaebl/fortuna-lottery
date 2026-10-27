@@ -56,6 +56,23 @@ export class StatisticsViewModel extends StatisticsModel {
     };
   }
 
+  /** 합계 구간표 — 6개 합계가 낼 수 있는 21~255 를 20 단위로 묶은 회차 수와 회차 대비 비율(소수 첫째 자리) */
+  get sumBands(): { label: string; count: number; percent: number }[] {
+    const bands = Array.from({ length: 12 }, (_, i) => {
+      const from = 21 + i * 20;
+      return { from, to: Math.min(from + 19, 255), count: 0 };
+    });
+    for (const { sum, count } of this.sumDistribution) {
+      const band = bands[Math.floor((sum - 21) / 20)];
+      if (band) band.count += count;
+    }
+    return bands.map(({ from, to, count }) => ({
+      label: `${from}~${to}`,
+      count,
+      percent: this.totalDraws > 0 ? Math.round((count / this.totalDraws) * 1000) / 10 : 0,
+    }));
+  }
+
   /** 합계 하나가 합계 축의 어디(0~1)에 놓이는가 — 내 합계 표지도 같은 축을 쓴다 */
   sumRatio(sum: number): number {
     return (sum - this.minSum) / Math.max(1, this.maxSum - this.minSum);

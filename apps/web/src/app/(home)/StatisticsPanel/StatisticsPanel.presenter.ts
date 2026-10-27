@@ -155,6 +155,8 @@ export function useStatisticsPanelPresenter() {
       ? `내 조합 합계 ${my.mySum} — 과거 회차의 ${my.percentBelow}%가 이보다 작았습니다`
       : "전 회차 6개 번호 합계의 분포",
     marker: my ? { sum: my.mySum, x: stats.sumRatio(my.mySum) } : null,
+    // 내 합계가 든 구간을 표에 표시한다 — 내 조합이 없으면 표시 없음
+    bands: stats.sumBands.map((band, i) => ({ ...band, mine: my !== null && Math.floor((my.mySum - 21) / 20) === i })),
   };
   const pattern: PatternDistributionProps = {
     subtitle: rarity

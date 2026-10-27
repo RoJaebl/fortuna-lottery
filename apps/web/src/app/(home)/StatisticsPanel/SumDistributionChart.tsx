@@ -11,9 +11,11 @@ export interface SumDistributionChartProps {
   subtitle: string;
   /** 합계 축 위 내 합계의 자리(x 는 0~1) — 내 조합이 없으면 null */
   marker: { sum: number; x: number } | null;
+  /** 차트 아래 표 — 합계 20 단위 구간별 회차 수와 비율. mine 은 내 합계가 든 구간 */
+  bands: { label: string; count: number; percent: number; mine: boolean }[];
 }
 
-export function SumDistributionChart({ chart, subtitle, marker }: SumDistributionChartProps) {
+export function SumDistributionChart({ chart, subtitle, marker, bands }: SumDistributionChartProps) {
   if (!chart) return null;
 
   return (
@@ -26,6 +28,7 @@ export function SumDistributionChart({ chart, subtitle, marker }: SumDistributio
             y={H - y * (H - 10)}
             width={2.4}
             height={y * (H - 10)}
+            rx={0.8}
             fill="var(--ui-accent)"
             opacity={0.75}
           />
@@ -45,6 +48,27 @@ export function SumDistributionChart({ chart, subtitle, marker }: SumDistributio
           {chart.maxSum}
         </text>
       </svg>
+      <table className="mt-4 w-full text-small tabular-nums text-text">
+        <thead>
+          <tr className="text-micro text-muted">
+            <th className="text-left font-medium">합계 구간</th>
+            <th className="text-right font-medium">회차 수</th>
+            <th className="text-right font-medium">비율</th>
+          </tr>
+        </thead>
+        <tbody>
+          {bands.map(({ label, count, percent, mine }) => (
+            <tr key={label} className="border-t border-line">
+              <td className="py-1">
+                {label}
+                {mine ? <span className="ml-2 text-micro text-warn">내 합계</span> : null}
+              </td>
+              <td className="py-1 text-right">{count.toLocaleString()}</td>
+              <td className="py-1 text-right">{percent}%</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </Card>
   );
 }

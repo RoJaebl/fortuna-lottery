@@ -60,6 +60,23 @@ describe("StatisticsViewModel (그 통계 하나로 정해지는 값)", () => {
     expect(vm.sumRatio(110)).toBe(0.25);
   });
 
+  it("sumBands — 합계를 20 단위 구간(21~40 … 241~255)으로 묶어 회차 수와 회차 대비 비율(소수 첫째 자리)", () => {
+    const bands = stats({
+      totalDraws: 8,
+      sumDistribution: [
+        { sum: 21, count: 1 },
+        { sum: 40, count: 1 },
+        { sum: 41, count: 2 },
+        { sum: 255, count: 4 },
+      ],
+    }).sumBands;
+    expect(bands).toHaveLength(12);
+    expect(bands[0]).toEqual({ label: "21~40", count: 2, percent: 25 });
+    expect(bands[1]).toEqual({ label: "41~60", count: 2, percent: 25 });
+    expect(bands[2]).toEqual({ label: "61~80", count: 0, percent: 0 });
+    expect(bands[11]).toEqual({ label: "241~255", count: 4, percent: 50 });
+  });
+
   it("sumChart — 분포가 비면 null", () => {
     expect(stats({ sumDistribution: [] }).sumChart).toBeNull();
   });

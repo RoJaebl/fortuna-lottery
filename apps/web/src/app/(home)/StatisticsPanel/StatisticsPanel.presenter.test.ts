@@ -167,11 +167,15 @@ describe("useStatisticsPanelPresenter", () => {
     expect(mine?.subtitle).toBe("내 조합 합계 120 — 과거 회차의 30%가 이보다 작았습니다");
     expect(mine?.marker).toEqual({ sum: 120, x: 0.5 });
     expect(mine?.chart?.maxCount).toBe(40);
+    // 합계 120 은 101~120 구간(다섯째)이다
+    expect(mine?.bands.findIndex((b) => b.mine)).toBe(4);
+    expect(mine?.bands[4]?.label).toBe("101~120");
 
     withState();
     const none = renderHook(() => useStatisticsPanelPresenter()).result.current.views?.sum;
     expect(none?.subtitle).toBe("전 회차 6개 번호 합계의 분포");
     expect(none?.marker).toBeNull();
+    expect(none?.bands.some((b) => b.mine)).toBe(false);
   });
 
   it("frequency · recent — 표시 모델의 파생값을 그대로 넘긴다", () => {
