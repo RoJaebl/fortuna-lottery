@@ -3,18 +3,17 @@ import { tabs } from "./Tabs.styles";
 
 const set = (cls: string) => new Set(cls.split(" ").filter(Boolean));
 
-// 옮기기 전 tabs.tsx 의 상수 그대로다
 const UNDERLINE = {
-  list: "flex gap-1 border-b border-line",
-  item: "-mb-px border-b-2 px-3 py-2 text-small font-medium transition-colors",
-  active: "border-text text-text",
+  list: "flex gap-5 border-b border-line/80",
+  item: "-mb-px border-b-2 pb-2.5 pt-1 text-small tracking-tight transition-colors duration-200",
+  active: "border-text font-semibold text-text",
   inactive: "border-transparent text-muted hover:text-text",
 };
 const CHIP = {
-  list: "flex gap-2 overflow-x-auto whitespace-nowrap pb-1 [scrollbar-gutter:stable] md:flex-wrap md:overflow-x-visible",
-  item: "shrink-0 rounded-box px-3 py-2 text-micro font-semibold transition-colors",
-  active: "bg-text text-bg",
-  inactive: "bg-said text-muted hover:bg-inset",
+  list: "flex gap-1.5 overflow-x-auto whitespace-nowrap pb-1 [scrollbar-gutter:stable] md:flex-wrap md:overflow-x-visible",
+  item: "shrink-0 rounded-pill border px-3.5 py-1.5 text-nano font-medium transition-colors duration-200",
+  active: "border-text bg-text text-bg",
+  inactive: "border-line text-muted hover:border-muted hover:text-text",
 };
 
 describe("tabs 서식", () => {

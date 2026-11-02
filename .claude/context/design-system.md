@@ -42,6 +42,10 @@ emerald-600(`#059669`)은 흰 글자 대비 3.77 로 4.5 에 못 미쳐 한 단 
 - **채운 초록(strong)은 실행 단추다.** 주 단추(`bg-strong text-on-strong`)만 strong 으로 채운다. accent 는
   고른 것·활성(선택된 토글·번호, 머리글 강조)에 쓴다(`bg-accent text-on-strong`, `text-accent`). 탭·내비게이션은
   무채색(`text-text` 와 선·`bg-selected`)으로 표현하고, "지금 보고 있는 화면"에 초록을 쓰지 않는다.
+- **단추는 `shared/ui/Button` 하나로 그린다.** 알약형 하나에 `intent`(`primary` 채운 실행 단추 · `secondary` 테두리 ·
+  `ghost` 글자만)와 `size`(`sm`·`md`)만 고른다. 화면마다 단추 서식을 새로 적지 않는다.
+- **정제 방향은 절제다.** 작은 머리글(`text-pico` 대문자 자간 넓힘 이름표 + `text-small`/`text-body` 값), 옅은 선(`border-line/70~80`),
+  넉넉한 여백, `tabular-nums`, 값이 바뀌는 요소의 끊김 없는 전환. 강조색은 고른 것과 실행에만 쓴다.
 - 표면과 선은 케이스 값을 바꾸지 않는다.
 - 신호색(`ok`·`warn`·`danger`·`info`·`busy`)은 의미에 맞는 자리에만 쓴다. 점·뱃지 전용인 것은 큰
   글자 본문에 쓰지 않는다.
