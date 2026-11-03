@@ -23,12 +23,12 @@ function remaining(assumption: Assumption, pool: readonly number[], pastKeys: Re
   const { fixed, sumRange } = assumption;
   const key = `${pool.join(",")}|${fixed.join(",")}|${sumRange.min}|${sumRange.max}`;
   if (last.pastKeys !== pastKeys || last.key !== key) {
-    last = { pastKeys, key, left: count(fixed, sumRange, pool, pastKeys) };
+    last = { pastKeys, key, left: remainingCount(fixed, sumRange, pool, pastKeys) };
   }
   return last.left;
 }
 
-function count(
+export function remainingCount(
   fixed: readonly number[],
   sumRange: Assumption["sumRange"],
   pool: readonly number[],
