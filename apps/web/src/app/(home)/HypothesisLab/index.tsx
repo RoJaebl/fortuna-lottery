@@ -112,7 +112,7 @@ export function HypothesisLab() {
             </label>
             <Tooltip
               align="start"
-              text="센 회차까지 나온 1등 조합을 가정에서 뺍니다. 구간 안 조합 수와 이론 비율이 조금 줄 뿐 실제 당첨 확률은 그대로입니다."
+              text="센 회차까지 나온 1등 조합을 가정에서 빼며, 구간 안 조합 수와 이론 비율이 조금 줄 뿐 실제 당첨 확률은 그대로입니다."
             />
           </span>
           <span className="flex items-center gap-1">
@@ -130,7 +130,7 @@ export function HypothesisLab() {
               />
               개 번호만
             </label>
-            <Tooltip text="회차마다 그 앞 회차들에서 가장 많이 나온 K개 번호로만 조합을 만든다고 가정합니다. 켜면 풀을 짓는 데 쓰는 앞선 100회는 세지 않습니다." />
+            <Tooltip text="회차마다 그 앞 회차들에서 가장 많이 나온 K개 번호로만 조합을 만든다고 가정하며, 풀을 짓는 데 쓰는 앞선 100회는 세지 않습니다." />
           </span>
           <span className="flex items-center gap-1">
             <label className="flex items-center gap-2">
@@ -139,7 +139,7 @@ export function HypothesisLab() {
             </label>
             <Tooltip
               align="end"
-              text="켜면 결과 표의 첫 줄이 과거 비율로 곱한 당첨 확률을 보입니다. 끄면 그 줄을 접고 공정한 추첨의 이론 줄만 봅니다."
+              text="켜면 결과 표의 첫 줄이 과거 비율로 곱한 당첨 확률을 보이고, 끄면 그 줄을 접어 공정한 추첨의 이론 줄만 남깁니다."
             />
           </span>
         </div>
@@ -155,7 +155,7 @@ export function HypothesisLab() {
               <p className="mt-2 text-micro leading-relaxed text-text">{result.gapSentence}</p>
               <p className="mt-1 flex items-center gap-1 text-nano text-muted">
                 {result.excludedLabel}
-                <Tooltip text="「과거 1등 조합 제외」를 켜면 구간 안 조합 가운데 센 회차까지의 1등 조합을 이만큼 뺍니다. 꺼져 있으면 0개입니다." />
+                <Tooltip text="「과거 1등 조합 제외」를 켰을 때 구간 안 조합에서 뺀 센 회차까지의 1등 조합 수입니다(끄면 0개)." />
               </p>
             </div>
 

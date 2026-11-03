@@ -11,11 +11,7 @@ gsap.registerPlugin(Draggable, useGSAP);
 
 const W = 560;
 const H = 120;
-/** 가로축 숫자가 서는 아래 여백 */
-const FOOT = 16;
-/** 축 숫자 크기 — viewBox 가 화면 폭과 거의 1:1 로 그려지므로 text-pico(9px)와 같다 */
-const TICK_FONT = 9;
-/** 가로축 눈금 — 양 끝과 그 사이 40 배수 언저리 */
+/** 가로축 눈금 — 양 끝 사이 40 배수 언저리. 숫자는 차트 폭과 상관없이 text-pico 로 서도록 HTML 층에 둔다 */
 const TICKS = [60, 100, 140, 180, 220];
 /** 막대가 값이 바뀔 때 끊기지 않고 이어서 움직이게 하는 전환 — 통계 탭의 합계 분포와 같다 */
 const SMOOTH = { transition: "transform 320ms cubic-bezier(0.22, 1, 0.36, 1)" } as const;
@@ -75,11 +71,17 @@ export function SumRangeChart({ axis, bars, frequentBands, emptyBands, frequentL
     });
   };
 
-  /** 손잡이 i 를 합계 sum 에 두고, 다른 손잡이와 함께 고른 구간으로 알린다 */
+  /**
+   * 손잡이가 맡은 값 — place 가 고른 구간의 최소·최대 가운데 하나를 aria-valuenow 에 곧바로 적는다.
+   * 미끄러지는 중인 자리(x)가 아니라 이 값을 읽어야 키를 누르고 있을 때 한 번에 한 칸씩 바로 움직인다
+   */
+  const valueOf = (el: HTMLElement) => Number(el.getAttribute("aria-valuenow"));
+
+  /** 손잡이 i 를 합계 sum 에 두고, 다른 손잡이의 값과 함께 고른 구간으로 알린다 */
   const select = (i: number, sum: number) => {
     const other = handleRefs[1 - i]!.current;
     if (!other) return;
-    const pair = [sum, sumAt(xNow(other))].sort((p, q) => p - q);
+    const pair = [sum, valueOf(other)].sort((p, q) => p - q);
     // 끄는 동안 같은 칸 안에서 움직이면 알리지 않는다
     const { min, max } = latest.current.selected;
     if (pair[0] !== min || pair[1] !== max) latest.current.onSelect(pair[0]!, pair[1]!);
@@ -117,13 +119,13 @@ export function SumRangeChart({ axis, bars, frequentBands, emptyBands, frequentL
     const step = { ArrowLeft: -1, ArrowRight: 1, PageDown: -10, PageUp: 10 }[e.key];
     if (step === undefined) return;
     e.preventDefault();
-    select(i, sumAt(xNow(e.currentTarget)) + step);
+    select(i, valueOf(e.currentTarget) + step);
   };
 
   return (
     <div>
       <div className="relative">
-        <svg viewBox={`0 0 ${W} ${H + FOOT}`} className="w-full tabular-nums" aria-hidden>
+        <svg viewBox={`0 0 ${W} ${H}`} className="block w-full" aria-hidden>
           <defs>
             <pattern id="sum-range-hatch" width={5} height={5} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
               <line x1={0} y1={0} x2={0} y2={5} stroke="var(--ui-muted)" strokeOpacity={0.35} strokeWidth={1.5} />
@@ -178,27 +180,9 @@ export function SumRangeChart({ axis, bars, frequentBands, emptyBands, frequentL
             style={{ transform: `translateX(${left(selected.min)}px) scaleX(${selected.max - selected.min + 1})` }}
           />
           <line x1={0} y1={H} x2={W} y2={H} stroke="var(--ui-line)" strokeWidth={1} />
-          {TICKS.map((sum) => (
-            <g key={sum} transform={`translate(${left(sum) + slot / 2} 0)`}>
-              <line x1={0} y1={H} x2={0} y2={H + 3} stroke="var(--ui-line)" strokeWidth={0.75} />
-              <text x={0} y={H + 12} textAnchor="middle" fontSize={TICK_FONT} fill="var(--ui-muted)">
-                {sum}
-              </text>
-            </g>
-          ))}
-          <text x={0} y={H + 12} fontSize={TICK_FONT} fill="var(--ui-muted)">
-            {axis.min}
-          </text>
-          <text x={W} y={H + 12} textAnchor="end" fontSize={TICK_FONT} fill="var(--ui-muted)">
-            {axis.max}
-          </text>
         </svg>
-        {/* 손잡이 층 — 막대 영역만 덮고, 손잡이 밖은 아래 띠가 마우스를 받는다 */}
-        <div
-          ref={layerRef}
-          className="pointer-events-none absolute inset-x-0 top-0"
-          style={{ bottom: `${(FOOT / (H + FOOT)) * 100}%` }}
-        >
+        {/* 손잡이 층 — 막대 영역을 덮고, 손잡이 밖은 아래 띠가 마우스를 받는다 */}
+        <div ref={layerRef} className="pointer-events-none absolute inset-0">
           {handleRefs.map((ref, i) => (
             <div
               key={i}
@@ -218,6 +202,16 @@ export function SumRangeChart({ axis, bars, frequentBands, emptyBands, frequentL
           ))}
         </div>
       </div>
+      {/* 가로축 숫자 — 양 끝은 안쪽으로 붙이고, 사이 눈금은 그 합계 칸의 가운데에 세운다 */}
+      <div aria-hidden className="relative mt-1 h-3 text-pico tabular-nums text-muted">
+        <span className="absolute left-0">{axis.min}</span>
+        {TICKS.map((sum) => (
+          <span key={sum} className="absolute -translate-x-1/2" style={{ left: `${((sum - axis.min + 0.5) / slots) * 100}%` }}>
+            {sum}
+          </span>
+        ))}
+        <span className="absolute right-0">{axis.max}</span>
+      </div>
       <p className="mt-1 text-pico text-muted">가로축은 당첨 번호 6개의 합, 막대는 그 합이 나온 과거 회차 수입니다.</p>
       {frequentLegend || emptyLegend ? (
         <ul className="mt-3 space-y-1 text-nano leading-relaxed text-text">
@@ -226,7 +220,7 @@ export function SumRangeChart({ axis, bars, frequentBands, emptyBands, frequentL
               <span aria-hidden className="h-2.5 w-4 shrink-0 rounded-[2px] bg-accent/15" />
               {frequentLegend}
               <Tooltip
-                text="고른 구간과 같은 폭의 창을 21~255 에서 한 칸씩 밀며 과거 회차를 셌을 때, 가장 많이 든 창의 90% 이상인 곳입니다. 많이 든 것은 과거의 결과일 뿐 다음 추첨에 더 잘 나온다는 뜻이 아닙니다."
+                text="고른 구간과 같은 폭의 창을 21~255 에서 한 칸씩 밀며 과거 회차를 셌을 때 가장 많이 든 창의 90% 이상인 곳으로, 다음 추첨에 더 잘 나온다는 뜻은 아닙니다."
               />
             </li>
           ) : null}

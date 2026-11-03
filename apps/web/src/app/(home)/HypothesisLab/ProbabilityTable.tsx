@@ -28,13 +28,13 @@ export function ProbabilityTable({ rows, pastRowFolded }: ProbabilityTableProps)
           <th className={`${HEAD} text-right`}>합이 구간에 들 확률</th>
           <th className={`${HEAD} text-right`}>
             구간 안에서 맞힐 확률{" "}
-            <Tooltip text="1 / 구간 안 조합 수입니다. 1~45 에서 고른 6개 가운데 합이 구간에 드는 조합을 모두 센 수이고, 켠 스위치(과거 1등 제외·출현 상위 K개)를 반영합니다." />
+            <Tooltip text="1 / 구간 안 조합 수이고, 그 수는 켠 스위치를 반영해 합이 구간에 드는 6개 조합을 모두 센 값입니다." />
           </th>
           <th className={`${HEAD} text-right`}>
             당첨 확률{" "}
             <Tooltip
               align="end"
-              text="왼쪽 두 칸을 곱한 값입니다. 이론 줄은 어떤 구간이든 정확히 1 / 8,145,060 이고, 과거 줄이 그와 다른 만큼이 과거의 우연입니다."
+              text="왼쪽 두 칸을 곱한 값으로, 이론 줄은 어떤 구간이든 정확히 1 / 8,145,060 이고 과거 줄과의 차이는 과거의 우연입니다."
             />
           </th>
         </tr>
@@ -57,7 +57,7 @@ export function ProbabilityTable({ rows, pastRowFolded }: ProbabilityTableProps)
           <th scope="row" className="py-2 pr-2 text-left font-medium">
             <Tooltip
               align="start"
-              text="이론 비율 — 구간 안 조합 수를 전체 조합 8,145,060 으로 나눈 값으로 곱합니다. 공정한 추첨이면 합은 이 비율로 구간에 듭니다."
+              text="이론 비율 — 구간 안 조합 수를 전체 조합 8,145,060 으로 나눈, 공정한 추첨에서 합이 구간에 들 비율로 곱합니다."
             >
               {theory.title}
             </Tooltip>
