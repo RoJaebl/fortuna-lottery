@@ -14,7 +14,7 @@ const evaluation = (over: Partial<EvaluationModel>) =>
         random: { tickets: 20, rankCounts: [19, 0, 0, 0, 0, 1] },
       },
       sumRange: { min: 121, max: 160 },
-      sumRangeCombinations: { total: 3948748, excluded: 7 },
+      sumRangeCombinations: { total: 38767, excluded: 7 },
       theoryRate: 0.485,
       pastRate: 0.47,
       expectedHits: 552.6,
@@ -53,7 +53,12 @@ describe("EvaluationViewModel (가정 평가 결과 하나로 정해지는 문�
   });
 
   it("합계 구간 문구", () => {
-    const e = evaluation({ hitRate: { hits: 585, rounds: 1245, expectedRate: 0.485 }, expectedHits: 581.4 });
+    const e = evaluation({
+      hitRate: { hits: 585, rounds: 1245, expectedRate: 0.485 },
+      expectedHits: 581.4,
+      assumedCombinations: 3948748,
+      sumRangeCombinations: { total: 3948755, excluded: 7 },
+    });
     expect(e.pastRateLabel).toBe("47.0% · 1,245회 중 585회");
     expect(e.theoryRateLabel).toBe("48.5%");
     expect(e.inRangeLabel).toBe("1 / 3,948,748");

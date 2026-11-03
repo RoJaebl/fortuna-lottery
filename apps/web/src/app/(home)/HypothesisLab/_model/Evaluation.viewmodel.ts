@@ -31,6 +31,7 @@ export class EvaluationViewModel extends EvaluationModel {
   get pastRateLabel(): string {
     const { hits, rounds } = this.hitRate;
     if (rounds === 0) return "센 회차 없음";
+    // 비율은 pastRate, 횟수는 hitRate — 같은 센 회차에서 나온 값이다
     return `${(this.pastRate * 100).toFixed(1)}% · ${rounds.toLocaleString()}회 중 ${hits.toLocaleString()}회`;
   }
 
@@ -38,9 +39,9 @@ export class EvaluationViewModel extends EvaluationModel {
     return `${(this.theoryRate * 100).toFixed(1)}%`;
   }
 
-  /** 합계 구간 안 조합 수 — 제외 전 */
+  /** 합계 구간 안 조합 수 — 과거 1등 제외 뒤(theoryRate 의 분자와 같다) */
   get inRangeLabel(): string {
-    return `1 / ${this.sumRangeCombinations.total.toLocaleString()}`;
+    return `1 / ${this.assumedCombinations.toLocaleString()}`;
   }
 
   get pastProbabilityLabel(): string {
