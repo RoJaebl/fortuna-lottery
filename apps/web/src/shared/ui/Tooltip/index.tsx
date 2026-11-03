@@ -8,12 +8,18 @@ interface TooltipProps {
 }
 
 /** 마우스·초점에서 말풍선을 보인다. 열고 닫는 것은 CSS(group-hover·group-focus-within)뿐이라 상태가 없다 */
-export function Tooltip({ text, children = "ⓘ" }: TooltipProps) {
+export function Tooltip({ text, children }: TooltipProps) {
   const id = useId();
   return (
     <span className={tooltipRoot()}>
-      <button type="button" aria-label={text} aria-describedby={id} className={tooltipTrigger()}>
-        {children}
+      {/* 이름은 ⓘ 일 때만 따로 준다 — 글은 설명(aria-describedby)으로만 읽힌다 */}
+      <button
+        type="button"
+        aria-label={children === undefined ? "도움말" : undefined}
+        aria-describedby={id}
+        className={tooltipTrigger()}
+      >
+        {children ?? "ⓘ"}
       </button>
       <span role="tooltip" id={id} className={tooltipBubble()}>
         {text}
