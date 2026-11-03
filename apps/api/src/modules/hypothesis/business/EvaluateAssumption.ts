@@ -5,7 +5,7 @@ import { drawInSumRange, err, ok, TOTAL_COMBINATIONS, type Result } from "@fortu
 import type { Assumption } from "../domain/model/Assumption.model.js";
 import type { Evaluation } from "../domain/model/Evaluation.model.js";
 import { DRAW_HISTORY, type DrawHistoryPort } from "../domain/port/DrawHistoryPort.js";
-import { assumedCombinations, combinationKey, hitRate } from "./assumption.js";
+import { assumedCombinations, combinationKey, hitRate, WARMUP_ROUNDS } from "./assumption.js";
 import { backtestAssumption } from "./backtestAssumption.js";
 import { numberBoard, sumBands, sumCounts } from "./sumAnalysis.js";
 
@@ -46,7 +46,9 @@ export class EvaluateAssumption {
     const hits = hitRate(assumption, draws);
     const pastRate = hits.rounds === 0 ? 0 : hits.hits / hits.rounds;
     const theoryRate = count / TOTAL_COMBINATIONS;
-    const counts = sumCounts(draws);
+    // 차트·띠·번호판도 적중률과 같은 회차를 센다 — K 를 켜면 walkRounds 처럼 워밍업을 건너뛴다(spec §5.2)
+    const counted = assumption.topK === null ? draws : draws.slice(WARMUP_ROUNDS);
+    const counts = sumCounts(counted);
     const width = assumption.sumRange.max - assumption.sumRange.min + 1;
     const pastKeys = new Set(draws.map((d) => combinationKey(d.numbers)));
     return ok({
@@ -63,8 +65,8 @@ export class EvaluateAssumption {
       // 과거 비율로 곱한 당첨 확률 = pastRate × 1/N, 이론 비율로 곱하면 N 이 지워져 언제나 1/전체 조합 수
       denominators: { past: pastRate > 0 && count > 0 ? Math.round(count / pastRate) : null, theory: TOTAL_COMBINATIONS },
       sumCounts: counts,
-      ...sumBands(counts, width, draws.length),
-      numbers: numberBoard(draws, assumption, pool, pastKeys),
+      ...sumBands(counts, width, counted.length),
+      numbers: numberBoard(counted, assumption, pool, pastKeys),
     });
   }
 }

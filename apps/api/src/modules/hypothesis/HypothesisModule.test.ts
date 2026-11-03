@@ -117,6 +117,17 @@ describe("POST /api/hypothesis/*", () => {
     expect(body.hitRate.rounds).toBe(0);
     expect(body.pastRate).toBe(0);
     expect(body.denominators.past).toBeNull();
+    expect(body.sumCounts.every((c: number) => c === 0)).toBe(true);
+    expect(body.frequentBands).toEqual([]);
+    expect(body.maxWindowRate).toBe(0);
+  });
+
+  it("K 를 켜면 차트도 센 회차만 센다", async () => {
+    const res = await post(base, "evaluate", { sumRange: ALL, excludePastWinners: false, topK: 10 });
+    const body = await res.json();
+
+    expect(body.hitRate.rounds).toBe(5);
+    expect(body.sumCounts.reduce((a: number, b: number) => a + b, 0)).toBe(body.hitRate.rounds);
   });
 
   it("evaluate·generate 는 최소가 최대보다 큰 구간을 400 으로 거절한다", async () => {
@@ -161,6 +172,21 @@ describe("POST /api/hypothesis/*", () => {
 });
 
 describe("남은 조합이 0 개인 가정", () => {
+  it("evaluate 는 제외만으로 우주가 비어도 200 이고 이론 비율 0, 과거 분모 null 이다", async () => {
+    const { app, base } = await boot(SAME);
+    try {
+      const res = await post(base, "evaluate", { sumRange: ALL, excludePastWinners: true, topK: 6 });
+      const body = await res.json();
+
+      expect(res.status).toBe(200);
+      expect(body.assumedCombinations).toBe(0);
+      expect(body.theoryRate).toBe(0);
+      expect(body.denominators.past).toBeNull();
+    } finally {
+      await app.close();
+    }
+  });
+
   it("generate 는 다시 뽑지 않고 400 으로 거절한다", async () => {
     const { app, base } = await boot(SAME);
     try {
