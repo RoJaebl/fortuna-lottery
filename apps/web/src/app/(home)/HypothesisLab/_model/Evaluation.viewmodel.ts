@@ -64,6 +64,35 @@ export class EvaluationViewModel extends EvaluationModel {
     return `과거에 ${expected}보다 ${Math.abs(d).toLocaleString()}회 ${d > 0 ? "더 나왔" : "덜 나왔"}습니다. 이 차이는 우연입니다.`;
   }
 
+  /** 합계 21~255 마다 과거 회차 막대 — 높이는 가장 높은 막대를 1 로 둔 비 */
+  get sumBars(): { sum: number; height: number }[] {
+    const top = Math.max(0, ...this.sumCounts);
+    return this.sumCounts.map((count, i) => ({ sum: 21 + i, height: top > 0 ? count / top : 0 }));
+  }
+
+  /** 많이 든 구간 띠 — 마우스를 올리면 보일 문구 */
+  get frequentBandItems(): { min: number; max: number; label: string }[] {
+    return this.frequentBands.map(({ min, max, count, rate }) => ({
+      min,
+      max,
+      label: `합계 ${min}~${max} · 과거 ${count.toLocaleString()}회 · ${(rate * 100).toFixed(1)}%`,
+    }));
+  }
+
+  get emptyBandItems(): { min: number; max: number; label: string }[] {
+    return this.emptyBands.map(({ min, max }) => ({ min, max, label: `합계 ${min}~${max} · 과거 0회` }));
+  }
+
+  /** 띠의 폭은 고른 구간의 폭이다(서버가 같은 폭으로 창을 센다) */
+  get frequentLegend(): string {
+    const width = this.sumRange.max - this.sumRange.min + 1;
+    return `폭 ${width} 구간 가운데 가장 많이 든 비율 ${(this.maxWindowRate * 100).toFixed(1)}% (그 90% 이상인 구간 ${this.frequentBands.length}곳)`;
+  }
+
+  get emptyLegend(): string {
+    return `한 번도 나오지 않은 합계 구간 ${this.emptyBands.length}곳`;
+  }
+
   readonly firstPrizeNote = "1등은 이 장수로는 사실상 나오지 않습니다. 위의 세 확률을 보세요.";
 
   /** 등수 2~5 마다 가정 쪽과 무작위 쪽 당첨 장수 — 1등은 표에 두지 않는다 */

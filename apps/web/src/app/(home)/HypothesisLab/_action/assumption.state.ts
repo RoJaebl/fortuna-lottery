@@ -5,10 +5,13 @@ import { EvaluationViewModel } from "../_model/Evaluation.viewmodel";
 import { hypothesisEvaluateRequest, hypothesisEvaluateResponse } from "../_mapper/hypothesisEvaluate.mapper";
 import { hypothesisGenerateRequest, hypothesisGenerateResponse } from "../_mapper/hypothesisGenerate.mapper";
 
-/** 가정 평가와 가정대로 뽑기 — 누를 때마다 새로 계산하므로 조회 없이 바꾸기만 둔다 */
+/**
+ * 가정 평가는 조회다 — 가정(args)마다 칸이 따로 있어 가정이 바뀌면 다시 받고, 앞선 가정의 늦은 응답은 제 칸에만 든다.
+ * 나머지 자동 채우기(generate)는 누를 때마다 새로 뽑으므로 바꾸기다
+ */
 createStore("api.home.HypothesisLab.assumption", (set, get, ctx) =>
   createResource(() => ({
-    async evaluate(assumption: AssumptionModel) {
+    async query(assumption: AssumptionModel) {
       try {
         return EvaluationViewModel.from(
           hypothesisEvaluateResponse(

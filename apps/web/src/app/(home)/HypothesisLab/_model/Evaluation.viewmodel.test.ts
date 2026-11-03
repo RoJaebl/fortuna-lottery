@@ -76,6 +76,35 @@ describe("EvaluationViewModel (가정 평가 결과 하나로 정해지는 문�
     expect(evaluation({ expectedHits: 20 }).gapSentence).toBe("과거에 기대(약 20회)보다 8회 덜 나왔습니다. 이 차이는 우연입니다.");
   });
 
+  it("차트 — 막대 높이는 가장 높은 막대를 1 로, 띠마다 마우스 문구", () => {
+    const e = evaluation({
+      sumCounts: [0, 2, 4],
+      frequentBands: [{ min: 121, max: 160, count: 585, rate: 0.47 }],
+      emptyBands: [{ min: 21, max: 60 }],
+    });
+    expect(e.sumBars).toEqual([
+      { sum: 21, height: 0 },
+      { sum: 22, height: 0.5 },
+      { sum: 23, height: 1 },
+    ]);
+    expect(evaluation({ sumCounts: [0, 0] }).sumBars.map((b) => b.height)).toEqual([0, 0]);
+    expect(e.frequentBandItems).toEqual([{ min: 121, max: 160, label: "합계 121~160 · 과거 585회 · 47.0%" }]);
+    expect(e.emptyBandItems).toEqual([{ min: 21, max: 60, label: "합계 21~60 · 과거 0회" }]);
+  });
+
+  it("차트 범례 두 줄 — 폭은 고른 구간의 폭이다", () => {
+    const e = evaluation({
+      frequentBands: [
+        { min: 121, max: 160, count: 585, rate: 0.47 },
+        { min: 170, max: 209, count: 530, rate: 0.43 },
+      ],
+      maxWindowRate: 0.47,
+      emptyBands: [{ min: 21, max: 60 }],
+    });
+    expect(e.frequentLegend).toBe("폭 40 구간 가운데 가장 많이 든 비율 47.0% (그 90% 이상인 구간 2곳)");
+    expect(e.emptyLegend).toBe("한 번도 나오지 않은 합계 구간 1곳");
+  });
+
   it("firstPrizeNote — 1등 칸 대신 세 확률을 가리킨다", () => {
     expect(evaluation({}).firstPrizeNote).toBe("1등은 이 장수로는 사실상 나오지 않습니다. 위의 세 확률을 보세요.");
   });

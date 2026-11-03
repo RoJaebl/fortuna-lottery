@@ -6,8 +6,9 @@ import { useHypothesisLabPresenter } from "./HypothesisLab.presenter";
 
 export function HypothesisLab() {
   const lab = useHypothesisLabPresenter();
-  const { numbers } = lab;
-  const result = lab.evaluation;
+  const { controls } = lab;
+  const { numbers } = lab.popularity;
+  const result = lab.result;
 
   return (
     <Card
@@ -19,22 +20,22 @@ export function HypothesisLab() {
         <label className="flex items-center gap-2">
           <input
             type="checkbox"
-            checked={lab.excludePastWinners}
-            onChange={lab.toggleExcludePastWinners}
+            checked={controls.excludePastWinners.checked}
+            onChange={controls.excludePastWinners.onToggle}
             className="size-3.5 accent-accent"
           />
           과거 1등 조합 제외
         </label>
         <label className="flex items-center gap-2">
-          <input type="checkbox" checked={lab.topKEnabled} onChange={lab.toggleTopK} className="size-3.5 accent-accent" />
+          <input type="checkbox" checked={controls.topK.checked} onChange={controls.topK.onToggle} className="size-3.5 accent-accent" />
           출현 상위
           <input
             type="number"
             min={6}
             max={45}
-            value={lab.topK}
-            disabled={!lab.topKEnabled}
-            onChange={(e) => lab.changeTopK(e.target.value)}
+            value={controls.topK.value}
+            disabled={!controls.topK.checked}
+            onChange={(e) => controls.topK.onChange(e.target.value)}
             className="h-7 w-14 rounded-button border border-line bg-panel px-2 text-center tabular-nums outline-none focus-visible:border-text disabled:opacity-40"
           />
           개 번호만
@@ -42,12 +43,11 @@ export function HypothesisLab() {
       </div>
 
       <div className="mt-6 flex flex-wrap gap-2">
-        <Button onClick={lab.evaluate} disabled={lab.evaluateDisabled}>
-          {lab.evaluateLabel}
-        </Button>
-        <Button intent="secondary" onClick={lab.generate} disabled={lab.generateDisabled}>
-          {lab.generateLabel}
-        </Button>
+        {result ? (
+          <Button intent="secondary" onClick={result.autoFill.onClick} disabled={result.autoFill.disabled}>
+            {result.autoFill.label}
+          </Button>
+        ) : null}
       </div>
 
       {lab.error ? <p className="mt-3 text-micro text-danger">{lab.error}</p> : null}
@@ -56,9 +56,9 @@ export function HypothesisLab() {
         <div className="mt-8 space-y-6">
           <div className="grid gap-px overflow-hidden rounded-box border border-line/80 bg-line/80 sm:grid-cols-3">
             {[
-              { name: "가정 확률", value: result.assumedProbabilityLabel, note: null },
-              { name: "가정 적중률", value: result.hitRateLabel, note: result.expectedRateLabel },
-              { name: "실제 확률", value: result.realProbabilityLabel, note: null },
+              { name: "합이 구간에 든 과거 비율", value: result.rows.past.sumInRange, note: result.rows.theory.sumInRange },
+              { name: "구간 안에서 맞힐 확률", value: result.rows.past.withinRange, note: null },
+              { name: "실제 당첨 확률", value: result.rows.theory.prize, note: null },
             ].map(({ name, value, note }) => (
               <div key={name} className="bg-panel p-4">
                 <p className="text-pico uppercase tracking-[0.18em] text-muted">{name}</p>
@@ -69,16 +69,16 @@ export function HypothesisLab() {
           </div>
 
           <div>
-            <p className="mb-2 text-pico uppercase tracking-[0.18em] text-muted">풀 · {result.pool.length}개</p>
+            <p className="mb-2 text-pico uppercase tracking-[0.18em] text-muted">{result.pool.label}</p>
             <div className="flex flex-wrap gap-1.5">
-              {result.pool.map((n) => (
+              {result.pool.numbers.map((n) => (
                 <Ball key={n} n={n} size="sm" />
               ))}
             </div>
           </div>
 
           <table className="w-full text-micro tabular-nums text-text">
-            <caption className="mb-2 text-left text-nano text-muted">{result.backtestCaption}</caption>
+            <caption className="mb-2 text-left text-nano text-muted">{result.backtest.caption}</caption>
             <thead>
               <tr className="text-nano tracking-wide text-muted">
                 <th className="pb-1.5 text-left font-medium">등수</th>
@@ -87,16 +87,16 @@ export function HypothesisLab() {
               </tr>
             </thead>
             <tbody>
-              {result.backtestRows.map(({ label, assumed, random }) => (
+              {result.backtest.rows.map(({ label, assumed, random }) => (
                 <tr key={label} className="border-t border-line/70">
                   <td className="py-1.5">{label}</td>
-                  <td className="py-1.5 text-right">{assumed.toLocaleString()}</td>
-                  <td className="py-1.5 text-right text-muted">{random.toLocaleString()}</td>
+                  <td className="py-1.5 text-right">{assumed}</td>
+                  <td className="py-1.5 text-right text-muted">{random}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-          <p className="text-nano leading-relaxed text-muted">{result.firstPrizeNote}</p>
+          <p className="text-nano leading-relaxed text-muted">{result.backtest.firstPrizeNote}</p>
         </div>
       ) : null}
 
@@ -111,10 +111,10 @@ export function HypothesisLab() {
                 <Ball key={n} n={n} size="sm" />
               ))}
             </div>
-            {lab.popularityError ? <p className="mt-2 text-micro text-danger">{lab.popularityError}</p> : null}
-            {lab.popularityMessages ? (
+            {lab.popularity.error ? <p className="mt-2 text-micro text-danger">{lab.popularity.error}</p> : null}
+            {lab.popularity.messages ? (
               <ul className="mt-3 space-y-1.5 text-micro leading-relaxed text-text">
-                {lab.popularityMessages.map((m) => (
+                {lab.popularity.messages.map((m) => (
                   <li key={m} className="flex gap-2">
                     <span aria-hidden className="mt-[0.55em] size-1 shrink-0 rounded-full bg-muted" />
                     {m}
