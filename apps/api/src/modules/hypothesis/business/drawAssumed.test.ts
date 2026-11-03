@@ -1,8 +1,15 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import * as kernel from "@fortuna-lottery/kernel";
 import { mulberry32 } from "@fortuna-lottery/kernel";
 import type { Assumption } from "../domain/model/Assumption.model.js";
 import { combinationKey } from "./assumption.js";
 import { drawAssumed } from "./drawAssumed.js";
+
+// 나열 횟수를 세려고 원래 함수를 감싼다 — 동작은 그대로다.
+vi.mock("@fortuna-lottery/kernel", async (orig) => {
+  const real = await orig<typeof import("@fortuna-lottery/kernel")>();
+  return { ...real, listInSumRange: vi.fn(real.listInSumRange) };
+});
 
 const range = (n: number) => Array.from({ length: n }, (_, i) => i + 1);
 const a = (over: Partial<Assumption>): Assumption => ({
@@ -66,5 +73,24 @@ describe("drawAssumed", () => {
   it("풀 안에 구간 안 조합이 없으면 거절한다", () => {
     const r = drawAssumed(mulberry32(1), a({ topK: 6, sumRange: { min: 22, max: 30 } }), range(6), new Set());
     expect(r).toEqual({ ok: false, error: "이 가정 아래 남은 조합이 없습니다" });
+  });
+
+  it("같은 회차의 잇단 뽑기는 조합을 한 번만 나열한다", () => {
+    const list = vi.mocked(kernel.listInSumRange);
+    list.mockClear();
+    const as = a({ excludePastWinners: true, sumRange: { min: 21, max: 23 } });
+    const past = new Set(["1,2,3,4,5,6"]);
+    const rng = mulberry32(3);
+    for (let i = 0; i < 20; i++) expect(drawAssumed(rng, as, range(45), past).ok).toBe(true);
+    expect(list).toHaveBeenCalledTimes(1);
+  });
+
+  it("남은 조합이 많으면 나열하지 않는다", () => {
+    const list = vi.mocked(kernel.listInSumRange);
+    list.mockClear();
+    const as = a({ excludePastWinners: true, sumRange: { min: 21, max: 45 } });
+    const rng = mulberry32(3);
+    for (let i = 0; i < 20; i++) expect(drawAssumed(rng, as, range(45), new Set(["1,2,3,4,5,6"])).ok).toBe(true);
+    expect(list).not.toHaveBeenCalled();
   });
 });

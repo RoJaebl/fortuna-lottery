@@ -12,20 +12,22 @@ import type { Assumption } from "../domain/model/Assumption.model.js";
 import { combinationKey, inSumRange, sumOf } from "./assumption.js";
 
 const NONE = "이 가정 아래 남은 조합이 없습니다";
-/** 남은 조합이 이 수 이하면 전부 나열해 그 가운데서 고른다. */
-const LIST_LIMIT = 4_096;
+/**
+ * 남은 조합이 이 수 이하면 전부 나열해 그 가운데서 고른다(spec §5.2).
+ * 그보다 많으면 다시 뽑기의 기대 횟수 total/left 가 작다.
+ */
+const LIST_LIMIT = 64;
 
-// 백테스트는 같은 회차에서 20 장을 잇달아 뽑으므로 마지막 셈 하나만 기억한다.
-let last = { pastKeys: null as ReadonlySet<string> | null, key: "", left: 0 };
+// 백테스트는 같은 회차에서 20 장을 잇달아 뽑으므로 마지막 셈 하나와 그 나열만 기억한다.
+let last = { pastKeys: null as ReadonlySet<string> | null, key: "", left: 0, list: null as Combination[] | null };
 
-/** 고른 번호를 품고 합이 구간 안인 조합 수에서, 그 가운데 과거 1등 수를 뺀 값. */
-function remaining(assumption: Assumption, pool: readonly number[], pastKeys: ReadonlySet<string>): number {
+function cached(assumption: Assumption, pool: readonly number[], pastKeys: ReadonlySet<string>): typeof last {
   const { fixed, sumRange } = assumption;
   const key = `${pool.join(",")}|${fixed.join(",")}|${sumRange.min}|${sumRange.max}`;
   if (last.pastKeys !== pastKeys || last.key !== key) {
-    last = { pastKeys, key, left: remainingCount(fixed, sumRange, pool, pastKeys) };
+    last = { pastKeys, key, left: remainingCount(fixed, sumRange, pool, pastKeys), list: null };
   }
-  return last.left;
+  return last;
 }
 
 export function remainingCount(
@@ -66,13 +68,14 @@ export function drawAssumed(
   const first = draw();
   if (!first.ok || !assumption.excludePastWinners) return first;
 
-  const left = remaining(assumption, pool, pastKeys);
-  if (left === 0) return err(NONE);
-  if (left <= LIST_LIMIT) {
-    const list = listInSumRange(pool, fixed, sumRange.min, sumRange.max).filter(
+  const memo = cached(assumption, pool, pastKeys);
+  if (memo.left === 0) return err(NONE);
+  if (memo.left <= LIST_LIMIT) {
+    memo.list ??= listInSumRange(pool, fixed, sumRange.min, sumRange.max).filter(
       (c) => !pastKeys.has(combinationKey(c)),
     );
-    return ok(list[Math.floor(random() * list.length)]!);
+    if (memo.list.length === 0) return err(NONE);
+    return ok(memo.list[Math.floor(random() * memo.list.length)]!);
   }
   // 남은 조합이 LIST_LIMIT 보다 많고 빠지는 것은 과거 1등뿐이라 다시 뽑기는 곧 끝난다.
   let r: Result<Combination> = first;
