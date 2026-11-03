@@ -5,7 +5,7 @@ import { useGSAP } from "@gsap/react";
 import { ballColor } from "@lib/lotto-colors";
 import { Card } from "@ui/Card";
 import type { GridColumn } from "./_model/Statistics.viewmodel";
-import { RoundTimeline, type RoundTimelineProps } from "./RoundTimeline";
+import { RoundTimeline, type RoundTimelineProps } from "../RoundTimeline";
 
 gsap.registerPlugin(useGSAP);
 

@@ -3,7 +3,7 @@ import { Card } from "@ui/Card";
 import { Tabs, type TabsProps } from "@ui/Tabs";
 import type { StatisticsViewModel } from "./_model/Statistics.viewmodel";
 import type { SumAxisMode } from "./StatisticsPanel.presenter";
-import { RoundTimeline, type RoundTimelineProps } from "./RoundTimeline";
+import { RoundTimeline, type RoundTimelineProps } from "../RoundTimeline";
 
 const W = 560;
 const H = 140;
