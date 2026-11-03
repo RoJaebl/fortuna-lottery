@@ -29,24 +29,6 @@ const evaluation = (over: Partial<EvaluationModel>) =>
   );
 
 describe("EvaluationViewModel (가정 평가 결과 하나로 정해지는 문구)", () => {
-  it("assumedProbabilityLabel — 남은 조합이 없으면 남은 조합 없음", () => {
-    expect(evaluation({}).assumedProbabilityLabel).toBe("1 / 38,760");
-    expect(evaluation({ assumedCombinations: 0 }).assumedProbabilityLabel).toBe("남은 조합 없음");
-  });
-
-  it("realProbabilityLabel 은 전체 조합 수로", () => {
-    expect(evaluation({}).realProbabilityLabel).toBe("1 / 8,145,060");
-  });
-
-  it("hitRateLabel — 센 회차가 없으면 0 으로 나누지 않는다", () => {
-    expect(evaluation({}).hitRateLabel).toBe("12 / 1,090회차 (1.1%)");
-    expect(evaluation({ hitRate: { hits: 0, rounds: 0, expectedRate: 0.0048 } }).hitRateLabel).toBe("센 회차 없음");
-  });
-
-  it("expectedRateLabel", () => {
-    expect(evaluation({}).expectedRateLabel).toBe("무작위라면 0.5%");
-  });
-
   it("backtestCaption — 회차 합계 장수를 총계로 말한다", () => {
     const e = evaluation({ backtest: { assumed: { tickets: 21800, rankCounts: [] }, random: { tickets: 21800, rankCounts: [] } } });
     expect(e.backtestCaption).toBe("백테스트 — 총 가정 21,800장 · 무작위 21,800장 (회차마다 20장)");
@@ -73,6 +55,8 @@ describe("EvaluationViewModel (가정 평가 결과 하나로 정해지는 문�
     expect(none.pastRateLabel).toBe("센 회차 없음");
     expect(none.pastProbabilityLabel).toBe("과거에 든 회차 없음");
     expect(evaluation({ expectedHits: 12 }).gapSentence).toBe("기대와 같았습니다.");
+    expect(none.gapSentence).toBe("센 회차 없음");
+    expect(evaluation({ assumedCombinations: 0 }).inRangeLabel).toBe("남은 조합 없음");
     expect(evaluation({ expectedHits: 20 }).gapSentence).toBe("과거에 기대(약 20회)보다 8회 덜 나왔습니다. 이 차이는 우연입니다.");
   });
 

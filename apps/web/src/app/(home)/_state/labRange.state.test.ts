@@ -23,6 +23,14 @@ describe("state.home.labRange", () => {
     expect(range()).toMatchObject({ min: 121, max: 160 });
   });
 
+  it("setRangeNow 는 기다리지 않고 보낸 구간까지 바꾸며, 앞서 걸린 setRange 를 지운다", () => {
+    range().setRange(100, 110);
+    range().setRangeNow(130, 90);
+    expect(range()).toMatchObject({ min: 90, max: 130, committed: { min: 90, max: 130 } });
+    vi.advanceTimersByTime(300);
+    expect(range().committed).toEqual({ min: 90, max: 130 });
+  });
+
   it("보낸 구간은 마지막 setRange 뒤 300ms 에 한 번 따라온다", () => {
     range().setRange(100, 110);
     vi.advanceTimersByTime(200);

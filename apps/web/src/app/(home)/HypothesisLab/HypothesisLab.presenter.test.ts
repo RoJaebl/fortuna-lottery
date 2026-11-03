@@ -76,18 +76,72 @@ describe("useHypothesisLabPresenter — 평가는 지금 가정의 조회다", (
     const http = setup();
     const { result } = renderHook(() => useHypothesisLabPresenter());
     await waitFor(() => expect(result.current.result).not.toBeNull());
-    expect(evaluations(http)).toEqual([{ sumRange: { min: 121, max: 160 }, excludePastWinners: true, topK: 20, fixed: [] }]);
+    expect(evaluations(http)).toEqual([{ sumRange: { min: 121, max: 160 }, excludePastWinners: false, fixed: [] }]);
   });
 
-  it("구간을 바꾸면 멈춘 뒤 바뀐 sumRange 로 한 번 받는다", async () => {
+  it("입력 칸으로 바꾼 구간은 기다리지 않고 곧바로 보낸 구간이 된다", async () => {
     const http = setup();
     const { result } = renderHook(() => useHypothesisLabPresenter());
     await waitFor(() => expect(result.current.result).not.toBeNull());
     act(() => result.current.controls.changeMin("100"));
     act(() => result.current.controls.changeMax("110"));
     expect(result.current.controls).toMatchObject({ min: 100, max: 110 });
-    await waitFor(() => expect(evaluations(http)).toHaveLength(2), { timeout: 1000 });
-    expect(evaluations(http)[1]!.sumRange).toEqual({ min: 100, max: 110 });
+    expect(getStore("state.home.labRange").getState().committed).toEqual({ min: 100, max: 110 });
+    await waitFor(() => expect(evaluations(http).at(-1)!.sumRange).toEqual({ min: 100, max: 110 }));
+  });
+
+  it("차트로 끈 구간은 멈춘 뒤 300ms 에 보낸다", () => {
+    setup();
+    const { result } = renderHook(() => useHypothesisLabPresenter());
+    act(() => result.current.chart.onSelect(100, 110));
+    expect(getStore("state.home.labRange").getState().committed).toEqual({ min: 121, max: 160 });
+  });
+
+  it("평가가 400 이면 오류 문구를 보이고 앞선 결과는 흐리게 남긴다", async () => {
+    const http = setup();
+    const { result } = renderHook(() => useHypothesisLabPresenter());
+    await waitFor(() => expect(result.current.result).not.toBeNull());
+    expect(result.current.stale).toBe(false);
+    http.respond("/api/hypothesis/evaluate", () => {
+      throw new Error("이 가정 아래 남은 조합이 없습니다");
+    });
+    act(() => getStore("state.home.HypothesisLab.switches").getState().toggleFixed(7));
+    await waitFor(() => expect(result.current.error).toBe("이 가정 아래 남은 조합이 없습니다"));
+    expect(result.current.result).not.toBeNull();
+    expect(result.current.stale).toBe(true);
+  });
+
+  it("첫 평가가 실패해도 자동 채우기는 누를 수 있다", async () => {
+    const http = setup();
+    http.respond("/api/hypothesis/evaluate", () => {
+      throw new Error("서버에 닿지 않습니다");
+    });
+    http.respond("/api/hypothesis/generate", () => ({ numbers: [1, 2, 3, 4, 5, 6] }));
+    const { result } = renderHook(() => useHypothesisLabPresenter());
+    await waitFor(() => expect(result.current.error).toBe("서버에 닿지 않습니다"));
+    expect(result.current.result).toBeNull();
+    expect(result.current.autoFill.disabled).toBe(false);
+    await act(async () => result.current.autoFill.onClick());
+    await waitFor(() => expect(getStore("state.home.combination").getState().numbers).toEqual([1, 2, 3, 4, 5, 6]));
+  });
+
+  it("풀이 바뀌어 고른 번호가 풀 밖이 되면 그 번호를 버리고 다시 받는다", async () => {
+    const http = setup();
+    const switches = getStore("state.home.HypothesisLab.switches").getState();
+    switches.toggleTopK();
+    switches.toggleFixed(3);
+    switches.toggleFixed(45);
+    // 서버처럼 — 고른 번호가 풀(1~20) 밖이면 400, 아니면 그 풀로 답한다
+    const pool = Array.from({ length: 20 }, (_, i) => i + 1);
+    http.respond("/api/hypothesis/evaluate", () => {
+      const body = bodyOf(http.sent.at(-1)!);
+      if (body.fixed.some((n) => !pool.includes(n))) throw new Error("고른 번호 가운데 풀 밖의 번호가 있습니다");
+      return { ...EVALUATION, pool };
+    });
+    const { result } = renderHook(() => useHypothesisLabPresenter());
+    await waitFor(() => expect(getStore("state.home.HypothesisLab.switches").getState().fixed).toEqual([3]));
+    await waitFor(() => expect(result.current.result).not.toBeNull());
+    expect(evaluations(http).at(-1)!.fixed).toEqual([3]);
   });
 
   it("차트에서 거꾸로 끌어도 정렬해 보인다", () => {
@@ -200,10 +254,10 @@ describe("useHypothesisLabPresenter — 나머지 자동 채우기", () => {
     const { result } = renderHook(() => useHypothesisLabPresenter());
     await waitFor(() => expect(result.current.result).not.toBeNull());
     // 과거 줄은 지금 조합이 아니라 이 가정에서 뽑은 조합의 확률이다
-    expect(result.current.result!.autoFill.pastProbabilityLine).toBe("이 가정에서 뽑은 조합은 과거 비율로 가정하면 1 / 4");
-    expect(result.current.result!.autoFill.realProbabilityLine).toBe("실제 당첨 확률 1 / 8,145,060");
+    expect(result.current.autoFill.pastProbabilityLine).toBe("이 가정에서 뽑은 조합은 과거 비율로 가정하면 1 / 4");
+    expect(result.current.autoFill.realProbabilityLine).toBe("실제 당첨 확률 1 / 8,145,060");
     act(() => result.current.result!.board[6]!.onToggle());
-    await act(async () => result.current.result!.autoFill.onClick());
+    await act(async () => result.current.autoFill.onClick());
 
     await waitFor(() => expect(getStore("state.home.combination").getState().numbers).toEqual([7, 20, 21, 22, 23, 30]));
     const generate = http.sent.find((s) => s.path === "/api/hypothesis/generate")!;

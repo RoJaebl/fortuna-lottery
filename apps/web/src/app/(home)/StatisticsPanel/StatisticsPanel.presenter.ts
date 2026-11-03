@@ -170,7 +170,7 @@ export function useStatisticsPanelPresenter() {
     changePlaySpeed,
   } = useStore("state.home.StatisticsPanel.view");
 
-  const { setRange } = useStore("state.home.labRange", { pick: ["setRange"] });
+  const { setRangeNow } = useStore("state.home.labRange", { pick: ["setRangeNow"] });
   const { selectTab } = useStore("state.home.navigation", { pick: ["selectTab"] });
 
   const tabs = { items: STAT_VIEWS, active: activeStatView, onChange: changeStatView };
@@ -202,7 +202,7 @@ export function useStatisticsPanelPresenter() {
       mine: my !== null && Math.floor((my.mySum - 21) / 20) === i,
       // 이 구간을 실험실의 합계 구간으로 넘기고 가정 실험실 탭을 연다
       onExperiment: () => {
-        setRange(min, max);
+        setRangeNow(min, max);
         selectTab("hypothesis");
       },
     })),

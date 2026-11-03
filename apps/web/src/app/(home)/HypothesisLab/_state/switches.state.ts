@@ -38,8 +38,8 @@ createStore("state.home.HypothesisLab.switches", (set, get, ctx) => {
   };
 
   return {
-    excludePastWinners: true,
-    topKEnabled: true,
+    excludePastWinners: false,
+    topKEnabled: false,
     topK: 20,
     pastRateMode: true,
     fixed: [] as number[],
@@ -56,6 +56,8 @@ createStore("state.home.HypothesisLab.switches", (set, get, ctx) => {
         if (fixed.includes(n)) return { fixed: fixed.filter((f) => f !== n) };
         return fixed.length < MAX_FIXED ? { fixed: [...fixed, n].sort((a, b) => a - b) } : {};
       }),
+    /** 풀 밖의 고른 번호를 버린다 — 풀이 바뀌면(K·회차) 풀 밖 번호는 늘 불가능이다(spec §5.2) */
+    keepInPool: (pool: readonly number[]) => set(({ fixed }) => ({ fixed: fixed.filter((n) => pool.includes(n)) })),
     /** 재생 바의 회차는 곧바로 바꾸고, 평가가 진행 중이 아니면 곧바로 들인다 — 진행 중이면 끝난 뒤 가장 새 것만 들인다 */
     changeUntilRound: (untilRound: number | null) => {
       set({ untilRound });

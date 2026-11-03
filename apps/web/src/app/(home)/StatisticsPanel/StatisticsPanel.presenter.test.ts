@@ -126,7 +126,7 @@ describe("useStatisticsPanelPresenter", () => {
     withState();
     const { result } = renderHook(() => useStatisticsPanelPresenter());
     act(() => result.current.views?.sum.bands[1]?.onExperiment());
-    expect(getStore("state.home.labRange").getState()).toMatchObject({ min: 41, max: 60 });
+    expect(getStore("state.home.labRange").getState()).toMatchObject({ min: 41, max: 60, committed: { min: 41, max: 60 } });
     expect(getStore("state.home.navigation").getState().activeTab).toBe("hypothesis");
   });
 

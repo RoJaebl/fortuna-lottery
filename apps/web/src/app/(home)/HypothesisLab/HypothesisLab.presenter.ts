@@ -75,6 +75,18 @@ export interface LabBoardNumber {
   onToggle: () => void;
 }
 
+/** 나머지 자동 채우기 — 결과가 없어도(첫 평가 실패) 누를 수 있다 */
+export interface LabAutoFill {
+  label: string;
+  disabled: boolean;
+  onClick: () => void;
+  /** 현재 조합 — 없으면 null */
+  numbers: number[] | null;
+  /** 조합 아래 두 줄 — 과거 줄은 결과가 없거나 「과거 비율로 계산」이 꺼져 있으면 null */
+  pastProbabilityLine: string | null;
+  realProbabilityLine: string;
+}
+
 /** 3 결과 읽기 */
 export interface LabResult {
   rows: { past: LabRateRow; theory: LabRateRow };
@@ -85,16 +97,6 @@ export interface LabResult {
   board: LabBoardNumber[];
   /** 「고른 번호 2 / 5」 */
   fixedLabel: string;
-  autoFill: {
-    label: string;
-    disabled: boolean;
-    onClick: () => void;
-    /** 현재 조합 — 없으면 null */
-    numbers: number[] | null;
-    /** 조합 아래 두 줄 — 과거 줄은 「과거 비율로 계산」이 꺼져 있으면 null */
-    pastProbabilityLine: string | null;
-    realProbabilityLine: string;
-  };
   pool: { label: string; numbers: number[] };
   backtest: {
     caption: string;
@@ -129,7 +131,7 @@ export function useHypothesisLabPresenter() {
   const popularity = useStore("api.home.HypothesisLab.popularity", { args: numbers ? { numbers } : undefined, pick: ["data", "error"] });
   const { generate } = evaluation;
 
-  const autoFill = async () => {
+  const fill = async () => {
     const drawn = await generate.mutateAsync(assumption).catch(() => undefined);
     if (drawn) choose(drawn);
   };
@@ -151,8 +153,9 @@ export function useHypothesisLabPresenter() {
   const controls: LabControls = {
     min: labRange.min,
     max: labRange.max,
-    changeMin: (value) => labRange.setRange(toNumber(value), labRange.max),
-    changeMax: (value) => labRange.setRange(labRange.min, toNumber(value)),
+    // 입력 칸은 칸을 떠나거나 Enter 를 누를 때 넘기므로 기다리지 않고 곧바로 보낸다 — 기다림은 차트 끌기만 갖는다
+    changeMin: (value) => labRange.setRangeNow(toNumber(value), labRange.max),
+    changeMax: (value) => labRange.setRangeNow(labRange.min, toNumber(value)),
     excludePastWinners: { checked: excludePastWinners, onToggle: switches.toggleExcludePastWinners },
     topK: {
       checked: topKEnabled,
@@ -196,15 +199,6 @@ export function useHypothesisLabPresenter() {
       };
     }),
     fixedLabel: `고른 번호 ${fixed.length} / ${MAX_FIXED}`,
-    autoFill: {
-      label: generate.pending ? "채우는 중…" : "나머지 자동 채우기",
-      disabled: generate.pending,
-      onClick: () => void autoFill(),
-      numbers,
-      // 이 확률은 가정의 것이다 — 지금 조합이 생성기에서 왔어도 「이 가정에서 뽑은 조합」의 값으로 읽히게 적는다
-      pastProbabilityLine: pastRateMode ? `이 가정에서 뽑은 조합은 과거 비율로 가정하면 ${e.pastProbabilityLabel}` : null,
-      realProbabilityLine: `실제 당첨 확률 ${e.theoryProbabilityLabel}`,
-    },
     pool: { label: `풀 · ${e.pool.length}개`, numbers: e.pool },
     backtest: {
       caption: e.backtestCaption,
@@ -215,6 +209,16 @@ export function useHypothesisLabPresenter() {
       })),
       firstPrizeNote: e.firstPrizeNote,
     },
+  };
+
+  const autoFill: LabAutoFill = {
+    label: generate.pending ? "채우는 중…" : "나머지 자동 채우기",
+    disabled: generate.pending,
+    onClick: () => void fill(),
+    numbers,
+    // 이 확률은 가정의 것이다 — 지금 조합이 생성기에서 왔어도 「이 가정에서 뽑은 조합」의 값으로 읽히게 적는다
+    pastProbabilityLine: e && pastRateMode ? `이 가정에서 뽑은 조합은 과거 비율로 가정하면 ${e.pastProbabilityLabel}` : null,
+    realProbabilityLine: `실제 당첨 확률 ${e?.theoryProbabilityLabel ?? "1 / 8,145,060"}`,
   };
 
   // 재생 바 — 위치 i 는 제 i+1 회. 맨 끝을 고르면 「최신」(null)으로 둔다 — 새 회차가 오면 따라간다
@@ -240,11 +244,14 @@ export function useHypothesisLabPresenter() {
     loading: e === null && evaluation.status !== "error",
     /** 앞선 결과를 보이며 새 가정을 받는 중 */
     updating: evaluation.isFetching && e !== null,
+    /** 지금 가정의 평가가 실패해 보이는 결과는 앞선 가정의 것이다 — 오류 문구 아래에서 흐리게 */
+    stale: evaluation.status === "error" && e !== null,
     error: evaluation.error ?? generate.error,
     timeline,
     chart,
     controls,
     result,
+    autoFill,
     popularity: { numbers, messages: popularity.data?.messages ?? null, error: popularity.error },
   };
 }

@@ -50,10 +50,10 @@ state.home.GeneratorCard.selection = {"mode":"auto","selected":[]}
   바꾸는 함수: changeMode, toggleNumber
   정의: app/(home)/GeneratorCard/_state/selection.state.ts
   쓰는 곳: GeneratorCard
-state.home.HypothesisLab.switches = {"excludePastWinners":true,"topKEnabled":true,"topK":20,"pastRateMode":true,"fixed":[],"untilRound":null,"committedUntilRound":null,"playSpeed":1}
-  바꾸는 함수: changePlaySpeed, changeTopK, changeUntilRound, toggleExcludePastWinners, toggleFixed, togglePastRateMode, toggleTopK
+state.home.HypothesisLab.switches = {"excludePastWinners":false,"topKEnabled":false,"topK":20,"pastRateMode":true,"fixed":[],"untilRound":null,"committedUntilRound":null,"playSpeed":1}
+  바꾸는 함수: changePlaySpeed, changeTopK, changeUntilRound, keepInPool, toggleExcludePastWinners, toggleFixed, togglePastRateMode, toggleTopK
   정의: app/(home)/HypothesisLab/_state/switches.state.ts
-  쓰는 곳: HypothesisLab
+  쓰는 곳: HypothesisLab, api.home.HypothesisLab.assumption
 state.home.LotterietusCard.clock = {"now":0}
   바꾸는 함수: 없다
   정의: app/(home)/LotterietusCard/_state/clock.state.ts
@@ -67,7 +67,7 @@ state.home.combination = {"numbers":null}
   정의: app/(home)/_state/combination.state.ts
   쓰는 곳: GeneratorCard, HypothesisLab, PicksCard, SimulationCard, StatisticsPanel
 state.home.labRange = {"min":121,"max":160,"committed":{"min":121,"max":160}}
-  바꾸는 함수: setRange
+  바꾸는 함수: setRange, setRangeNow
   정의: app/(home)/_state/labRange.state.ts
   쓰는 곳: HypothesisLab, StatisticsPanel, state.home.HypothesisLab.switches
 state.home.navigation = {"activeMenu":"workroom","activeTab":"statistics"}

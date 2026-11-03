@@ -5,8 +5,21 @@ import { TestHttpClient } from "@infrastructure/http";
 const switches = () => getStore("state.home.HypothesisLab.switches").getState();
 
 describe("state.home.HypothesisLab.switches", () => {
-  it("처음 값 — 과거 비율로 계산, 고른 번호 없음, 최신 회차, 1 배속", () => {
-    expect(switches()).toMatchObject({ pastRateMode: true, fixed: [], untilRound: null, playSpeed: 1 });
+  it("처음 값 — 제외·K 끔, 과거 비율로 계산, 고른 번호 없음, 최신 회차, 1 배속", () => {
+    expect(switches()).toMatchObject({
+      excludePastWinners: false,
+      topKEnabled: false,
+      pastRateMode: true,
+      fixed: [],
+      untilRound: null,
+      playSpeed: 1,
+    });
+  });
+
+  it("keepInPool 은 풀 밖의 고른 번호를 버린다", () => {
+    for (const n of [3, 14, 45]) switches().toggleFixed(n);
+    switches().keepInPool([1, 3, 14, 20]);
+    expect(switches().fixed).toEqual([3, 14]);
   });
 
   it("toggleFixed 는 넣고 빼며, 다섯 개를 넘겨 넣지 않는다", () => {

@@ -6,7 +6,7 @@ import { Card } from "@ui/Card";
 import { Tooltip } from "@ui/Tooltip";
 import { RoundTimeline } from "../RoundTimeline";
 import { BacktestTable } from "./BacktestTable";
-import { useHypothesisLabPresenter } from "./HypothesisLab.presenter";
+import { type LabAutoFill, useHypothesisLabPresenter } from "./HypothesisLab.presenter";
 import { NumberBoard } from "./NumberBoard";
 import { ProbabilityTable } from "./ProbabilityTable";
 import { SumRangeChart } from "./SumRangeChart";
@@ -22,6 +22,35 @@ function Step({ n, title, lead, children }: { n: number; title: string; lead: st
       <p className="mt-1 mb-4 text-nano leading-relaxed text-muted">{lead}</p>
       {children}
     </section>
+  );
+}
+
+/** 나머지 자동 채우기 — 결과가 없어도(첫 평가 실패) 누를 수 있다 */
+function AutoFill({ label, disabled, onClick, numbers, pastProbabilityLine, realProbabilityLine }: LabAutoFill) {
+  return (
+    <div>
+      <Button intent="secondary" size="sm" onClick={onClick} disabled={disabled}>
+        {label}
+      </Button>
+      {numbers ? (
+        <div className="mt-3">
+          <div className="flex gap-1.5">
+            {numbers.map((n) => (
+              <Ball key={n} n={n} size="sm" />
+            ))}
+          </div>
+          <p className="mt-2 text-nano tabular-nums leading-relaxed text-muted">
+            {pastProbabilityLine ? (
+              <>
+                {pastProbabilityLine}
+                <br />
+              </>
+            ) : null}
+            <span className="font-semibold text-text">{realProbabilityLine}</span>
+          </p>
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -51,6 +80,7 @@ export function HypothesisLab() {
   const lab = useHypothesisLabPresenter();
   const { controls, chart, result } = lab;
   const { numbers } = lab.popularity;
+  const autoFill = <AutoFill {...lab.autoFill} />;
 
   return (
     <Card
@@ -149,7 +179,11 @@ export function HypothesisLab() {
         {lab.error ? <p className="mb-3 text-micro text-danger">{lab.error}</p> : null}
         {lab.loading ? <p className="text-micro text-muted">과거 회차로 계산하는 중…</p> : null}
         {result ? (
-          <div aria-busy={lab.updating} className="space-y-6 transition-opacity duration-200 aria-busy:opacity-60">
+          <div
+            aria-busy={lab.updating}
+            data-stale={lab.stale || undefined}
+            className="space-y-6 transition-opacity duration-200 aria-busy:opacity-60 data-stale:opacity-60"
+          >
             <div>
               <ProbabilityTable rows={result.rows} pastRowFolded={result.pastRowFolded} />
               <p className="mt-2 text-micro leading-relaxed text-text">{result.gapSentence}</p>
@@ -161,29 +195,7 @@ export function HypothesisLab() {
 
             <NumberBoard board={result.board} fixedLabel={result.fixedLabel} />
 
-            <div>
-              <Button intent="secondary" size="sm" onClick={result.autoFill.onClick} disabled={result.autoFill.disabled}>
-                {result.autoFill.label}
-              </Button>
-              {result.autoFill.numbers ? (
-                <div className="mt-3">
-                  <div className="flex gap-1.5">
-                    {result.autoFill.numbers.map((n) => (
-                      <Ball key={n} n={n} size="sm" />
-                    ))}
-                  </div>
-                  <p className="mt-2 text-nano tabular-nums leading-relaxed text-muted">
-                    {result.autoFill.pastProbabilityLine ? (
-                      <>
-                        {result.autoFill.pastProbabilityLine}
-                        <br />
-                      </>
-                    ) : null}
-                    <span className="font-semibold text-text">{result.autoFill.realProbabilityLine}</span>
-                  </p>
-                </div>
-              ) : null}
-            </div>
+            {autoFill}
 
             <div>
               <p className="mb-2 flex items-center gap-1 text-pico uppercase tracking-[0.18em] text-muted">
@@ -202,7 +214,9 @@ export function HypothesisLab() {
 
             <BacktestTable {...result.backtest} />
           </div>
-        ) : null}
+        ) : lab.loading ? null : (
+          autoFill
+        )}
       </Step>
 
       <div className="mt-8 border-t border-line/70 pt-6">
