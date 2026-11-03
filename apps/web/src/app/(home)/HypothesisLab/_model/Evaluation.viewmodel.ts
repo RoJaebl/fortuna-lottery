@@ -28,6 +28,41 @@ export class EvaluationViewModel extends EvaluationModel {
     return `백테스트 — 총 가정 ${assumed.tickets.toLocaleString()}장 · 무작위 ${random.tickets.toLocaleString()}장 (회차마다 20장)`;
   }
 
+  get pastRateLabel(): string {
+    const { hits, rounds } = this.hitRate;
+    if (rounds === 0) return "센 회차 없음";
+    return `${(this.pastRate * 100).toFixed(1)}% · ${rounds.toLocaleString()}회 중 ${hits.toLocaleString()}회`;
+  }
+
+  get theoryRateLabel(): string {
+    return `${(this.theoryRate * 100).toFixed(1)}%`;
+  }
+
+  /** 합계 구간 안 조합 수 — 제외 전 */
+  get inRangeLabel(): string {
+    return `1 / ${this.sumRangeCombinations.total.toLocaleString()}`;
+  }
+
+  get pastProbabilityLabel(): string {
+    const { past } = this.denominators;
+    return past === null ? "과거에 든 회차 없음" : `1 / ${past.toLocaleString()}`;
+  }
+
+  get theoryProbabilityLabel(): string {
+    return `1 / ${this.denominators.theory.toLocaleString()}`;
+  }
+
+  get excludedLabel(): string {
+    return `제외한 과거 1등 ${this.sumRangeCombinations.excluded.toLocaleString()}개`;
+  }
+
+  get gapSentence(): string {
+    const expected = `기대(약 ${Math.round(this.expectedHits).toLocaleString()}회)`;
+    const d = Math.round(this.hitRate.hits - this.expectedHits);
+    if (d === 0) return "기대와 같았습니다.";
+    return `과거에 ${expected}보다 ${Math.abs(d).toLocaleString()}회 ${d > 0 ? "더 나왔" : "덜 나왔"}습니다. 이 차이는 우연입니다.`;
+  }
+
   readonly firstPrizeNote = "1등은 이 장수로는 사실상 나오지 않습니다. 위의 세 확률을 보세요.";
 
   /** 등수 2~5 마다 가정 쪽과 무작위 쪽 당첨 장수 — 1등은 표에 두지 않는다 */

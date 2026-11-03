@@ -6,8 +6,10 @@ import { assumptionRequest, useHypothesisLabPresenter } from "./HypothesisLab.pr
 
 describe("assumptionRequest", () => {
   it("K 스위치가 꺼져 있으면 topK 를 싣지 않는다", () => {
-    expect(assumptionRequest(true, false, 20)).toEqual({ excludePastWinners: true });
-    expect(assumptionRequest(false, true, 6)).toEqual({ excludePastWinners: false, topK: 6 });
+    // 합계 구간·고른 번호는 Task 8 이 화면에서 받는다 — 지금은 고정값
+    const fixedPart = { sumRange: { min: 121, max: 160 }, fixed: [] };
+    expect(assumptionRequest(true, false, 20)).toEqual({ ...fixedPart, excludePastWinners: true });
+    expect(assumptionRequest(false, true, 6)).toEqual({ ...fixedPart, excludePastWinners: false, topK: 6 });
   });
 });
 
@@ -20,6 +22,17 @@ const EVALUATION = {
     assumed: { tickets: 20, rankCounts: [20, 0, 0, 0, 0, 0] },
     random: { tickets: 20, rankCounts: [20, 0, 0, 0, 0, 0] },
   },
+  sumRange: { min: 121, max: 160 },
+  sumRangeCombinations: { total: 38760, excluded: 0 },
+  theoryRate: 0.5,
+  pastRate: 0.5,
+  expectedHits: 1,
+  denominators: { past: 4, theory: 8145060 },
+  sumCounts: [],
+  frequentBands: [],
+  maxWindowRate: 0.5,
+  emptyBands: [],
+  numbers: [],
 };
 
 /** 평가는 EVALUATION 을, 인기 패턴은 빈 목록을 돌려준다. 조합을 미리 정한다 */

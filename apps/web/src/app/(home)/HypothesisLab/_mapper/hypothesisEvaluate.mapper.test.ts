@@ -3,13 +3,18 @@ import { EvaluationModel } from "../_model/Evaluation.model";
 import { hypothesisEvaluateRequest, hypothesisEvaluateResponse } from "./hypothesisEvaluate.mapper";
 
 describe("hypothesisEvaluate 변환기", () => {
-  it("요청은 topK 가 없으면 그 키를 빼고, 있으면 싣는다", () => {
-    const request = hypothesisEvaluateRequest({ excludePastWinners: true });
-    expect(request).toEqual({ excludePastWinners: true });
+  it("요청은 topK·untilRound 가 없으면 그 키를 빼고 fixed 는 언제나 싣는다", () => {
+    const base = { sumRange: { min: 121, max: 160 }, excludePastWinners: true, fixed: [] };
+    const request = hypothesisEvaluateRequest(base);
+    expect(request).toEqual(base);
     expect("topK" in request).toBe(false);
-    expect(hypothesisEvaluateRequest({ excludePastWinners: false, topK: 20 })).toEqual({
+    expect("untilRound" in request).toBe(false);
+    expect(hypothesisEvaluateRequest({ ...base, excludePastWinners: false, topK: 20, fixed: [3, 7], untilRound: 100 })).toEqual({
+      ...base,
       excludePastWinners: false,
       topK: 20,
+      fixed: [3, 7],
+      untilRound: 100,
     });
   });
 
@@ -23,6 +28,17 @@ describe("hypothesisEvaluate 변환기", () => {
         assumed: { tickets: 20, rankCounts: [20, 0, 0, 0, 0, 0] },
         random: { tickets: 20, rankCounts: [19, 0, 0, 0, 0, 1] },
       },
+      sumRange: { min: 121, max: 160 },
+      sumRangeCombinations: { total: 3948748, excluded: 7 },
+      theoryRate: 0.485,
+      pastRate: 0.47,
+      expectedHits: 1.5,
+      denominators: { past: null, theory: 8145060 },
+      sumCounts: [1, 2, 3],
+      frequentBands: [{ min: 130, max: 150, count: 9, rate: 0.1 }],
+      maxWindowRate: 0.1,
+      emptyBands: [{ min: 21, max: 40 }],
+      numbers: [{ n: 1, possible: true, count: 4 }],
     };
     const model = hypothesisEvaluateResponse(res);
 
@@ -32,5 +48,12 @@ describe("hypothesisEvaluate 변환기", () => {
     expect(model.hitRate).not.toBe(res.hitRate);
     expect(model.backtest.assumed.rankCounts).not.toBe(res.backtest.assumed.rankCounts);
     expect(model.backtest.random.rankCounts).not.toBe(res.backtest.random.rankCounts);
+    expect(model.sumRange).not.toBe(res.sumRange);
+    expect(model.sumRangeCombinations).not.toBe(res.sumRangeCombinations);
+    expect(model.denominators).not.toBe(res.denominators);
+    expect(model.sumCounts).not.toBe(res.sumCounts);
+    expect(model.frequentBands[0]).not.toBe(res.frequentBands[0]);
+    expect(model.emptyBands[0]).not.toBe(res.emptyBands[0]);
+    expect(model.numbers[0]).not.toBe(res.numbers[0]);
   });
 });

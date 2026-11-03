@@ -3,7 +3,9 @@ import type { AssumptionModel } from "./_model/Evaluation.model";
 
 /** 스위치 셋을 가정 하나로 — K 스위치가 꺼져 있으면 topK 를 싣지 않는다 */
 export function assumptionRequest(excludePastWinners: boolean, topKEnabled: boolean, topK: number): AssumptionModel {
-  return topKEnabled ? { excludePastWinners, topK } : { excludePastWinners };
+  // Task 8 replaces the fixed sumRange and fixed: [] below
+  const base = { sumRange: { min: 121, max: 160 }, excludePastWinners, fixed: [] };
+  return topKEnabled ? { ...base, topK } : base;
 }
 
 export function useHypothesisLabPresenter() {
