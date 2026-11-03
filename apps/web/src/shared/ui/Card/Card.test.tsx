@@ -11,11 +11,11 @@ describe("Card", () => {
     );
     const cls = new Set(container.querySelector("section")!.className.split(" "));
     expect(cls.has("p-3")).toBe(true);
-    expect(cls.has("p-5")).toBe(false);
+    expect(cls.has("p-6")).toBe(false);
   });
 
   it("className 을 내리지 않으면 끝에 빈 칸이 없다", () => {
     const { container } = render(<Card title="t">x</Card>);
-    expect(container.querySelector("section")!.className).toBe("rounded-card border border-line bg-panel p-5");
+    expect(container.querySelector("section")!.className).toBe("rounded-card border border-line/80 bg-panel p-6");
   });
 });

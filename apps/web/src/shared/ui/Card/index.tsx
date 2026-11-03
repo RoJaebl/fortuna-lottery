@@ -20,7 +20,14 @@ export function Card({ title, subtitle, footnote, children, className }: CardPro
         {subtitle ? <p className={s.subtitle()}>{subtitle}</p> : null}
       </header>
       {children}
-      {footnote ? <p className={s.footnote()}>⚠ {footnote}</p> : null}
+      {footnote ? (
+        <p className={s.footnote()}>
+          <span aria-hidden className={s.footnoteMark()}>
+            ⚠
+          </span>
+          {footnote}
+        </p>
+      ) : null}
     </section>
   );
 }

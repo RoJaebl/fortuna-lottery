@@ -11,6 +11,22 @@ export interface HotColdBoardProps {
   hottest: { number: number; gapLabel: string }[];
 }
 
+function GapRow({ title, items, cold }: { title: string; items: HotColdBoardProps["coldest"]; cold: boolean }) {
+  return (
+    <div>
+      <p className="mb-3 text-pico uppercase tracking-[0.18em] text-muted">{title}</p>
+      <div className="flex flex-wrap gap-3">
+        {items.map(({ number, gapLabel }) => (
+          <div key={number} className="flex flex-col items-center gap-1.5">
+            {cold ? <Ball n={number} size="md" dimmed /> : <Ball n={number} size="md" glow={0.5} />}
+            <span className="text-pico tabular-nums text-muted">{gapLabel}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function HotColdBoard({ top, coldest, hottest }: HotColdBoardProps) {
   return (
     <Card
@@ -18,29 +34,9 @@ export function HotColdBoard({ top, coldest, hottest }: HotColdBoardProps) {
       subtitle="각 번호가 몇 회째 안 나왔는지"
       footnote="미출현 기간은 미래 출현 가능성을 높이지 않습니다 (매 회차 독립 사건)."
     >
-      <div className="space-y-4">
-        <div>
-          <p className="mb-2 text-micro font-medium text-muted">{`오래 안 나온 번호 TOP ${top}`}</p>
-          <div className="flex flex-wrap gap-2">
-            {coldest.map(({ number, gapLabel }) => (
-              <div key={number} className="flex flex-col items-center gap-1">
-                <Ball n={number} size="sm" dimmed />
-                <span className="text-nano tabular-nums text-muted">{gapLabel}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div>
-          <p className="mb-2 text-micro font-medium text-muted">{`최근 나온 번호 TOP ${top}`}</p>
-          <div className="flex flex-wrap gap-2">
-            {hottest.map(({ number, gapLabel }) => (
-              <div key={number} className="flex flex-col items-center gap-1">
-                <Ball n={number} size="sm" glow={0.7} />
-                <span className="text-nano tabular-nums text-muted">{gapLabel}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+      <div className="grid gap-8 md:grid-cols-2">
+        <GapRow title={`오래 안 나온 번호 TOP ${top}`} items={coldest} cold />
+        <GapRow title={`최근 나온 번호 TOP ${top}`} items={hottest} cold={false} />
       </div>
     </Card>
   );
