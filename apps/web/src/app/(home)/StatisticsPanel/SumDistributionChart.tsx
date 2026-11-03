@@ -114,14 +114,14 @@ export function SumDistributionChart({ chart, subtitle, marker, axis, bands, tim
           <RoundTimeline {...timeline} />
         </div>
       )}
-      <table className="mt-5 w-full min-w-0text-micro tabular-nums text-text">
+      <table className="mt-5 w-full min-w-0 text-micro tabular-nums text-text">
         <thead>
           <tr className="text-nano tracking-wide text-muted">
             <th className="pb-1.5 text-left font-medium">합계 구간</th>
             <th className="pb-1.5 text-right font-medium">회차 수</th>
             <th className="pb-1.5 text-right font-medium">비율</th>
             <th className="pb-1.5">
-              <span className="sr-only">실험실로 보내기</span>
+              <span className="sr-only">실험하기</span>
             </th>
           </tr>
         </thead>
