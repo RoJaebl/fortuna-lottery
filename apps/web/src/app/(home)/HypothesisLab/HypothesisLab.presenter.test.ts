@@ -199,6 +199,9 @@ describe("useHypothesisLabPresenter — 나머지 자동 채우기", () => {
     http.respond("/api/hypothesis/generate", () => ({ numbers: [7, 20, 21, 22, 23, 30] }));
     const { result } = renderHook(() => useHypothesisLabPresenter());
     await waitFor(() => expect(result.current.result).not.toBeNull());
+    // 과거 줄은 지금 조합이 아니라 이 가정에서 뽑은 조합의 확률이다
+    expect(result.current.result!.autoFill.pastProbabilityLine).toBe("이 가정에서 뽑은 조합은 과거 비율로 가정하면 1 / 4");
+    expect(result.current.result!.autoFill.realProbabilityLine).toBe("실제 당첨 확률 1 / 8,145,060");
     act(() => result.current.result!.board[6]!.onToggle());
     await act(async () => result.current.result!.autoFill.onClick());
 

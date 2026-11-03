@@ -201,7 +201,8 @@ export function useHypothesisLabPresenter() {
       disabled: generate.pending,
       onClick: () => void autoFill(),
       numbers,
-      pastProbabilityLine: pastRateMode ? `과거 비율로 가정하면 ${e.pastProbabilityLabel}` : null,
+      // 이 확률은 가정의 것이다 — 지금 조합이 생성기에서 왔어도 「이 가정에서 뽑은 조합」의 값으로 읽히게 적는다
+      pastProbabilityLine: pastRateMode ? `이 가정에서 뽑은 조합은 과거 비율로 가정하면 ${e.pastProbabilityLabel}` : null,
       realProbabilityLine: `실제 당첨 확률 ${e.theoryProbabilityLabel}`,
     },
     pool: { label: `풀 · ${e.pool.length}개`, numbers: e.pool },
