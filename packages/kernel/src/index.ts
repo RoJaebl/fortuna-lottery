@@ -3,3 +3,4 @@ export * from "./combination.js";
 export * from "./scoring.js";
 export * from "./rng.js";
 export * from "./generate.js";
+export * from "./sumRange.js";
