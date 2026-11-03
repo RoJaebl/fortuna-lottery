@@ -150,15 +150,25 @@ describe("POST /api/hypothesis/*", () => {
     expect(await res.json()).toEqual({ error: "이 가정 아래 남은 조합이 없습니다" });
   });
 
-  it("evaluate·generate 는 풀 밖의 고른 번호를 400 으로 거절한다", async () => {
+  it("evaluate 는 풀 밖의 고른 번호를 빼고 센다 — 그 번호는 번호판에서 불가능이고 나머지는 그 번호 없이 센다", async () => {
+    const assumption = { sumRange: { min: 21, max: 60 }, excludePastWinners: false, topK: 6 };
+    const none = await (await post(base, "evaluate", { ...assumption, fixed: [] })).json();
+    const outside = [...Array(45).keys()].map((i) => i + 1).find((n) => !none.pool.includes(n))!;
+    const res = await post(base, "evaluate", { ...assumption, fixed: [outside] });
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body.numbers.find((b: { n: number }) => b.n === outside).possible).toBe(false);
+    expect(body.numbers).toEqual(none.numbers);
+  });
+
+  it("generate 는 풀 밖의 고른 번호를 400 으로 거절한다", async () => {
     const assumption = { sumRange: ALL, excludePastWinners: false, topK: 6 };
     const { pool } = await (await post(base, "evaluate", assumption)).json();
     const outside = [...Array(45).keys()].map((i) => i + 1).find((n) => !pool.includes(n));
-    for (const path of ["evaluate", "generate"]) {
-      const res = await post(base, path, { ...assumption, fixed: [outside] });
-      expect(res.status).toBe(400);
-      expect(await res.json()).toEqual({ error: "고른 번호 가운데 풀 밖의 번호가 있습니다" });
-    }
+    const res = await post(base, "generate", { ...assumption, fixed: [outside] });
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: "고른 번호 가운데 풀 밖의 번호가 있습니다" });
   });
 
   it("evaluate 는 고른 번호 중복을 400 으로 거절한다", async () => {

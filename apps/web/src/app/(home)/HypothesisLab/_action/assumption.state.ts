@@ -22,24 +22,26 @@ createStore("api.home.HypothesisLab.assumption", (set, get, ctx) => {
     );
 
   /**
-   * K 풀은 서버만 안다. 고른 번호를 실은 평가가 실패하면, 고른 번호 없이·구간 전부·제외 끔(늘 받을 수 있고 가볍다)으로
-   * 같은 풀을 물어 풀 밖이 된 번호를 버린다 — 고른 번호가 바뀌면 화면의 조회가 버린 뒤의 가정으로 다시 받는다
+   * 받은 평가의 풀 밖에 있는 고른 번호를 덜어 낸다(spec §5.2) — 그러면 고른 번호가 바뀌어 화면의 조회가 다시 받는다.
+   * 응답의 K·회차가 지금 스위치와 같을 때만이다. 다르면(재생이 앞서 갔거나 K 를 바꿨다) 그 풀은 지금 풀이 아니다
    */
-  const dropOutsidePool = async (assumption: AssumptionModel) => {
-    if (assumption.topK === undefined || assumption.fixed.length === 0) return;
-    const probe = { ...assumption, sumRange: { min: 21, max: 255 }, excludePastWinners: false, fixed: [] };
-    const pool = await evaluate(probe).then((e) => e.pool, () => null);
-    if (pool && assumption.fixed.some((n) => !pool.includes(n))) ctx("state.home.HypothesisLab.switches").keepInPool(pool);
+  const keepInCurrentPool = (assumption: AssumptionModel, pool: readonly number[]) => {
+    const switches = ctx("state.home.HypothesisLab.switches");
+    const topK = switches.topKEnabled ? switches.topK : undefined;
+    const untilRound = switches.untilRound ?? undefined;
+    if (assumption.topK === topK && assumption.untilRound === untilRound) switches.keepInPool(pool);
   };
 
   return createResource(() => ({
     async query(assumption: AssumptionModel) {
+      let result: EvaluationViewModel;
       try {
-        return await evaluate(assumption);
+        result = await evaluate(assumption);
       } catch (e) {
-        await dropOutsidePool(assumption);
         throw e instanceof Error ? e : new Error("가정 평가에 실패했습니다");
       }
+      keepInCurrentPool(assumption, result.pool);
+      return result;
     },
 
     /** 뽑은 번호는 presenter 가 공통 상태로 올린다 */

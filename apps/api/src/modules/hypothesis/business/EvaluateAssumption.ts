@@ -38,9 +38,12 @@ export class EvaluateAssumption {
   constructor(@Inject(DRAW_HISTORY) private readonly drawHistory: DrawHistoryPort) {}
 
   async execute(request: HypothesisEvaluateRequest): Promise<Result<Evaluation>> {
-    const assumption = toAssumption(request);
+    const asked = toAssumption(request);
     const draws = countedDraws(await this.drawHistory.findAll(), request.untilRound);
-    const { pool, total, excluded, count } = assumedCombinations(assumption, draws);
+    const { pool, total, excluded, count } = assumedCombinations(asked, draws);
+    // 풀 밖의 고른 번호는 거절하지 않고 빼고 센다 — 번호판에서 불가능으로 보이고, 화면이 응답의 풀로 덜어 낸다(spec §5.2).
+    // 재생 중에는 회차마다 풀이 바뀌므로 거절하면 고른 번호를 쥔 채로 재생할 수 없다
+    const assumption = { ...asked, fixed: asked.fixed.filter((n) => pool.includes(n)) };
     const checked = checkAssumption(assumption, pool);
     if (!checked.ok) return checked;
 

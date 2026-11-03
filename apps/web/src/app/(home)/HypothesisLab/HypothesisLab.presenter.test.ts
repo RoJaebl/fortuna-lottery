@@ -125,23 +125,47 @@ describe("useHypothesisLabPresenter — 평가는 지금 가정의 조회다", (
     await waitFor(() => expect(getStore("state.home.combination").getState().numbers).toEqual([1, 2, 3, 4, 5, 6]));
   });
 
-  it("풀이 바뀌어 고른 번호가 풀 밖이 되면 그 번호를 버리고 다시 받는다", async () => {
+  it("받은 평가의 풀 밖에 있는 고른 번호를 버리고 다시 받는다", async () => {
     const http = setup();
     const switches = getStore("state.home.HypothesisLab.switches").getState();
     switches.toggleTopK();
     switches.toggleFixed(3);
     switches.toggleFixed(45);
-    // 서버처럼 — 고른 번호가 풀(1~20) 밖이면 400, 아니면 그 풀로 답한다
+    // 서버처럼 — 풀 밖의 고른 번호가 있어도 200 이고 풀(1~20)을 싣는다
     const pool = Array.from({ length: 20 }, (_, i) => i + 1);
-    http.respond("/api/hypothesis/evaluate", () => {
-      const body = bodyOf(http.sent.at(-1)!);
-      if (body.fixed.some((n) => !pool.includes(n))) throw new Error("고른 번호 가운데 풀 밖의 번호가 있습니다");
-      return { ...EVALUATION, pool };
-    });
+    http.respond("/api/hypothesis/evaluate", () => ({ ...EVALUATION, pool }));
     const { result } = renderHook(() => useHypothesisLabPresenter());
     await waitFor(() => expect(getStore("state.home.HypothesisLab.switches").getState().fixed).toEqual([3]));
-    await waitFor(() => expect(result.current.result).not.toBeNull());
-    expect(evaluations(http).at(-1)!.fixed).toEqual([3]);
+    await waitFor(() => expect(evaluations(http).at(-1)!.fixed).toEqual([3]));
+    expect(result.current.result).not.toBeNull();
+  });
+
+  it("평가가 400 이어도 평가를 더 보내지 않는다", async () => {
+    const http = setup();
+    const switches = getStore("state.home.HypothesisLab.switches").getState();
+    switches.toggleTopK();
+    switches.toggleFixed(45);
+    http.respond("/api/hypothesis/evaluate", () => {
+      throw new Error("이 가정 아래 남은 조합이 없습니다");
+    });
+    const { result } = renderHook(() => useHypothesisLabPresenter());
+    await waitFor(() => expect(result.current.error).toBe("이 가정 아래 남은 조합이 없습니다"));
+    await new Promise((r) => setTimeout(r, 50));
+    expect(evaluations(http)).toHaveLength(1);
+  });
+
+  it("지금 스위치와 K·회차가 다른 응답은 고른 번호를 건드리지 않는다", async () => {
+    const http = setup();
+    http.respond("/api/hypothesis/evaluate", () => ({ ...EVALUATION, pool: [1, 2, 3, 4, 5, 6] }));
+    const switches = getStore("state.home.HypothesisLab.switches").getState();
+    switches.toggleFixed(45);
+    const resource = getStore("api.home.HypothesisLab.assumption").getState();
+    await resource.fetch({ sumRange: { min: 121, max: 160 }, excludePastWinners: false, fixed: [45], topK: 6 });
+    await resource.fetch({ sumRange: { min: 121, max: 160 }, excludePastWinners: false, fixed: [45], untilRound: 300 });
+    expect(getStore("state.home.HypothesisLab.switches").getState().fixed).toEqual([45]);
+    // 같은 K·회차(K 끔·최신)의 응답이면 버린다
+    await resource.fetch({ sumRange: { min: 121, max: 160 }, excludePastWinners: false, fixed: [45] });
+    expect(getStore("state.home.HypothesisLab.switches").getState().fixed).toEqual([]);
   });
 
   it("차트에서 거꾸로 끌어도 정렬해 보인다", () => {
