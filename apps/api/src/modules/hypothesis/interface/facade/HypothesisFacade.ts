@@ -34,6 +34,17 @@ export class HypothesisFacade {
         assumed: { tickets: e.backtest.assumed.tickets, rankCounts: [...e.backtest.assumed.rankCounts] },
         random: { tickets: e.backtest.random.tickets, rankCounts: [...e.backtest.random.rankCounts] },
       },
+      sumRange: { ...e.sumRange },
+      sumRangeCombinations: { ...e.sumRangeCombinations },
+      theoryRate: e.theoryRate,
+      pastRate: e.pastRate,
+      expectedHits: e.expectedHits,
+      denominators: { ...e.denominators },
+      sumCounts: [...e.sumCounts],
+      frequentBands: e.frequentBands.map((b) => ({ ...b })),
+      maxWindowRate: e.maxWindowRate,
+      emptyBands: e.emptyBands.map((b) => ({ ...b })),
+      numbers: e.numbers.map((b) => ({ ...b })),
     };
   }
 

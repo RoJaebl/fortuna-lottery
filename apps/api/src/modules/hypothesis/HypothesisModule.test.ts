@@ -37,6 +37,9 @@ async function boot(draws: LotterietusDraw[]): Promise<{ app: INestApplication; 
   return { app, base: `http://127.0.0.1:${port}` };
 }
 
+// 합계 구간 전체 — 합 조건이 아무것도 거르지 않는다
+const ALL = { min: 21, max: 255 };
+
 const post = (base: string, path: string, body: unknown) =>
   fetch(`${base}/api/hypothesis/${path}`, {
     method: "POST",
@@ -56,7 +59,7 @@ describe("POST /api/hypothesis/*", () => {
   });
 
   it("evaluate 는 가정 우주·풀·적중률·백테스트를 200 으로 준다", async () => {
-    const res = await post(base, "evaluate", { excludePastWinners: false, topK: 20 });
+    const res = await post(base, "evaluate", { sumRange: ALL, excludePastWinners: false, topK: 20 });
     const body = await res.json();
 
     expect(res.status).toBe(200);
@@ -68,13 +71,13 @@ describe("POST /api/hypothesis/*", () => {
   });
 
   it("evaluate 는 excludePastWinners 가 없으면 400 이다", async () => {
-    const res = await post(base, "evaluate", { topK: 20 });
+    const res = await post(base, "evaluate", { sumRange: ALL, topK: 20 });
 
     expect(res.status).toBe(400);
   });
 
   it("generate 는 풀 안의 번호 6개를 200 으로 준다", async () => {
-    const assumption = { excludePastWinners: true, topK: 10 };
+    const assumption = { sumRange: ALL, excludePastWinners: true, topK: 10 };
     const { pool } = await (await post(base, "evaluate", assumption)).json();
     const res = await post(base, "generate", assumption);
     const { numbers } = await res.json();
@@ -82,6 +85,65 @@ describe("POST /api/hypothesis/*", () => {
     expect(res.status).toBe(200);
     expect(numbers).toHaveLength(6);
     for (const n of numbers) expect(pool).toContain(n);
+  });
+
+  it("evaluate 는 합계 구간의 숫자를 모두 싣는다", async () => {
+    const res = await post(base, "evaluate", { sumRange: { min: 100, max: 160 }, excludePastWinners: false });
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body.sumRange).toEqual({ min: 100, max: 160 });
+    expect(body.sumCounts).toHaveLength(235);
+    expect(body.numbers).toHaveLength(45);
+    expect(body.theoryRate * 8_145_060).toBe(body.assumedCombinations);
+    expect(body.denominators.theory).toBe(8_145_060);
+    expect(body.hitRate.rounds).toBe(105);
+    expect(body.pastRate).toBe(body.hitRate.hits / 105);
+  });
+
+  it("evaluate 는 untilRound 까지만 센다", async () => {
+    const res = await post(base, "evaluate", { sumRange: ALL, excludePastWinners: false, untilRound: 1 });
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body.hitRate.rounds).toBe(1);
+  });
+
+  it("센 회차가 없으면 과거 비율 0, 과거 분모 null 이다", async () => {
+    const res = await post(base, "evaluate", { sumRange: ALL, excludePastWinners: false, topK: 10, untilRound: 1 });
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body.hitRate.rounds).toBe(0);
+    expect(body.pastRate).toBe(0);
+    expect(body.denominators.past).toBeNull();
+  });
+
+  it("evaluate·generate 는 최소가 최대보다 큰 구간을 400 으로 거절한다", async () => {
+    for (const path of ["evaluate", "generate"]) {
+      const res = await post(base, path, { sumRange: { min: 200, max: 100 }, excludePastWinners: false });
+
+      expect(res.status).toBe(400);
+      expect(await res.json()).toEqual({ error: "합계 구간의 최소가 최대보다 큽니다" });
+    }
+  });
+
+  it("evaluate 는 고른 번호만으로 구간을 넘으면 400 이다", async () => {
+    const res = await post(base, "evaluate", {
+      sumRange: { min: 21, max: 30 },
+      excludePastWinners: false,
+      fixed: [40],
+    });
+
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: "이 가정 아래 남은 조합이 없습니다" });
+  });
+
+  it("evaluate 는 고른 번호 중복을 400 으로 거절한다", async () => {
+    const res = await post(base, "evaluate", { sumRange: ALL, excludePastWinners: false, fixed: [3, 3] });
+
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: "고정 번호에 중복이 있습니다" });
   });
 
   it("popularity 는 중복 번호를 400 으로 거절한다", async () => {
@@ -102,7 +164,7 @@ describe("남은 조합이 0 개인 가정", () => {
   it("generate 는 다시 뽑지 않고 400 으로 거절한다", async () => {
     const { app, base } = await boot(SAME);
     try {
-      const res = await post(base, "generate", { excludePastWinners: true, topK: 6 });
+      const res = await post(base, "generate", { sumRange: ALL, excludePastWinners: true, topK: 6 });
 
       expect(res.status).toBe(400);
       expect(await res.json()).toEqual({ error: "이 가정 아래 남은 조합이 없습니다" });
