@@ -62,11 +62,7 @@ export function RoundTimeline({
   const tipRef = useRef<HTMLDivElement>(null);
   const playButtonRef = useRef<HTMLButtonElement>(null);
   const dragRef = useRef<Draggable | null>(null);
-  /**
-   * 재생 — 벽시계로 센다. GSAP 트윈으로 세면 프레임이 무거운 화면(실험실은 회차마다 평가를 받아 다시 그린다)에서
-   * lagSmoothing 이 긴 프레임을 33ms 로 깎아 재생이 몇십 배 느려진다. 그래서 프레임마다 실제로 흐른 시간만큼 회차를 넘긴다
-   */
-  const playRef = useRef<{ frame: number; at: number; last: number } | null>(null);
+  const playRef = useRef<gsap.core.Tween | null>(null);
   // Draggable·재생 트윈은 한 번 짓고 최신 값은 ref 로 읽는다
   const latest = useRef({ position, minPosition, total, roundAt, onSeek, speed });
   latest.current = { position, minPosition, total, roundAt, onSeek, speed };
@@ -80,7 +76,7 @@ export function RoundTimeline({
   };
 
   const stop = () => {
-    if (playRef.current) cancelAnimationFrame(playRef.current.frame);
+    playRef.current?.kill();
     playRef.current = null;
     markPlaying(false);
   };
@@ -111,7 +107,7 @@ export function RoundTimeline({
     if (playedRef.current && headRef.current) playedRef.current.style.width = `${gsap.getProperty(headRef.current, "x")}px`;
   };
 
-  useGSAP(() => {
+  const { contextSafe } = useGSAP(() => {
     if (!headRef.current || !trackRef.current) return;
     dragRef.current = Draggable.create(headRef.current, {
       type: "x",
@@ -126,11 +122,6 @@ export function RoundTimeline({
       },
       onRelease: hideTip,
     })[0] ?? null;
-    // 사라지면 재생도 멈춘다
-    return () => {
-      if (playRef.current) cancelAnimationFrame(playRef.current.frame);
-      playRef.current = null;
-    };
   }, []);
 
   // 위치가 바뀌면 재생 위치 점을 그 자리로 미끄러뜨린다. 끄는 동안은 손이 자리를 정한다
@@ -150,35 +141,38 @@ export function RoundTimeline({
     });
   }, [position, total]);
 
-  /**
-   * 지금 위치부터 마지막 회차까지 한 회차씩 넘긴다. 끝에 있으면 가장 앞자리부터 다시 돈다. 재생 중이면 멈춘다.
-   * 1 배속은 초당 10 회차다. 배속은 프레임마다 최신 값을 읽으므로 재생 중에 바꿔도 남은 재생이 그 배속으로 이어진다
-   */
-  const togglePlay = () => {
+  // 재생 중에 배속을 바꾸면 남은 재생이 그 배속으로 이어진다
+  useGSAP(() => {
+    playRef.current?.timeScale(speed);
+  }, [speed]);
+
+  /** 지금 위치부터 마지막 회차까지 한 회차씩 넘긴다. 끝에 있으면 가장 앞자리부터 다시 돈다. 재생 중이면 멈춘다 */
+  const togglePlay = contextSafe(() => {
     if (playRef.current) return stop();
     const { position: now, minPosition: first, total: count } = latest.current;
     const last = count - 1;
     const from = now >= last ? first : now;
     if (from >= last) return;
     if (from !== now) latest.current.onSeek(from);
+    const proxy = { at: from };
     let shown = from;
-    const step = () => {
-      const play = playRef.current;
-      if (!play) return;
-      const t = performance.now();
-      play.at += ((t - play.last) / 1000) * (latest.current.speed / SECONDS_PER_ROUND);
-      play.last = t;
-      const next = Math.min(Math.floor(play.at), last);
-      if (next !== shown) {
+    playRef.current = gsap.to(proxy, {
+      at: last,
+      duration: (last - from) * SECONDS_PER_ROUND,
+      ease: "none",
+      onUpdate: () => {
+        const next = Math.floor(proxy.at);
+        if (next === shown) return;
         shown = next;
         latest.current.onSeek(next);
-      }
-      if (next >= last) return stop();
-      play.frame = requestAnimationFrame(step);
-    };
-    playRef.current = { frame: requestAnimationFrame(step), at: from, last: performance.now() };
+      },
+      onComplete: () => {
+        latest.current.onSeek(last);
+        stop();
+      },
+    }).timeScale(latest.current.speed);
     markPlaying(true);
-  };
+  });
 
   const pointerX = (e: { clientX: number }) => e.clientX - (trackRef.current?.getBoundingClientRect().left ?? 0);
 
