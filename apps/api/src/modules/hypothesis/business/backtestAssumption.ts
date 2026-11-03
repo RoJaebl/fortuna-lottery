@@ -25,7 +25,7 @@ export function backtestAssumption(
   const random = emptyTally();
   walkRounds(assumption, draws, (draw, before) => {
     for (let i = 0; i < TICKETS_PER_ROUND; i++) {
-      const a = drawAssumed(assumedRng, assumption, before.pool, before.pastKeys, before.count);
+      const a = drawAssumed(assumedRng, assumption, before.pool, before.pastKeys);
       if (a.ok) {
         assumed.tickets++;
         assumed.rankCounts[scoreAgainstDraw(a.value, draw.numbers, draw.bonus).rank]!++;

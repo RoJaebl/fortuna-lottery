@@ -1,5 +1,5 @@
 import type { LotterietusDraw as Draw } from "@fortuna-lottery/contract/lotterietus";
-import { LOTTO_MAX, TOTAL_COMBINATIONS } from "@fortuna-lottery/kernel";
+import { countInSumRange, LOTTO_MAX, TOTAL_COMBINATIONS } from "@fortuna-lottery/kernel";
 import type { Assumption } from "../domain/model/Assumption.model.js";
 
 /** 앞선 회차가 이 수보다 적은 회차는 세지 않는다. */
@@ -44,19 +44,41 @@ function topFromCounts(counts: readonly number[], k: number): number[] {
     .sort((a, b) => a - b);
 }
 
-// ponytail: topK 가정은 회차마다 과거 1등 전체를 훑는다(O(회차²)). 회차 수천 개까지는 충분하다.
-function universe(assumption: Assumption, tally: Tally): { pool: number[]; count: number } {
-  if (assumption.topK === null) {
-    const excluded = assumption.excludePastWinners ? tally.pastWinners.size : 0;
-    return { pool: [...ALL_NUMBERS], count: TOTAL_COMBINATIONS - excluded };
-  }
-  const pool = topFromCounts(tally.counts, assumption.topK);
+export const sumOf = (numbers: readonly number[]): number => numbers.reduce((a, b) => a + b, 0);
+
+export const inSumRange = (numbers: readonly number[], { min, max }: Assumption["sumRange"]): boolean => {
+  const s = sumOf(numbers);
+  return s >= min && s <= max;
+};
+
+// 걷는 동안 풀이 거의 바뀌지 않으므로 마지막 셈 하나만 기억한다.
+let lastTotal = { key: "", total: 0 };
+function totalInRange(pool: readonly number[], { min, max }: Assumption["sumRange"]): number {
+  const key = `${pool.join(",")}|${min}|${max}`;
+  if (lastTotal.key !== key) lastTotal = { key, total: countInSumRange(pool, 6, min, max) };
+  return lastTotal.total;
+}
+
+/** 가정 우주. total = 풀 안·구간 안 조합 수, excluded = 그 안의 과거 1등 수, count = total - excluded. 고른 번호와 무관하다. */
+export interface Universe {
+  readonly pool: number[];
+  readonly total: number;
+  readonly excluded: number;
+  readonly count: number;
+}
+
+// ponytail: 제외는 회차마다 과거 1등 전체를 훑는다(O(회차²)). 회차 수천 개까지는 충분하다.
+function universe(assumption: Assumption, tally: Tally): Universe {
+  const pool = assumption.topK === null ? [...ALL_NUMBERS] : topFromCounts(tally.counts, assumption.topK);
+  const total = totalInRange(pool, assumption.sumRange);
   let excluded = 0;
   if (assumption.excludePastWinners) {
     const inPool = new Set(pool);
-    for (const numbers of tally.pastWinners.values()) if (numbers.every((n) => inPool.has(n))) excluded++;
+    for (const numbers of tally.pastWinners.values()) {
+      if (numbers.every((n) => inPool.has(n)) && inSumRange(numbers, assumption.sumRange)) excluded++;
+    }
   }
-  return { pool, count: binomial(assumption.topK, 6) - excluded };
+  return { pool, total, excluded, count: total - excluded };
 }
 
 export function topNumbers(draws: readonly Draw[], k: number): number[] {
@@ -64,19 +86,23 @@ export function topNumbers(draws: readonly Draw[], k: number): number[] {
 }
 
 /** 지금 데이터 전체 기준의 풀과 가정 우주 크기. */
-export function assumedCombinations(assumption: Assumption, draws: readonly Draw[]): { pool: number[]; count: number } {
+export function assumedCombinations(assumption: Assumption, draws: readonly Draw[]): Universe {
   return universe(assumption, tallyOf(draws));
 }
 
-/** draws(회차 오름차순)를 앞에서부터 걷는다. before 는 그 회차보다 앞선 회차로만 만든다. */
+/**
+ * draws(회차 오름차순)를 앞에서부터 걷는다. before 는 그 회차보다 앞선 회차로만 만든다.
+ * topK 가 없으면 우주가 과거에 기대지 않으므로 제1회부터, 있으면 WARMUP_ROUNDS 뒤부터 센다.
+ */
 export function walkRounds(
   assumption: Assumption,
   draws: readonly Draw[],
   visit: (draw: Draw, before: { pool: number[]; pastKeys: ReadonlySet<string>; count: number }) => void,
 ): void {
+  const start = assumption.topK === null ? 0 : WARMUP_ROUNDS;
   const tally = emptyTally();
   draws.forEach((draw, i) => {
-    if (i >= WARMUP_ROUNDS) {
+    if (i >= start) {
       const { pool, count } = universe(assumption, tally);
       visit(draw, { pool, pastKeys: new Set(tally.pastWinners.keys()), count });
     }
@@ -97,6 +123,7 @@ export function hitRate(
     const inPool = new Set(before.pool);
     const hit =
       draw.numbers.every((n) => inPool.has(n)) &&
+      inSumRange(draw.numbers, assumption.sumRange) &&
       !(assumption.excludePastWinners && before.pastKeys.has(combinationKey(draw.numbers)));
     if (hit) hits++;
   });

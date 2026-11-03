@@ -18,8 +18,8 @@ export class GenerateAssumed {
   async execute(request: HypothesisGenerateRequest): Promise<Result<Combination>> {
     const assumption = toAssumption(request);
     const draws = await this.drawHistory.findAll();
-    const { pool, count } = assumedCombinations(assumption, draws);
+    const { pool } = assumedCombinations(assumption, draws);
     const pastKeys = new Set(draws.map((d) => combinationKey(d.numbers)));
-    return drawAssumed(this.random, assumption, pool, pastKeys, count);
+    return drawAssumed(this.random, assumption, pool, pastKeys);
   }
 }

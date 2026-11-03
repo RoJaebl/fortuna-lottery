@@ -10,6 +10,8 @@ import { backtestAssumption } from "./backtestAssumption.js";
 export const toAssumption = (r: HypothesisEvaluateRequest): Assumption => ({
   excludePastWinners: r.excludePastWinners,
   topK: r.topK ?? null,
+  sumRange: r.sumRange,
+  fixed: r.fixed,
 });
 
 /** 가정 평가 유스케이스 — 지금 가정 우주, 가정 적중률, 백테스트 */
