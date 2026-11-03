@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { getStore } from "supa-store";
+import { getStore, overrideStore } from "supa-store";
+import { TestHttpClient } from "@infrastructure/http";
 
 const switches = () => getStore("state.home.HypothesisLab.switches").getState();
 
@@ -15,10 +16,19 @@ describe("state.home.HypothesisLab.switches", () => {
     expect(switches().fixed).toEqual([1, 2, 4, 5]);
   });
 
-  it("과거 비율 계산·센 회차·배속을 바꾼다", () => {
+  it("과거 비율 계산·센 회차·배속을 바꾼다 — 받는 중인 평가가 없으면 회차를 곧바로 들인다", async () => {
+    const http = new TestHttpClient();
+    http.respond("/api/hypothesis/evaluate", () => new Promise(() => {}));
+    overrideStore("infra.http", () => ({ client: http }));
     switches().togglePastRateMode();
     switches().changeUntilRound(300);
     switches().changePlaySpeed(5);
-    expect(switches()).toMatchObject({ pastRateMode: false, untilRound: 300, playSpeed: 5 });
+    expect(switches()).toMatchObject({ pastRateMode: false, untilRound: 300, committedUntilRound: 300, playSpeed: 5 });
+    // 받는 중이면 재생 바 값만 바뀌고 들인 회차는 그대로다
+    switches().changeUntilRound(400);
+    expect(switches()).toMatchObject({ untilRound: 400, committedUntilRound: 300 });
+    await new Promise((r) => setTimeout(r, 0));
+    // 화면이 없으면 문이 스스로 받는다 — 하나만
+    expect(http.sent).toHaveLength(1);
   });
 });

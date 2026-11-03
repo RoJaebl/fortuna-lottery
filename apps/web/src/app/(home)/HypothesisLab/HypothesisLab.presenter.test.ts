@@ -2,7 +2,8 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { getStore, overrideStore } from "supa-store";
 import { TestHttpClient } from "@infrastructure/http";
-import { assumptionRequest, useHypothesisLabPresenter } from "./HypothesisLab.presenter";
+import { assumptionRequest } from "./_model/Evaluation.model";
+import { useHypothesisLabPresenter } from "./HypothesisLab.presenter";
 
 describe("assumptionRequest", () => {
   const base = {
@@ -120,30 +121,75 @@ describe("useHypothesisLabPresenter — 재생 바", () => {
     expect(getStore("state.home.HypothesisLab.switches").getState().untilRound).toBeNull();
   });
 
-  it("회차를 빠르게 셋 바꾸면 늦게 온 첫 응답이 셋째 화면을 덮지 않는다", async () => {
+  /** 첫 평가(최신 회차)를 받은 뒤부터 평가 응답을 손으로 푼다 — 요청마다 { rounds, resolve, reject } */
+  async function gated() {
     const http = setup();
-    const { result } = renderHook(() => useHypothesisLabPresenter());
-    await waitFor(() => expect(result.current.timeline).not.toBeNull());
-
-    const gates = new Map<number, () => void>();
+    const hook = renderHook(() => useHypothesisLabPresenter());
+    await waitFor(() => expect(hook.result.current.timeline).not.toBeNull());
+    await waitFor(() => expect(hook.result.current.result).not.toBeNull());
+    const pending: Array<{ rounds: number; resolve: () => void; reject: () => void }> = [];
     http.respond("/api/hypothesis/evaluate", () => {
       const rounds = bodyOf(http.sent.at(-1)!).untilRound!;
-      return new Promise((resolve) =>
-        gates.set(rounds, () => resolve({ ...EVALUATION, hitRate: { ...EVALUATION.hitRate, rounds } })),
+      return new Promise((resolve, reject) =>
+        pending.push({
+          rounds,
+          resolve: () => resolve({ ...EVALUATION, hitRate: { ...EVALUATION.hitRate, rounds } }),
+          reject: () => reject(new Error("평가 실패")),
+        }),
       );
     });
+    const shown = () => hook.result.current.result?.rows.past.sumInRange;
+    return { http, pending, shown, ...hook };
+  }
+
+  it("받는 중에 회차를 30번 바꾸면 평가는 둘(처음 것과 가장 새 것)만 가고, 화면은 가장 새 회차로 끝난다", async () => {
+    const { http, pending, shown, result } = await gated();
+    const before = evaluations(http).length;
+    for (let i = 1; i <= 30; i++) act(() => result.current.timeline!.onSeek(i * 10 - 1));
+    // 재생 바는 곧바로 따라간다
+    expect(result.current.timeline!.position).toBe(299);
+    await waitFor(() => expect(pending).toHaveLength(1));
+    expect(pending[0]!.rounds).toBe(10);
+
+    await act(async () => pending[0]!.resolve());
+    await waitFor(() => expect(pending).toHaveLength(2));
+    expect(pending[1]!.rounds).toBe(300);
+    await act(async () => pending[1]!.resolve());
+
+    await waitFor(() => expect(shown()).toBe("50.0% · 300회 중 1회"));
+    expect(evaluations(http).slice(before).map((b) => b.untilRound)).toEqual([10, 300]);
+  });
+
+  it("진행 중인 평가가 실패해도 문이 열려 가장 새 회차를 보낸다", async () => {
+    const { pending, shown, result } = await gated();
+    act(() => result.current.timeline!.onSeek(99));
+    act(() => result.current.timeline!.onSeek(199));
+    await waitFor(() => expect(pending).toHaveLength(1));
+
+    await act(async () => pending[0]!.reject());
+    await waitFor(() => expect(pending).toHaveLength(2));
+    expect(pending[1]!.rounds).toBe(200);
+    await act(async () => pending[1]!.resolve());
+    await waitFor(() => expect(shown()).toBe("50.0% · 200회 중 1회"));
+  });
+
+  it("첫 응답이 셋째를 받는 동안 도착하면 — 첫 응답을 자리 채움으로 보이고 updating 이다", async () => {
+    const { pending, shown, result } = await gated();
     act(() => result.current.timeline!.onSeek(99));
     act(() => result.current.timeline!.onSeek(199));
     act(() => result.current.timeline!.onSeek(299));
-    await waitFor(() => expect(gates.size).toBe(3));
+    await waitFor(() => expect(pending).toHaveLength(1));
 
-    await act(async () => gates.get(300)!());
-    await waitFor(() => expect(result.current.result?.rows.past.sumInRange).toBe("50.0% · 300회 중 1회"));
-    await act(async () => {
-      gates.get(100)!();
-      gates.get(200)!();
-    });
-    expect(result.current.result?.rows.past.sumInRange).toBe("50.0% · 300회 중 1회");
+    // 첫째(100)가 오면 문이 열려 셋째(300)를 보낸다 — 둘째(200)는 건너뛴다
+    await act(async () => pending[0]!.resolve());
+    await waitFor(() => expect(pending).toHaveLength(2));
+    expect(pending[1]!.rounds).toBe(300);
+    expect(shown()).toBe("50.0% · 100회 중 1회");
+    expect(result.current.updating).toBe(true);
+
+    await act(async () => pending[1]!.resolve());
+    await waitFor(() => expect(shown()).toBe("50.0% · 300회 중 1회"));
+    expect(result.current.updating).toBe(false);
   });
 });
 

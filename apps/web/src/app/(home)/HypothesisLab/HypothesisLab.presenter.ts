@@ -1,38 +1,14 @@
 // 가정 확률은 언제나 실제 확률 1/8,145,060 · 과거 비율과 함께 보인다 (정직성 원칙).
 import { useStore } from "supa-store/react";
 import { keepPreviousData } from "supa-store/query";
-import type { RoundTimelineProps } from "../RoundTimeline";
-import type { AssumptionModel, SumRange } from "./_model/Evaluation.model";
-
-/** 실험실 재생 바에서 고를 수 있는 배속 — 통계 탭과 같은 줄이다 */
-const PLAY_SPEEDS = [0.5, 1, 2, 5, 10] as const;
+import { PLAY_SPEEDS, type RoundTimelineProps } from "../RoundTimeline";
+import { assumptionRequest, type SumRange } from "./_model/Evaluation.model";
 
 /** 고를 수 있는 번호 수 — 여섯째는 자동 채우기가 고른다 */
 const MAX_FIXED = 5;
 
 /** 6개 번호 합계의 축 — 1+2+…+6 ~ 40+41+…+45 */
 const SUM_AXIS = { min: 21, max: 255 } as const;
-
-export interface AssumptionInput {
-  range: SumRange;
-  excludePastWinners: boolean;
-  topKEnabled: boolean;
-  topK: number;
-  fixed: number[];
-  /** null 이면 최신 회차까지 — 요청에 싣지 않는다 */
-  untilRound: number | null;
-}
-
-/** 입력을 가정 하나로 — K 스위치가 꺼져 있으면 topK 를, 최신 회차면 untilRound 를 싣지 않는다 */
-export function assumptionRequest(i: AssumptionInput): AssumptionModel {
-  return {
-    sumRange: { min: i.range.min, max: i.range.max },
-    excludePastWinners: i.excludePastWinners,
-    fixed: [...i.fixed],
-    ...(i.topKEnabled ? { topK: i.topK } : {}),
-    ...(i.untilRound === null ? {} : { untilRound: i.untilRound }),
-  };
-}
 
 /** 켜고 끄는 스위치 하나 */
 export interface LabSwitch {
@@ -131,10 +107,17 @@ export function useHypothesisLabPresenter() {
   const { numbers, choose } = useStore("state.home.combination", { pick: ["numbers", "choose"] });
   const labRange = useStore("state.home.labRange");
   const switches = useStore("state.home.HypothesisLab.switches");
-  const { excludePastWinners, topKEnabled, topK, pastRateMode, fixed, untilRound, playSpeed } = switches;
+  const { excludePastWinners, topKEnabled, topK, pastRateMode, fixed, untilRound, committedUntilRound, playSpeed } = switches;
 
-  // 평가는 멈춘 뒤의 구간(committed)으로 받는다 — 입력 칸은 곧바로 바뀌는 min·max 를 보인다
-  const assumption = assumptionRequest({ range: labRange.committed, excludePastWinners, topKEnabled, topK, fixed, untilRound });
+  // 평가는 멈춘 뒤의 구간과 store 가 문을 지나게 한 회차(committed)로 받는다 — 입력 칸과 재생 바는 곧바로 바뀌는 값을 보인다
+  const assumption = assumptionRequest({
+    range: labRange.committed,
+    excludePastWinners,
+    topKEnabled,
+    topK,
+    fixed,
+    untilRound: committedUntilRound,
+  });
   // 가정이 바뀌어 다시 받는 동안 앞선 결과를 잇는다 — 재생 중에 화면이 비었다 찼다 하지 않게
   const evaluation = useStore("api.home.HypothesisLab.assumption", {
     args: assumption,

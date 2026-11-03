@@ -29,6 +29,9 @@ export interface RoundTimelineProps {
   onSpeedChange: (speed: number) => void;
 }
 
+/** 재생 바에서 고를 수 있는 배속 — 1 배속은 한 회차에 0.1 초. 통계 탭과 실험실이 함께 쓴다 */
+export const PLAY_SPEEDS = [0.5, 1, 2, 5, 10] as const;
+
 /** 화살표 키 한 번에 옮기는 회차 수 */
 const STEP = 10;
 

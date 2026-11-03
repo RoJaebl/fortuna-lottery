@@ -2,6 +2,7 @@
 import { useStore } from "supa-store/react";
 import { LOW_MAX } from "@lib/lotto-rules";
 import type { TabItem } from "@ui/Tabs";
+import { PLAY_SPEEDS } from "../RoundTimeline";
 import type { StatisticsModel } from "./_model/Statistics.model";
 import { type DistBar, StatisticsViewModel } from "./_model/Statistics.viewmodel";
 import type { HotColdBoardProps } from "./HotColdBoard";
@@ -43,8 +44,6 @@ const SUM_RANGE = { min: 21, max: 255 };
 /** 잔디밭 창 양옆에 그리는 버퍼 열 수 — 화면이 흐리게 지우는 폭에 띠가 밀리는 폭까지 덮는다 */
 const GRID_EDGE_COLUMNS = 8;
 
-/** 재생 바에서 고를 수 있는 배속 — 1 배속은 한 회차에 0.1 초 */
-const PLAY_SPEEDS = [0.5, 1, 2, 5, 10] as const;
 
 const HOT_COLD_TOP = 8;
 
