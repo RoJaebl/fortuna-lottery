@@ -114,13 +114,15 @@ export function SumDistributionChart({ chart, subtitle, marker, axis, bands, tim
           <RoundTimeline {...timeline} />
         </div>
       )}
-      <table className="mt-5 w-full text-micro tabular-nums text-text">
+      <table className="mt-5 w-full min-w-0text-micro tabular-nums text-text">
         <thead>
           <tr className="text-nano tracking-wide text-muted">
             <th className="pb-1.5 text-left font-medium">합계 구간</th>
             <th className="pb-1.5 text-right font-medium">회차 수</th>
             <th className="pb-1.5 text-right font-medium">비율</th>
-            <th className="pb-1.5" />
+            <th className="pb-1.5">
+              <span className="sr-only">실험실로 보내기</span>
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -133,8 +135,9 @@ export function SumDistributionChart({ chart, subtitle, marker, axis, bands, tim
               <td className="py-1.5 text-right">{count.toLocaleString()}</td>
               <td className="py-1.5 text-right text-muted">{percent.toFixed(1)}%</td>
               <td className="py-1.5 text-right">
-                <Button intent="ghost" size="sm" onClick={onExperiment}>
-                  이 구간으로 실험하기
+                <Button intent="ghost" size="sm" aria-label="이 구간으로 실험하기" className="whitespace-nowrap" onClick={onExperiment}>
+                  <span className="sm:hidden">실험</span>
+                  <span className="hidden sm:inline">이 구간으로 실험하기</span>
                 </Button>
               </td>
             </tr>
