@@ -84,11 +84,14 @@ export function numberBoard(
     if (s >= sumRange.min && s <= sumRange.max) for (const n of numbers) counts[n]!++;
   }
   const inPool = new Set(pool);
+  // remainingCount 는 넘겨받은 과거 1등을 늘 뺀다 — 제외를 끄면 빈 집합을 넘긴다.
+  const past = assumption.excludePastWinners ? pastKeys : new Set<string>();
   return Array.from({ length: LOTTO_MAX }, (_, i) => {
     const n = i + 1;
     const possible =
       fixed.includes(n) ||
-      (inPool.has(n) && fixed.length < 6 && remainingCount([...fixed, n], sumRange, pool, pastKeys) > 0);
+      // fixed 가 이미 6개면 번호를 더 품을 수 없다(remainingCount 는 6 - 길이 개를 고른다).
+      (inPool.has(n) && fixed.length < 6 && remainingCount([...fixed, n], sumRange, pool, past) > 0);
     return { n, possible, count: counts[n]! };
   });
 }

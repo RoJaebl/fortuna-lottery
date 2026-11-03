@@ -46,6 +46,11 @@ describe("sumBands", () => {
     expect(sumBands(c, 2, 2).frequentBands).toEqual([{ min: 99, max: 103, count: 1, rate: 0.5 }]);
   });
 
+  it("합친 띠의 회차 수는 창들 가운데 최댓값이다", () => {
+    const c = sumCounts(draws([...Array<number>(9).fill(100), 101]));
+    expect(sumBands(c, 2, 10).frequentBands).toEqual([{ min: 99, max: 101, count: 10, rate: 1 }]);
+  });
+
   it("회차가 없으면 띠가 없고 비율은 0", () => {
     const r = sumBands(sumCounts([]), 10, 0);
     expect(r.frequentBands).toEqual([]);
@@ -69,6 +74,11 @@ describe("numberBoard", () => {
     expect(board[0]).toEqual({ n: 1, possible: true, count: 2 });
     expect(board.find((b) => b.n === 25)!.count).toBe(2);
     expect(board.find((b) => b.n === 45)!.count).toBe(0);
+  });
+
+  it("제외를 끄면 과거 1등 조합도 남은 조합으로 센다", () => {
+    const board = numberBoard([], a({ topK: 6 }), range(6), new Set([combinationKey([1, 2, 3, 4, 5, 6])]));
+    expect(board.filter((b) => b.possible).map((b) => b.n)).toEqual([1, 2, 3, 4, 5, 6]);
   });
 
   it("제외하면 남은 조합이 사라지는 번호는 불가능이다", () => {
