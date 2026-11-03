@@ -21,12 +21,13 @@ export const countedDraws = (draws: readonly Draw[], untilRound: number | undefi
   untilRound === undefined ? draws : draws.filter((d) => d.round <= untilRound);
 
 /**
- * 계약이 보지 않는 도메인 검사 — 구간의 순서, 고른 번호 중복, 고른 번호를 품고 구간 안인 조합이 없음(제외 전).
+ * 계약이 보지 않는 도메인 검사 — 구간의 순서, 풀 밖의 고른 번호(spec §5.2), 고른 번호 중복, 고른 번호를 품고 구간 안인 조합이 없음(제외 전).
  * 뒤의 둘은 커널 뽑기의 거절 문구를 그대로 쓴다(뽑기에 쓰는 난수는 거절이면 부르지 않는다).
  */
 export function checkAssumption(assumption: Assumption, pool: readonly number[]): Result<void> {
   const { sumRange, fixed } = assumption;
   if (sumRange.min > sumRange.max) return err("합계 구간의 최소가 최대보다 큽니다");
+  if (!fixed.every((n) => pool.includes(n))) return err("고른 번호 가운데 풀 밖의 번호가 있습니다");
   const probe = drawInSumRange(() => 0, pool, fixed, sumRange.min, sumRange.max);
   return probe.ok ? ok(undefined) : err(probe.error);
 }
@@ -56,12 +57,14 @@ export class EvaluateAssumption {
       assumedCombinations: count,
       pool,
       hitRate: hits,
-      backtest: backtestAssumption(assumption, draws),
+      // 고른 번호는 번호판과 자동 채우기에만 쓴다 — 백테스트는 가정 우주에서 20 장(spec §5.1)
+      backtest: backtestAssumption({ ...assumption, fixed: [] }, draws),
       sumRange: assumption.sumRange,
       sumRangeCombinations: { total, excluded },
       theoryRate,
       pastRate,
-      expectedHits: theoryRate * hits.rounds,
+      // 적중 수와 같은 바탕 — 회차마다 그 앞 회차로 만든 우주의 비율을 더한다
+      expectedHits: hits.expectedRate * hits.rounds,
       // 과거 비율로 곱한 당첨 확률 = pastRate × 1/N, 이론 비율로 곱하면 N 이 지워져 언제나 1/전체 조합 수
       denominators: { past: pastRate > 0 && count > 0 ? Math.round(count / pastRate) : null, theory: TOTAL_COMBINATIONS },
       sumCounts: counts,

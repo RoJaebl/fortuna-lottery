@@ -69,6 +69,11 @@ describe("numberBoard", () => {
     expect(board.filter((b) => b.possible).map((b) => b.n)).toEqual([1, 2, 3, 4, 5, 6]);
   });
 
+  it("풀 밖의 고른 번호는 불가능이다", () => {
+    const board = numberBoard([], a({ topK: 6, fixed: [45] }), range(6), new Set());
+    expect(board.find((b) => b.n === 45)!.possible).toBe(false);
+  });
+
   it("구간 안 회차에서 번호가 나온 횟수를 센다", () => {
     const board = numberBoard(draws([40, 40, 60]), a({ sumRange: { min: 30, max: 50 } }), range(45), new Set());
     expect(board[0]).toEqual({ n: 1, possible: true, count: 2 });

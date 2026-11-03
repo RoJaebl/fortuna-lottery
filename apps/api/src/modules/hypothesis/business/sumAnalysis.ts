@@ -69,7 +69,7 @@ export function sumBands(
 
 /**
  * 번호판 — 1~45 마다 「가정 우주에 이 번호를 품은 조합이 남아 있는가」와
- * 「합이 구간인 회차에서 이 번호가 나온 횟수」. 고른 번호에 든 번호는 늘 가능하다.
+ * 「합이 구간인 회차에서 이 번호가 나온 횟수」. 풀 밖 번호는 고른 번호여도 불가능이다(spec §5.2).
  */
 export function numberBoard(
   draws: readonly Draw[],
@@ -89,9 +89,9 @@ export function numberBoard(
   return Array.from({ length: LOTTO_MAX }, (_, i) => {
     const n = i + 1;
     const possible =
-      fixed.includes(n) ||
+      inPool.has(n) &&
       // fixed 가 이미 6개면 번호를 더 품을 수 없다(remainingCount 는 6 - 길이 개를 고른다).
-      (inPool.has(n) && fixed.length < 6 && remainingCount([...fixed, n], sumRange, pool, past) > 0);
+      (fixed.includes(n) || (fixed.length < 6 && remainingCount([...fixed, n], sumRange, pool, past) > 0));
     return { n, possible, count: counts[n]! };
   });
 }
