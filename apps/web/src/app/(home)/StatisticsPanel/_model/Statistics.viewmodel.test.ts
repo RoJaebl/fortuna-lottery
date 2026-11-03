@@ -71,10 +71,10 @@ describe("StatisticsViewModel (그 통계 하나로 정해지는 값)", () => {
       ],
     }).sumBands;
     expect(bands).toHaveLength(12);
-    expect(bands[0]).toEqual({ label: "21~40", count: 2, percent: 25 });
-    expect(bands[1]).toEqual({ label: "41~60", count: 2, percent: 25 });
-    expect(bands[2]).toEqual({ label: "61~80", count: 0, percent: 0 });
-    expect(bands[11]).toEqual({ label: "241~255", count: 4, percent: 50 });
+    expect(bands[0]).toEqual({ label: "21~40", min: 21, max: 40, count: 2, percent: 25 });
+    expect(bands[1]).toEqual({ label: "41~60", min: 41, max: 60, count: 2, percent: 25 });
+    expect(bands[2]).toEqual({ label: "61~80", min: 61, max: 80, count: 0, percent: 0 });
+    expect(bands[11]).toEqual({ label: "241~255", min: 241, max: 255, count: 4, percent: 50 });
   });
 
   const threeRounds = () =>
@@ -101,7 +101,7 @@ describe("StatisticsViewModel (그 통계 하나로 정해지는 값)", () => {
     ]);
     expect(cut.sumChart).toMatchObject({ minSum: 30, maxSum: 60, maxCount: 1 });
     expect(cut.sumRatio(45)).toBe(0.5);
-    expect(cut.sumBands[0]).toEqual({ label: "21~40", count: 1, percent: 50 });
+    expect(cut.sumBands[0]).toEqual({ label: "21~40", min: 21, max: 40, count: 1, percent: 50 });
   });
 
   it("paddedSumAxis — 기본 40~255 에 고정하고, 합계가 그 밖으로 나갈 때만 20 단위로 한 단계씩 넓힌다", () => {

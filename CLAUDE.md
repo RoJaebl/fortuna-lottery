@@ -196,13 +196,13 @@ ESLint 가 거는 모양 규칙은 이렇다.
   `configureApp` 으로 실제 접두를 건 뒤 HTTP 로 부른다. 유스케이스 시험은 `business/` 의 파일 옆에 둔다.
 - **화면은 상단 띠 · 왼쪽 메뉴 패널 · 오른쪽 콘텐츠로 선다.** 상단 띠(`LotterietusCard`)는 최근 회차, 다음 추첨까지 남은 시간,
   실제 당첨 확률 1/8,145,060 을 보인다. 메뉴는 지금 `작업실` 하나이고, 작업실은 위쪽 번호 영역에 생성기·내 번호·결과 확인을 늘 펼쳐 두고
-  (넓은 화면은 왼쪽 생성기 · 오른쪽 내 번호와 결과 확인), 그 아래 탭 셋(통계·시뮬레이션·가정 실험실)을 보인다. 고른 메뉴와 활성 탭은 `app/(home)/_state/` 의 `state.home.navigation` 이고, `page.tsx` 는 조립만 한다.
+  (넓은 화면은 왼쪽 생성기 · 오른쪽 내 번호와 결과 확인), 그 아래 탭 셋(통계·시뮬레이션·가정 실험실)을 보인다. 가정 실험실은 보기 · 가정 걸기 · 결과 읽기 세 단계로 서고 자기 재생 타임라인을 갖는다(`RoundTimeline` 은 통계 패널과 실험실 두 뷰의 공통 조상 `app/(home)/RoundTimeline` 에 있고, 설명 말풍선은 `shared/ui/Tooltip`). 통계 탭 합계 분포의 구간표는 행마다 「이 구간으로 실험하기」 단추를 두어 그 구간을 실험실에 넘기고 실험실 탭을 연다. 고른 메뉴와 활성 탭은 `app/(home)/_state/` 의 `state.home.navigation` 이고, `page.tsx` 는 조립만 한다.
 - **presenter 는 `useState`·`useEffect` 로 상태를 갖지 않는다.** 화면 하나만 쓰는 상태도 그 뷰 폴더의 `_state/` 에 둔다
-  (`state.home.GeneratorCard.selection` · `state.home.HypothesisLab.switches` · `state.home.StatisticsPanel.view` ·
+  (`state.home.GeneratorCard.selection` · `state.home.HypothesisLab.switches` · `state.home.labRange` · `state.home.StatisticsPanel.view` ·
   `state.home.LotterietusCard.clock`). 전역 등록부에 있으므로 탭을 옮겼다 돌아와도 값이 남는다.
   카운트다운 시계는 브라우저에서만 `setInterval` 을 걸고 `[DISPOSE]` 로 지운다.
 - **자식 뷰가 함께 쓰는 상태는 `app/(home)/_state/` 의 공통 상태다.** 현재 조합(`state.home.combination`)은
-  생성기·가정 실험실이 바꾸고 통계·시뮬레이션·내 번호·가정 실험실이 읽는다. 누가 무엇을 읽고 바꾸는지는 store 출력 스냅숏이 적는다.
+  생성기·가정 실험실이 바꾸고 통계·시뮬레이션·내 번호·가정 실험실이 읽는다. 합계 구간(`state.home.labRange`)은 통계 탭의 구간표와 실험실이 함께 바꾸고 실험실이 읽는다. 누가 무엇을 읽고 바꾸는지는 store 출력 스냅숏이 적는다.
 - **화면 앱의 상태는 모두 `supa-store` 의 전역 등록부에 있고 공급자도 컨테이너도 없다.** `supa-store` 는 이 저장소에서 떼어 낸
   라이브러리이고 GitHub 의존(`RoJaebl/supa-store`, `package.json` 에 커밋째 `github:RoJaebl/supa-store#<커밋>`)으로 들인다. pnpm 11 은 git
   의존의 빌드를 받아 온 주소째로 허락받으므로 `pnpm-workspace.yaml` 의 `allowBuilds` 에 그 커밋의 codeload 주소 한 줄이 함께 있다 — 커밋을 바꿀 때는
@@ -279,7 +279,7 @@ ESLint 가 거는 모양 규칙은 이렇다.
 DB 아님)에 저장된다. `apps/api` 를 다시 띄우면 사라진다. 나중에 Supabase 로 바꿔도 어댑터만 바뀐다.
 인증은 아직 없다(게스트 전용). Supabase Auth 와 로그인 게이팅은 v1 문서 기준 후속 단계다.
 
-`hypothesis` 모듈(가정 실험실)은 `POST /api/hypothesis/{evaluate,generate,popularity}` 를 낸다. 과거 회차로 가정 적중률·백테스트를 계산하고, 화면의 「가정 실험실」 탭이 이를 보인다.
+`hypothesis` 모듈(가정 실험실)은 `POST /api/hypothesis/{evaluate,generate,popularity}` 를 낸다. 과거 회차로 가정 적중률·백테스트를 계산한다. `evaluate` 는 합계 구간·고른 번호·`untilRound` 를 받아 합계별 회차 수·띠·번호판을 함께 돌려준다. 화면의 「가정 실험실」 탭이 이를 보인다.
 
 ## TDD
 

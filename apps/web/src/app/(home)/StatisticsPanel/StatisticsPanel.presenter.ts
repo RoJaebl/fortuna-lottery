@@ -170,6 +170,9 @@ export function useStatisticsPanelPresenter() {
     changePlaySpeed,
   } = useStore("state.home.StatisticsPanel.view");
 
+  const { setRange } = useStore("state.home.labRange", { pick: ["setRange"] });
+  const { selectTab } = useStore("state.home.navigation", { pick: ["selectTab"] });
+
   const tabs = { items: STAT_VIEWS, active: activeStatView, onChange: changeStatView };
 
   if (!stats) return { loading, error, tabs, views: null };
@@ -194,7 +197,15 @@ export function useStatisticsPanelPresenter() {
     marker: my ? { sum: my.mySum, x: sums.sumRatio(my.mySum) } : null,
     axis: { items: SUM_AXIS_MODES, active: sumAxis, onChange: changeSumAxis },
     // 내 합계가 든 구간을 표에 표시한다 — 내 조합이 없으면 표시 없음
-    bands: sums.sumBands.map((band, i) => ({ ...band, mine: my !== null && Math.floor((my.mySum - 21) / 20) === i })),
+    bands: sums.sumBands.map(({ min, max, ...band }, i) => ({
+      ...band,
+      mine: my !== null && Math.floor((my.mySum - 21) / 20) === i,
+      // 이 구간을 실험실의 합계 구간으로 넘기고 가정 실험실 탭을 연다
+      onExperiment: () => {
+        setRange(min, max);
+        selectTab("hypothesis");
+      },
+    })),
     timeline:
       total > 1
         ? {

@@ -81,7 +81,7 @@ export class StatisticsViewModel extends StatisticsModel {
   }
 
   /** 합계 구간표 — 6개 합계가 낼 수 있는 21~255 를 20 단위로 묶은 회차 수와 회차 대비 비율(소수 첫째 자리) */
-  get sumBands(): { label: string; count: number; percent: number }[] {
+  get sumBands(): { label: string; min: number; max: number; count: number; percent: number }[] {
     const bands = Array.from({ length: 12 }, (_, i) => {
       const from = 21 + i * 20;
       return { from, to: Math.min(from + 19, 255), count: 0 };
@@ -92,6 +92,8 @@ export class StatisticsViewModel extends StatisticsModel {
     }
     return bands.map(({ from, to, count }) => ({
       label: `${from}~${to}`,
+      min: from,
+      max: to,
       count,
       percent: this.totalDraws > 0 ? Math.round((count / this.totalDraws) * 1000) / 10 : 0,
     }));

@@ -69,11 +69,11 @@ state.home.combination = {"numbers":null}
 state.home.labRange = {"min":121,"max":160,"committed":{"min":121,"max":160}}
   바꾸는 함수: setRange
   정의: app/(home)/_state/labRange.state.ts
-  쓰는 곳: HypothesisLab, state.home.HypothesisLab.switches
+  쓰는 곳: HypothesisLab, StatisticsPanel, state.home.HypothesisLab.switches
 state.home.navigation = {"activeMenu":"workroom","activeTab":"statistics"}
   바꾸는 함수: selectMenu, selectTab
   정의: app/(home)/_state/navigation.state.ts
-  쓰는 곳: Home
+  쓰는 곳: Home, StatisticsPanel
 [event]
 event.home.PicksCard.changed
   exempt api.home.ResultsCard.check — 결과는 사람이 「당첨 대조」를 눌러 받는다 — 누르기 전까지 앞선 결과를 그대로 보인다

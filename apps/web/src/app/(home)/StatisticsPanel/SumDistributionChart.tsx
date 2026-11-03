@@ -1,4 +1,5 @@
 "use client";
+import { Button } from "@ui/Button";
 import { Card } from "@ui/Card";
 import { Tabs, type TabsProps } from "@ui/Tabs";
 import type { StatisticsViewModel } from "./_model/Statistics.viewmodel";
@@ -27,7 +28,7 @@ export interface SumDistributionChartProps {
   /** 합계 축의 길이 고르기 — 상대 길이(쌓은 회차의 최소~최대) · 절대 길이(21~255) */
   axis: Pick<TabsProps<SumAxisMode>, "items" | "active" | "onChange">;
   /** 차트 아래 표 — 합계 20 단위 구간별 회차 수와 비율. mine 은 내 합계가 든 구간 */
-  bands: { label: string; count: number; percent: number; mine: boolean }[];
+  bands: { label: string; count: number; percent: number; mine: boolean; onExperiment: () => void }[];
   /** 재생 바 — 1회부터 고른 회차까지 쌓은 분포를 보인다. 회차가 하나뿐이면 null 이고 그리지 않는다 */
   timeline: RoundTimelineProps | null;
 }
@@ -119,10 +120,11 @@ export function SumDistributionChart({ chart, subtitle, marker, axis, bands, tim
             <th className="pb-1.5 text-left font-medium">합계 구간</th>
             <th className="pb-1.5 text-right font-medium">회차 수</th>
             <th className="pb-1.5 text-right font-medium">비율</th>
+            <th className="pb-1.5" />
           </tr>
         </thead>
         <tbody>
-          {bands.map(({ label, count, percent, mine }) => (
+          {bands.map(({ label, count, percent, mine, onExperiment }) => (
             <tr key={label} className="border-t border-line/70">
               <td className="py-1.5">
                 {label}
@@ -130,6 +132,11 @@ export function SumDistributionChart({ chart, subtitle, marker, axis, bands, tim
               </td>
               <td className="py-1.5 text-right">{count.toLocaleString()}</td>
               <td className="py-1.5 text-right text-muted">{percent.toFixed(1)}%</td>
+              <td className="py-1.5 text-right">
+                <Button intent="ghost" size="sm" onClick={onExperiment}>
+                  이 구간으로 실험하기
+                </Button>
+              </td>
             </tr>
           ))}
         </tbody>

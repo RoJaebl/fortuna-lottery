@@ -121,6 +121,15 @@ describe("useStatisticsPanelPresenter", () => {
     ]);
   });
 
+  it("sum 구간표 — 「이 구간으로 실험하기」가 구간을 실험실에 넘기고 가정 실험실 탭을 연다", () => {
+    withStats({ totalDraws: 1, sumDistribution: [{ sum: 50, count: 1 }] });
+    withState();
+    const { result } = renderHook(() => useStatisticsPanelPresenter());
+    act(() => result.current.views?.sum.bands[1]?.onExperiment());
+    expect(getStore("state.home.labRange").getState()).toMatchObject({ min: 41, max: 60 });
+    expect(getStore("state.home.navigation").getState().activeTab).toBe("hypothesis");
+  });
+
   it("pairs — TOP 15 문구의 상수와 막대", () => {
     withStats({ topPairs: [{ a: 1, b: 2, count: 4 }] });
     withState();
