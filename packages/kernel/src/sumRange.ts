@@ -12,10 +12,18 @@ import type { RandomPort } from "./rng.js";
 export const SUM_MIN = 21;
 export const SUM_MAX = 255;
 
-/** ways[i][k][s] = pool[i..] 에서 k개를 골라 합이 s 인 경우의 수 */
+/** ways[i][k][s] = pool[i..] 에서 k개를 골라 합이 s 이하인 경우의 수(누적합) */
 type Ways = number[][][];
 
+// 백테스트처럼 같은 풀로 잇달아 부르는 자리를 위해 마지막 표 하나만 기억한다.
+let lastWays = { key: "", ways: [] as Ways };
 function buildWays(pool: readonly number[], maxPick: number): Ways {
+  const key = `${maxPick}|${pool.join(",")}`;
+  if (lastWays.key !== key) lastWays = { key, ways: buildCumulative(pool, maxPick) };
+  return lastWays.ways;
+}
+
+function buildCumulative(pool: readonly number[], maxPick: number): Ways {
   const ways: Ways = Array.from({ length: pool.length + 1 }, () =>
     Array.from({ length: maxPick + 1 }, () => new Array<number>(SUM_MAX + 1).fill(0)),
   );
@@ -30,13 +38,16 @@ function buildWays(pool: readonly number[], maxPick: number): Ways {
       }
     }
   }
+  for (const row of ways) for (const sums of row) for (let s = 1; s <= SUM_MAX; s += 1) sums[s]! += sums[s - 1]!;
   return ways;
 }
 
 function inRange(ways: Ways, i: number, k: number, lo: number, hi: number): number {
-  let total = 0;
-  for (let s = Math.max(lo, 0); s <= Math.min(hi, SUM_MAX); s += 1) total += ways[i]![k]![s]!;
-  return total;
+  const from = Math.max(lo, 0);
+  const to = Math.min(hi, SUM_MAX);
+  if (from > to) return 0;
+  const sums = ways[i]![k]!;
+  return sums[to]! - (from > 0 ? sums[from - 1]! : 0);
 }
 
 /** pool 에서 pick 개를 골라 합이 [min,max] 인 조합의 수 */
